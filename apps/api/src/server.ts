@@ -3,7 +3,7 @@ import express from "express";
 import morgan from "morgan";
 import cors from "cors";
 
-export const createServer = ():any => {
+export const createServer = (): any => {
   const app = express();
   app
     .disable("x-powered-by")
@@ -14,9 +14,9 @@ export const createServer = ():any => {
     .get("/message/:name", (req, res) => {
       return res.json({ message: `hello ${req.params.name}` });
     })
-    .get("/healthz", (req, res) => {
-      return res.json({ ok: true });
+    .get("/check", (req, res) => {
+      return res.json({ message: "wow pulze api working 🚀" });
     });
-       
+
   return app;
 };
