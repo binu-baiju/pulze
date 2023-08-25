@@ -1,6 +1,6 @@
 "use client";
 import { useEffect } from "react";
-import { Button, Header } from "ui";
+import { Button, Header, Heading } from "ui";
 
 interface ResponseType {
   message: string;
@@ -26,7 +26,7 @@ export default function Page(): JSX.Element {
     <>
       <Header text="Web" />
       <Button />
-      <h1 className="text-3xl font-bold underline bg-red-600">Hello world!</h1>
+      <Heading />
     </>
   );
 }
