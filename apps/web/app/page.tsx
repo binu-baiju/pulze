@@ -25,7 +25,7 @@ export default function Page(): JSX.Element {
   return (
     <>
       <Header text="Web" />
-      <Button />
+      <Button>shadcn button</Button>
       <Heading />
     </>
   );

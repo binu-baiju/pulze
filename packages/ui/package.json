@@ -12,15 +12,25 @@
     "generate:component": "turbo gen react-component"
   },
   "devDependencies": {
-    "tailwind-config": "workspace:*",
     "@turbo/gen": "^1.10.12",
     "@types/node": "^20.5.2",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
     "eslint-config-custom": "workspace:*",
+    "postcss": "^8.4.20",
     "react": "^18.2.0",
+    "tailwind-config": "workspace:*",
     "tsconfig": "workspace:*",
-    "typescript": "^4.5.2",
-    "postcss": "^8.4.20"
+    "typescript": "^4.5.2"
+  },
+  "dependencies": {
+    "@radix-ui/react-slot": "^1.0.2",
+    "class-variance-authority": "^0.7.0",
+    "clsx": "^2.0.0",
+    "install": "^0.13.0",
+    "lucide-react": "^0.268.0",
+    "tailwind-merge": "^1.14.0",
+    "tailwindcss": "^3.3.3",
+    "tailwindcss-animate": "^1.0.6"
   }
 }
