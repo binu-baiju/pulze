@@ -1,57 +1,41 @@
-import express from "express";
-import cors from "cors";
-import { graphqlHTTP } from "express-graphql";
-import { makeExecutableSchema } from "@graphql-tools/schema";
+import { ApolloServer } from "@apollo/server";
+import { startStandaloneServer } from "@apollo/server/standalone";
 
-const app = express();
-const port = 4000;
+const typeDefs = `#graphql
+  type Book {
+    title: String
+    author: String
+  }
 
-// In-memory data store
-const data = {
-  students: [
-    { id: "001", name: "Jaime" },
-    { id: "002", name: "Jorah" },
-  ],
-};
-
-// Schema
-const typeDefs = `
-type Student {
-  id: ID!
-  name: String!
-}
-
-type Query {
-  students: [Student]
-}
+  type Query {
+    books: [Book]
+  }
 `;
 
-// Resolver for warriors
+const books = [
+  {
+    title: "The Awakening",
+    author: "Kate Chopin",
+  },
+  {
+    title: "City of Glass",
+    author: "Paul Auster",
+  },
+];
+
 const resolvers = {
   Query: {
-    students: (obj, args, context) => data.students,
+    books: () => books,
   },
 };
 
-const executableSchema = makeExecutableSchema({
+const server = new ApolloServer({
   typeDefs,
   resolvers,
 });
 
-app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
-// Entrypoint
-app.use(
-  "/graphql",
-  graphqlHTTP({
-    schema: executableSchema,
-    context: data,
-    graphiql: true,
-  })
-);
-
-app.listen(port, () => {
-  console.log(`Running a server at http://localhost:${port}`);
+startStandaloneServer(server, {
+  listen: { port: 4000 },
+}).then((url) => {
+  console.log(`🚀  Server ready at: ${url}`);
 });
