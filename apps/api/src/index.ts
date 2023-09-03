@@ -8,7 +8,7 @@ const port = 4000;
 
 // In-memory data store
 const data = {
-  warriors: [
+  students: [
     { id: "001", name: "Jaime" },
     { id: "002", name: "Jorah" },
   ],
@@ -16,20 +16,20 @@ const data = {
 
 // Schema
 const typeDefs = `
-type Warrior {
+type Student {
   id: ID!
   name: String!
 }
 
 type Query {
-  warriors: [Warrior]
+  students: [Student]
 }
 `;
 
 // Resolver for warriors
 const resolvers = {
   Query: {
-    warriors: (obj, args, context) => context.warriors,
+    students: (obj, args, context) => data.students,
   },
 };
 
