@@ -1,10 +1,41 @@
-import { createServer } from "./server";
-// import { log } from "logger";
+import { ApolloServer } from "@apollo/server";
+import { startStandaloneServer } from "@apollo/server/standalone";
 
-const port = process.env.PORT || 5001;
-const server = createServer();
+const typeDefs = `#graphql
+  type Book {
+    title: String
+    author: String
+  }
 
-server.listen(port, () => {
-  console.log(`api running on ${port}`);
-           
+  type Query {
+    books: [Book]
+  }
+`;
+
+const books = [
+  {
+    title: "The Awakening",
+    author: "Kate Chopin",
+  },
+  {
+    title: "City of Glass",
+    author: "Paul Auster",
+  },
+];
+
+const resolvers = {
+  Query: {
+    books: () => books,
+  },
+};
+
+const server = new ApolloServer({
+  typeDefs,
+  resolvers,
+});
+
+startStandaloneServer(server, {
+  listen: { port: 4000 },
+}).then((url) => {
+  console.log(`🚀  Server ready at: ${url}`);
 });

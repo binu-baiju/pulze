@@ -1,32 +1,28 @@
-"use client";
-import { useEffect } from "react";
 import { Button, Header, Heading } from "ui";
 
-interface ResponseType {
-  message: string;
-}
+import { getClient } from "../lib/client";
 
-export default function Page(): JSX.Element {
-  async function getdata(): Promise<string> {
-    const data = await fetch("http://localhost:5001/check");
-    const res = (await data.json()) as ResponseType;
+import { gql } from "@apollo/client";
 
-    return res.message;
+const query = gql`
+  query ExampleQuery {
+    books {
+      title
+    }
   }
-  useEffect(() => {
-    getdata()
-      .then((data) => {
-        console.log(data);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-  }, []);
+`;
+
+export const revalidate = 5;
+
+export default async function Page() {
+  const { data } = await getClient().query({ query });
+
   return (
     <>
       <Header text="Web" />
       <Button>shadcn button</Button>
       <Heading />
+      <h1>{data.books[0].title}</h1>
     </>
   );
 }
