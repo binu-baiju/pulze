@@ -1,49 +1,13 @@
 import { ApolloServer } from "@apollo/server";
 import { startStandaloneServer } from "@apollo/server/standalone";
-import { type } from "os";
-const gql = require("graphql-tag");
-const { PrismaClient } = require("@prisma/client");
+
+import gql from "graphql-tag";
+import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
-const mysql = require("mysql2");
 
-const connection = mysql.createConnection({
-  host: "localhost",
-  user: "root",
-  password: "binubaiju",
-  database: "crud",
-});
-
-connection.connect((err) => {
-  if (err) {
-    console.error("Error connecting to the database:", err);
-    return;
-  }
-  console.log("Connected to MySQL database");
-});
-
-// const typeDefs = `#graphql
-//   # type Post {
-//   #   id: Int
-//   #   title: String
-//   #   content: String
-//   # }
-//   # type Book {
-//   #   title: String
-//   #   content: String
-//   # }
-
-//   # type Query {
-//   #   Post: [Post]
-//   # }
-//   # type Mutation {
-//   #   createPost(title: String!, author: String!): Post!
-//   # }
-
-// `;
 const typeDefs = gql`
   type Query {
-    greetings: String
-    getAllStudents: [Student!]!
+    students: [Student!]!
   }
   # Student object
   type Student {
@@ -55,7 +19,7 @@ const typeDefs = gql`
 
   # Mutation
   type Mutation {
-    create(firstName: String, lastName: String, age: Int): Student
+    createStudent(firstName: String, lastName: String, age: Int): Student
 
     updateStudent(
       id: Int!
@@ -68,37 +32,9 @@ const typeDefs = gql`
   }
 `;
 
-const books = [
-  {
-    title: "The Awakening",
-    author: "Kate Chopin",
-  },
-  {
-    title: "City of Glass",
-    author: "Paul Auster",
-  },
-];
-
-// const resolvers = {
-//   Query: {
-//     books: () => books,
-//   },
-//   Mutation: {
-//     createBook: async (_, { title, content }) => {
-//       return await prisma.book.create({
-//         data: {
-//           title,
-//           content,
-//         },
-//       });
-//     },
-//   },
-// };
-
 const resolvers = {
   Query: {
-    // greeting: () => "GraphQL is Awesome",
-    getAllStudents: async () => {
+    students: async () => {
       try {
         const students = await prisma.student.findMany();
         return students;
@@ -108,16 +44,21 @@ const resolvers = {
     },
   },
   Mutation: {
-    create: async (_, args) => {
+    createStudent: async (_, args) => {
       const { firstName, lastName, age } = args;
-      const newStudent = await prisma.student.create({
-        data: {
-          firstName,
-          lastName,
-          age,
-        },
-      });
-      return newStudent;
+
+      try {
+        const newStudent = await prisma.student.create({
+          data: {
+            firstName,
+            lastName,
+            age,
+          },
+        });
+        return newStudent;
+      } catch (error) {
+        console.log(error);
+      }
     },
 
     updateStudent: async (_, { id, firstName, lastName, age }) => {
@@ -153,14 +94,8 @@ const resolvers = {
 
 const server = new ApolloServer({ typeDefs, resolvers });
 
-// const server = new ApolloServer(
-//   {
-//   typeDefs,
-//   resolvers,
-// });
-
 startStandaloneServer(server, {
   listen: { port: 4000 },
-}).then((url) => {
+}).then(({ url }) => {
   console.log(`🚀  Server ready at: ${url}`);
 });

@@ -1,146 +1,111 @@
-// "use client";
-// import { Button, Header, Heading } from "ui";
-
-// // import { getClient } from "../lib/client";
-
-// import { gql, useMutation } from "@apollo/client";
-// import { useState } from "react";
-
-// const query = gql`
-//   query ExampleQuery {
-//     books {
-//       title
-//     }
-//   }
-// `;
-
-// const CREATE_BOOK = gql`
-//   mutation CreateBook($title: String!, $author: String!) {
-//     createBook(title: $title, author: $author) {
-//       id
-//       title
-//       author
-//     }
-//   }
-// `;
-
-// export const revalidate = 5;
-
-// export default async function Page() {
-//   const [title, setTitle] = useState("");
-//   const [author, setAuthor] = useState("");
-
-//   const [createBook] = useMutation(CREATE_BOOK);
-
-//   const handleCreateBook = async () => {
-//     try {
-//       const { data } = await createBook({
-//         variables: { title, author },
-//       });
-//       console.log("New book created:", data.createBook);
-//       // Optionally, you can navigate to a different page or update the UI here.
-//     } catch (error) {
-//       console.error("Error creating book:", error);
-//     }
-//   };
-
-//   // const { data } = await getClient().query({ query });
-
-//   return (
-//     <>
-//       <Header text="Web" />
-//       <Button>shadcn button</Button>
-//       <Heading />
-//       {/* <h1>{data.books[1].title}</h1> */}
-//       <div>
-//         <h2>Create a New Book</h2>
-//         <div>
-//           <label>Title:</label>
-//           <input
-//             type="text"
-//             value={title}
-//             onChange={(e) => setTitle(e.target.value)}
-//           />
-//         </div>
-//         <div>
-//           <label>Author:</label>
-//           <input
-//             type="text"
-//             value={author}
-//             onChange={(e) => setAuthor(e.target.value)}
-//           />
-//         </div>
-//         <button onClick={handleCreateBook}>Create Book</button>
-//       </div>
-//     </>
-//   );
-// }
 "use client";
-import { Button, Header, Heading } from "ui";
-import { useMutation, gql } from "@apollo/client";
-import { useState } from "react";
-import { useSuspenseQuery } from "@apollo/experimental-nextjs-app-support/ssr";
 
-const CREATE_BOOK = gql`
-  mutation CreateBook($title: String!, $author: String!) {
-    createBook(title: $title, author: $author) {
-      title
-      author
+import { useMutation, useQuery, gql } from "@apollo/client";
+
+import { useState } from "react";
+
+export const dynamic = "force-dynamic";
+
+const VIEW_STUDNETS = gql`
+  query students {
+    students {
+      firstName
+      lastName
+      age
     }
   }
 `;
 
-const VIEW_STUDNETS = gql`
-  query getAllStudents {
-    getAllStudents {
+type Student = {
+  firstName: string;
+  lastName: string;
+  age: number;
+};
+
+const CREATE_STUDENT = gql`
+  mutation CreateStudent($firstName: String!, $lastName: String!, $age: Int!) {
+    createStudent(firstName: $firstName, lastName: $lastName, age: $age) {
       firstName
     }
   }
 `;
 
-const CreateBookForm = () => {
-  const [title, setTitle] = useState("");
-  const [author, setAuthor] = useState("");
+const Page = () => {
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [age, setAge] = useState("");
 
-  const [createBook] = useMutation(CREATE_BOOK);
-  const { data } = useSuspenseQuery(VIEW_STUDNETS);
-  console.log(data);
+  const [createStudent, { data: returnData, loading, error }] =
+    useMutation(CREATE_STUDENT);
 
-  const handleCreateBook = async () => {
+  const { data } = useQuery<{ students: Student[] }>(VIEW_STUDNETS);
+  const students = data?.students || [];
+
+  const handlecreateStudent = async () => {
     try {
-      const { data } = await createBook({
-        variables: { title, author },
+      createStudent({
+        variables: { firstName, lastName, age: +age },
       });
-      console.log("New book created:", data.createBook);
-      // Optionally, you can navigate to a different page or update the UI here.
     } catch (error) {
-      console.error("Error creating book:", error);
-      // Handle the error and display an error message to the user if necessary.
+      console.error(error);
     }
   };
 
   return (
-    <div>
-      <h2>Create a New Book</h2>
-      <div>
-        <label>Title:</label>
-        <input
-          type="text"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-        />
+    <div className="flex">
+      <div className="p-16 flex flex-col gap-6 w-1/3">
+        <h2>Create a New Student</h2>
+        <div>
+          <label>FirstName:</label>
+          <input
+            className="h-8 bg-slate-200 rounded-md ms-4"
+            type="text"
+            value={firstName}
+            onChange={(e) => setFirstName(e.target.value)}
+          />
+        </div>
+        <div>
+          <label>LastName:</label>
+          <input
+            className="h-8 bg-slate-200 rounded-md ms-4"
+            type="text"
+            value={lastName}
+            onChange={(e) => setLastName(e.target.value)}
+          />
+        </div>
+        <div>
+          <label>Age:</label>
+          <input
+            className="h-8 bg-slate-200 rounded-md ms-4"
+            type="text"
+            value={age}
+            onChange={(e) => setAge(e.target.value)}
+          />
+        </div>
+        <button
+          className="bg-black text-white p-3 rounded-md"
+          onClick={handlecreateStudent}
+        >
+          {loading ? "Saving" : "Create Book"}
+        </button>
       </div>
-      <div>
-        <label>Author:</label>
-        <input
-          type="text"
-          value={author}
-          onChange={(e) => setAuthor(e.target.value)}
-        />
+      <div className="p-16 flex flex-col gap-6 w-1/3">
+        <h1 className="text-2xl">All students</h1>
+        {students.map((student, index) => (
+          <div className="flex gap-3 items-center" key={index}>
+            <h2>{index + 1}.</h2>
+            <h2>
+              {student.firstName} {student.lastName}
+            </h2>
+            <p>Age: {student.age}</p>
+            <button className="bg-red-600 p-1 rounded-lg text-white">
+              delete
+            </button>
+          </div>
+        ))}
       </div>
-      <button onClick={handleCreateBook}>Create Book</button>
     </div>
   );
 };
 
-export default CreateBookForm;
+export default Page;
