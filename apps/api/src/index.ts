@@ -1,41 +1,101 @@
 import { ApolloServer } from "@apollo/server";
 import { startStandaloneServer } from "@apollo/server/standalone";
 
-const typeDefs = `#graphql
-  type Book {
-    title: String
-    author: String
+import gql from "graphql-tag";
+import { PrismaClient } from "@prisma/client";
+const prisma = new PrismaClient();
+
+const typeDefs = gql`
+  type Query {
+    students: [Student!]!
+  }
+  # Student object
+  type Student {
+    id: ID
+    firstName: String
+    lastName: String
+    age: Int
   }
 
-  type Query {
-    books: [Book]
+  # Mutation
+  type Mutation {
+    createStudent(firstName: String, lastName: String, age: Int): Student
+
+    updateStudent(
+      id: Int!
+      firstName: String
+      lastName: String
+      age: Int
+    ): Student
+
+    deleteStudent(id: Int!): Student
   }
 `;
 
-const books = [
-  {
-    title: "The Awakening",
-    author: "Kate Chopin",
-  },
-  {
-    title: "City of Glass",
-    author: "Paul Auster",
-  },
-];
-
 const resolvers = {
   Query: {
-    books: () => books,
+    students: async () => {
+      try {
+        const students = await prisma.student.findMany();
+        return students;
+      } catch (error) {
+        throw new Error("Unable to fetch students.");
+      }
+    },
+  },
+  Mutation: {
+    createStudent: async (_, args) => {
+      const { firstName, lastName, age } = args;
+
+      try {
+        const newStudent = await prisma.student.create({
+          data: {
+            firstName,
+            lastName,
+            age,
+          },
+        });
+        return newStudent;
+      } catch (error) {
+        console.log(error);
+      }
+    },
+
+    updateStudent: async (_, { id, firstName, lastName, age }) => {
+      try {
+        const updatedStudent = await prisma.student.update({
+          where: { id },
+          data: {
+            firstName,
+            lastName,
+            age,
+          },
+        });
+        return updatedStudent;
+      } catch (error) {
+        console.error("Prisma Error:", error);
+        throw new Error("Unable to update student.");
+      }
+    },
+
+    deleteStudent: async (_, { id }) => {
+      try {
+        // Use Prisma to delete the student by ID
+        const deletedStudent = await prisma.student.delete({
+          where: { id },
+        });
+        return deletedStudent;
+      } catch (error) {
+        throw new Error(`Unable to delete student with ID ${id}`);
+      }
+    },
   },
 };
 
-const server = new ApolloServer({
-  typeDefs,
-  resolvers,
-});
+const server = new ApolloServer({ typeDefs, resolvers });
 
 startStandaloneServer(server, {
   listen: { port: 4000 },
-}).then((url) => {
+}).then(({ url }) => {
   console.log(`🚀  Server ready at: ${url}`);
 });
