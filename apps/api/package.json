@@ -18,7 +18,6 @@
     "graphql": "^16.8.0",
     "graphql-tag": "^2.12.6",
     "morgan": "^1.10.0",
-    "mysql2": "^3.6.0",
     "prisma": "^5.2.0"
   },
   "devDependencies": {
