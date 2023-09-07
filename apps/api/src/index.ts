@@ -2,7 +2,9 @@ import { ApolloServer } from "@apollo/server";
 import { startStandaloneServer } from "@apollo/server/standalone";
 
 import gql from "graphql-tag";
-import { PrismaClient } from "@prisma/client";
+// import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from "./node_modules/.prisma/client";
+
 const prisma = new PrismaClient();
 
 const typeDefs = gql`
@@ -11,7 +13,7 @@ const typeDefs = gql`
   }
   # Student object
   type Student {
-    id: ID
+    id: Int
     firstName: String
     lastName: String
     age: Int
@@ -21,12 +23,9 @@ const typeDefs = gql`
   type Mutation {
     createStudent(firstName: String, lastName: String, age: Int): Student
 
-    updateStudent(
-      id: Int!
-      firstName: String
-      lastName: String
-      age: Int
-    ): Student
+    updateStudent(id: Int!, firstName: String): # lastName: String
+    # age: Int
+    Student
 
     deleteStudent(id: Int!): Student
   }
