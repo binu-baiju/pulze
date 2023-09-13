@@ -12,12 +12,15 @@
   "dependencies": {
     "@apollo/server": "^4.9.3",
     "@prisma/client": "^5.2.0",
+    "bcrypt": "^5.1.1",
     "body-parser": "^1.19.0",
     "cors": "^2.8.5",
     "express": "^4.17.1",
     "graphql": "^16.8.0",
     "graphql-tag": "^2.12.6",
-    "morgan": "^1.10.0"
+    "jsonwebtoken": "^9.0.2",
+    "morgan": "^1.10.0",
+    "uuid": "^9.0.0"
   },
   "devDependencies": {
     "@types/body-parser": "^1.19.0",
