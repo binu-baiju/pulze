@@ -17,3 +17,10 @@ model Student {
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 }
+
+// schema.prisma
+model User {
+    id           String @id @default(uuid()) @map("_id") // Use UUID
+    email        String @unique
+    passwordHash String
+}

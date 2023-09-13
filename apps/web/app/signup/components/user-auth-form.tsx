@@ -141,53 +141,88 @@
 "use client";
 import * as React from "react";
 
+import { useEffect, useState } from "react";
+
 import { Label } from "../../../../../packages/ui/components/label";
 import { Input } from "../../../../../packages/ui/components/input";
 
 import { Button } from "ui";
 import { useMutation, gql } from "@apollo/client";
+import { useRouter } from "next/navigation";
 import { cn } from "ui/lib/utils";
 // import { Button, Label, Input, Icons } from "ui";
 // import { useMutation, gql } from "@apollo/client";
 // import { useEffect, useState } from "react";
 
+// const SIGNUP_MUTATION = gql`
+//   mutation Signup($email: String!, $password: String!) {
+//     signup(email: $email, password: $password) {
+//       id
+//       email
+//     }
+//   }
+// `;
+
 const SIGNUP_MUTATION = gql`
   mutation Signup($email: String!, $password: String!) {
-    signup(email: $email, password: $password)
+    signup(email: $email, password: $password) {
+      user {
+        id
+        email
+      }
+      token
+    }
   }
 `;
 
 export function UserAuthForm() {
+  const { push } = useRouter();
   const [isLoading, setIsLoading] = React.useState(false);
-  const [email, setEmail] = React.useState("");
-  const [password, setPassword] = React.useState("");
-
-  const [signup, { error }] = useMutation(SIGNUP_MUTATION, {
-    onCompleted: (data) => {
-      // The signup mutation should return a token or some indication of success.
-      // Handle the response data here, e.g., store the token in local storage.
-      console.log("Signup completed:", data);
-    },
-  });
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  // const [error, setError] = useState("");
+  // const [token, setToken] = useState(localStorage.getItem("token") || "");
+  const [signup, { error }] = useMutation(SIGNUP_MUTATION);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
 
     try {
-      await signup({
+      const { data } = await signup({
         variables: { email, password },
       });
+      console.log(data);
+      const { user, token } = data.signup;
+      // const { user, token } = data.signup;
+      // const user = data.signup;
+      localStorage.setItem("token", token);
+
+      console.log("Signup successful!");
+      console.log("User:", user);
+      // Save the token in localStorage
+      // localStorage.setItem("token", token);
+
+      console.log("Signup successful!", data);
+      // console.log("User:", user);
+      push("/dashboard");
     } catch (error) {
       console.error("Signup failed:", error.message);
+      // setError(error.message);
     }
 
     setIsLoading(false);
   };
 
+  // useEffect(() => {
+  //   // Save the token in localStorage when it changes
+  //   localStorage.setItem("token", token);
+  //   console.log(token);
+  // }, [token]);
+
   return (
     <form onSubmit={handleSubmit}>
-      {error && <p>Error: {error.message}</p>}
+      {/* {error && <p>Error: {error}</p>} */}
       <Label htmlFor="email">Email</Label>
       <Input
         type="email"
@@ -204,7 +239,7 @@ export function UserAuthForm() {
         onChange={(e) => setPassword(e.target.value)}
         required
       />
-      <Button type="submit" disabled={isLoading}>
+      <Button type="submit" disabled={isLoading} onClick={handleSubmit}>
         {isLoading ? "Signing up..." : "Sign Up"}
       </Button>
     </form>
