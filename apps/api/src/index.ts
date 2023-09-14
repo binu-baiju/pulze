@@ -7,6 +7,7 @@ import { PrismaClient } from "./node_modules/.prisma/client";
 import { v4 as uuidv4 } from "uuid";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
+import { error } from "console";
 
 const prisma = new PrismaClient();
 
@@ -29,8 +30,8 @@ const typeDefs = gql`
     updateStudent(
       id: Int!
       firstName: String # lastName: String
-      # age: Int
-    ): Student
+    ): # age: Int
+    Student
 
     deleteStudent(id: Int!): Student
   }
@@ -51,6 +52,7 @@ const typeDefs = gql`
 
   type Mutation {
     signup(email: String!, password: String!): UserWithToken!
+    login(email: String!, password: String!): UserWithToken!
   }
 `;
 
@@ -141,6 +143,29 @@ const resolvers = {
         return { user: newUser, token };
       } catch (error) {
         throw new Error(`Error during signup: ${error.message}`);
+      }
+    },
+    login: async (_, { email, password }) => {
+      try {
+        const user = await prisma.user.findUnique({
+          where: { email },
+        });
+
+        if (!user) {
+          throw new Error("User not found");
+        }
+        const passwordValid = await bcrypt.compare(password, user.passwordHash);
+
+        if (!passwordValid) {
+          throw new Error("Invalid password");
+        }
+        const token = jwt.sign({ userId: user.id }, secretKey, {
+          expiresIn: "1h", // Token expiration time (adjust as needed)
+        });
+
+        return { user, token };
+      } catch (error) {
+        throw new Error(`Error during login: ${error.message}`);
       }
     },
   },
