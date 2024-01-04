@@ -13,7 +13,7 @@ export const authenticateToken = (
   res: Response,
   next: NextFunction
 ) => {
-  const token = req.headers["authorization"];
+  const token = req.header["authorization"];
 
   if (!token) {
     return res.status(401).json({ message: "Unauthorized: No token provided" });

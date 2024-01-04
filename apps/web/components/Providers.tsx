@@ -1,5 +1,6 @@
 "use client";
 import React from "react";
+import { SessionProvider } from "next-auth/react"
 import { ApolloClient, InMemoryCache, ApolloProvider } from "@apollo/client";
 
 export const Providers = ({ children }: { children: any }) => {
@@ -7,5 +8,6 @@ export const Providers = ({ children }: { children: any }) => {
     uri: "http://localhost:4000/graphql",
     cache: new InMemoryCache(),
   });
-  return <ApolloProvider client={client}>{children}</ApolloProvider>;
+  return <ApolloProvider client={client}><SessionProvider>{children}</SessionProvider>
+  </ApolloProvider>;
 };
