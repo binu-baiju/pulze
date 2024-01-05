@@ -8,8 +8,8 @@ generator client {
 
 datasource db {
   provider = "mysql"
-//   url      = env("DATABASE_URL")
-  url      = "mysql://mt129b8qivdjob9tyskh:pscale_pw_KrOc9ABRm0u5Q5K0b1TQLxMquEvpiTh6vT70ycVrWPa@aws.connect.psdb.cloud/pulze?sslaccept=strict"
+  url      = env("DATABASE_URL")
+  
 
   relationMode = "prisma"
 }

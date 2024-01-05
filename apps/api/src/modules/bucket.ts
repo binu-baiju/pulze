@@ -8,8 +8,8 @@ export const bucket = BUCKET_NAME;
 
 export const s3 = new AWS.S3({
   endpoint: "http://s3-ap-south-1.amazonaws.com",
-  accessKeyId: "AKIAS5RNQ32LZBCCWN5J",
-  secretAccessKey: "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",
+  accessKeyId: ACCESSKEYID,
+  secretAccessKey: SECRETACCESSKEY,
   sslEnabled: false,
   s3ForcePathStyle: true,
 });
