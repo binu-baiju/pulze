@@ -8,6 +8,10 @@ export const Providers = ({ children }: { children: any }) => {
     uri: "http://localhost:4000/graphql",
     cache: new InMemoryCache(),
   });
-  return <ApolloProvider client={client}><SessionProvider>{children}</SessionProvider>
-  </ApolloProvider>;
+  return (
+     <SessionProvider>{children}</SessionProvider>
+ 
+    //  <ApolloProvider client={client}><SessionProvider>{children}</SessionProvider>
+    //  </ApolloProvider>
+  );
 };

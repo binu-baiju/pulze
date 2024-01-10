@@ -8,6 +8,7 @@ const router: Router = express.Router();
 // Register/Login route
 router.post("/registerOrLogin", registerOrLogin);
 
+
 // Dashboard route
 // router.get("/dashboard",authenticateToken, dashboard);
 
