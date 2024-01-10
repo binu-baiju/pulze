@@ -1,5 +1,9 @@
 const AWS = require("aws-sdk");
+import { Endpoint } from "aws-sdk";
+import dotenv from "dotenv";
 
+dotenv.config();
+// process.env.ACCESSKEYID;
 const ACCESSKEYID = process.env.ACCESSKEYID;
 const SECRETACCESSKEY = process.env.SECRETACCESSKEY;
 const BUCKET_NAME = process.env.BUCKET_NAME;
@@ -9,10 +13,11 @@ export const bucket = BUCKET_NAME;
 
 export const s3 = new AWS.S3({
   endpoint: END_POINT,
-  accessKeyId: ACCESSKEYID,
-  secretAccessKey: SECRETACCESSKEY,
+  accessKeyId: 'AKIAS5RNQ32LXOR7TBLP',
+  secretAccessKey: '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',
   sslEnabled: false,
   s3ForcePathStyle: true,
+  
 });
 
 // export const s3 = new AWS.S3({

@@ -12,6 +12,8 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import { error } from "console";
 import express from "express";
+import dotenv from "dotenv";
+dotenv.config();
 import { graphqlUploadExpress, GraphQLUpload } from "graphql-upload-ts";
 // const { graphqlUploadExpress, GraphQLUpload } = require("graphql-upload-ts");
 
@@ -244,6 +246,8 @@ const resolvers = {
       let result;
 
       try {
+        console.log("hello");
+        
         const uploadStream = createUploadStream(filename);
         stream.pipe(uploadStream.writeStream);
         result = await uploadStream.promise;
