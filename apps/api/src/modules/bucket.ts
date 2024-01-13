@@ -9,15 +9,19 @@ const SECRETACCESSKEY = process.env.SECRETACCESSKEY;
 const BUCKET_NAME = process.env.BUCKET_NAME;
 const END_POINT = process.env.END_POINT;
 
+console.log(ACCESSKEYID);
+console.log(SECRETACCESSKEY);
+
+
 export const bucket = BUCKET_NAME;
 
 export const s3 = new AWS.S3({
   endpoint: END_POINT,
-  accessKeyId: 'AKIAS5RNQ32LXOR7TBLP',
-  secretAccessKey: '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',
+  accessKeyId: ACCESSKEYID,
+  secretAccessKey: SECRETACCESSKEY,
   sslEnabled: false,
   s3ForcePathStyle: true,
-  
+  region:'Asia Pacific (Mumbai) ap-south-1'
 });
 
 // export const s3 = new AWS.S3({

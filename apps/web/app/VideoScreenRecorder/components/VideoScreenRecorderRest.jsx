@@ -5,14 +5,19 @@ import axios from "axios";
 import { useState } from "react";
 
 
-const VideoScreenRecorder = () => {
+const VideoScreenRecorder = ({ onRecordingComplete }) => {
   const videoElement = useRef(null);
   const recorder = useRef(null);
   // let resultVideosrc;
   const [resultVideosrc, setResultVideosrc] = useState("hlo");
   
+  const handleRecordingComplete = (recordedData) => {
+    // Do any processing or validation if needed
+    onRecordingComplete(recordedData);
+  };
 
   useEffect(() => {
+
     const startRecordingButton = document.getElementById("btn-start-recording");
     const stopRecordingButton = document.getElementById("btn-stop-recording");
 
@@ -123,7 +128,7 @@ const VideoScreenRecorder = () => {
             }
           }
 
-          const videoFile = new File([blob], "recorded-video8.mp4", {
+          const videoFile = new File([blob], "recorded-video18.mp4", {
             type: 'video/mp4',
           });
           console.log(videoFile)
@@ -177,8 +182,9 @@ const VideoScreenRecorder = () => {
             const responseData = await response.json();
     const {result,success} = responseData;
             console.log('Server Response:', responseData);
-            console.log('Server Response result:', result.key);
+            console.log('Server Response result:', result);
             setResultVideosrc(`https://d1yt4919vxgwb5.cloudfront.net/${result.key}`);
+            onRecordingComplete(resultVideosrc);
             try {
               
             } catch (error) {

@@ -9,6 +9,8 @@ dotenv.config();
 
 import authRoutes from "./routes/authRoutes";
 import uploadRoutes from "./routes/uploadRoutes";
+import videoRecorderCompletedRoutes from "./routes/videoRecorderCompletedRoutes";
+
 
 
 
@@ -19,6 +21,8 @@ app.use(express.json());
 
 app.use("/api", authRoutes);
 app.use("/api", uploadRoutes);
+app.use("/api", videoRecorderCompletedRoutes);
+
 
 
 app.get("/api/home",(req:Request,res:Response)=>{
