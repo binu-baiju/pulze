@@ -1,16 +1,26 @@
 import React, { useState } from "react";
+import Image from "next/image";
+import VideoPlayer from "./components/VideoPlayer";
+import { Button } from "ui";
+import { Icons } from "ui/components/icons";
+import { Checkbox } from "ui/components/checkbox";
+import { Textarea } from "ui/components/textarea";
 
-const gettinResponse = () => {
-    return (
-        <div className="flex w-full justify-center bg-blue-500">
-        <div className="w-60 bg-red-500 flex ">
-    Hello
-  </div>
-  <div className="w-40 bg-green-500 flex ">
-    Hai
-  </div>
-        </div>
-    )
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "ui/components/tabs";
+import ToggleButton from "../../../VideoScreenRecorder/components/toggleButton";
+import { Send, SendHorizontal, Type } from "lucide-react";
+import TimeStamp from "./components/timestamp";
+import GettinResponse from "./components/gettingResponse";
+
+const page = () => {
+  return (
+    <div className="font-poppins bg-gray-200 min-h-screen w-screen flex flex-col overflow-hidden ">
+      <GettinResponse />
+    </div>
+  );
+};
+
+export default page;
+
+{
 }
-
-export default gettinResponse;
