@@ -3,11 +3,11 @@ import jwt from 'jsonwebtoken';
 import bcrypt from "bcrypt";
 // import User from "../model/usermodel";
 import { config } from "dotenv";
-import { PrismaClient } from '@prisma/client'
+import { PrismaClient } from "../../node_modules/.prisma/client";
 import stream from 'stream';
-
-import { createUploadStream } from "../../../api/src/modules/stream";
 const prisma = new PrismaClient();
+import { createUploadStream } from "../../../api/src/modules/stream";
+
 
 // Load environment variables
 config();
@@ -55,8 +55,34 @@ export const uploadVideo = async (req: Request, res: Response) => {
       const uploadStream = createUploadStream(originalname);
       stream1.pipe(uploadStream.writeStream);
       const result = await uploadStream.promise;
-  
+  console.log(result)
+  const {ETag,Location,Bucket,Key} = result;
+  try {
+    const creatorId = 'd68e3f11-bdab-430f-9dc2-54c2c088864d'; // Replace with the actual user ID
+    const workspaceId = '1bd89f4c-36eb-4411-9232-acb129219e8f';
+    const newVideo = await prisma.video.create({
+      data: {
+        title:originalname,
+        ETag,
+        Location,
+        Key,
+        Bucket,
+        
+        
+        creator: { connect: { id: creatorId } },
+        workspace: { connect: { workspace_id: workspaceId } },
+      },
+      
+      
+    });
+    console.log(newVideo);
+    
+  } catch (error) {
+    console.error(`failed to add video to mysql:${error}`);
+    res.status(500).json({ error: `Error add video ${originalname} hello`,originalname });
+  }
       res.json({ success: true, result });
+      
     } catch (error: any) {
       console.error(`[Error]: Message: ${error.message}, Stack: ${error.stack}`);
       res.status(500).json({ error: `Error uploading file ${originalname} hello`,originalname });
