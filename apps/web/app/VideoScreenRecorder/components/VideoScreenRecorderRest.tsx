@@ -1,29 +1,27 @@
-"use client"
+"use client";
 import React, { useEffect, useRef } from "react";
 import RecordRTC from "recordrtc";
-import axios from "axios";
 import { useState } from "react";
 
-
-const VideoScreenRecorder = ({ onRecordingComplete }) => {
-  const videoElement = useRef(null);
-  const recorder = useRef(null);
+const VideoScreenRecorder = () => {
+  const videoElement: any = useRef(null);
+  const recorder: any = useRef(null);
   // let resultVideosrc;
   const [resultVideosrc, setResultVideosrc] = useState("hlo");
-  
-  const handleRecordingComplete = (recordedData) => {
-    // Do any processing or validation if needed
-    onRecordingComplete(recordedData);
-  };
 
   useEffect(() => {
+    const startRecordingButton: any = document.getElementById(
+      "btn-start-recording"
+    );
+    const stopRecordingButton: any =
+      document.getElementById("btn-stop-recording");
 
-    const startRecordingButton = document.getElementById("btn-start-recording");
-    const stopRecordingButton = document.getElementById("btn-stop-recording");
+    const sendMessage: any = document.getElementById("send-message");
 
-    const sendMessage = document.getElementById("send-message");
-
-    if (!navigator.getDisplayMedia && !navigator.mediaDevices.getDisplayMedia) {
+    if (
+      !(navigator as any).getDisplayMedia &&
+      !navigator.mediaDevices.getDisplayMedia
+    ) {
       const error = "Your browser does NOT support the getDisplayMedia API.";
       sendMessage.innerHTML = error;
       videoElement.current.style.display = "none";
@@ -45,7 +43,7 @@ const VideoScreenRecorder = ({ onRecordingComplete }) => {
             displayMediaConstraints
           );
         } else {
-          screenStream = await navigator.getDisplayMedia(
+          screenStream = await (navigator as any).getDisplayMedia(
             displayMediaConstraints
           );
         }
@@ -92,16 +90,16 @@ const VideoScreenRecorder = ({ onRecordingComplete }) => {
       cameraStream.top = screenStream.height - cameraStream.height;
       cameraStream.left = screenStream.width - cameraStream.width;
 
-      recorder.current = RecordRTC([screenStream, cameraStream], {
-        type: "video",
-        mimeType: "video/webm",
-        previewStream: (s) => {
-          videoElement.current.muted = true;
-          videoElement.current.srcObject = s;
-        },
-      });
+      // recorder.current = new RecordRTC([screenStream, cameraStream], {
+      //   type: "video",
+      //   mimeType: "video/webm",
+      //   previewStream: (s) => {
+      //     videoElement.current.muted = true;
+      //     videoElement.current.srcObject = s;
+      //   },
+      // });
 
-      recorder.current.startRecording();
+      // recorder.current.startRecording();
     };
 
     const stopRecording = async () => {
@@ -128,10 +126,10 @@ const VideoScreenRecorder = ({ onRecordingComplete }) => {
             }
           }
 
-          const videoFile = new File([blob], "recorded-video18.mp4", {
-            type: 'video/mp4',
+          const videoFile = new File([blob], "recorded-video8.mp4", {
+            type: "video/mp4",
           });
-          console.log(videoFile)
+          console.log(videoFile);
 
           // try {
           //   const formData = new FormData();
@@ -146,7 +144,6 @@ const VideoScreenRecorder = ({ onRecordingComplete }) => {
           //   //     },
           //   //   }
           //   // );
-           
 
           //   console.log(response.data);
 
@@ -166,43 +163,44 @@ const VideoScreenRecorder = ({ onRecordingComplete }) => {
           //     error: 'Error uploading file',
           //     details: error.response ? error.response.data : 'Unknown error',
           //   };
-    
+
           //   // Assuming you have access to the 'res' object here
           //   res.status(500).json(errorResponse);
           // }
           try {
             const formData = new FormData();
-            formData.append('file', videoFile);
-    
-            const response = await fetch('http://localhost:8080/api/uploadVideo', {
-              method: 'POST',
-              body: formData,
-            });
-    
+            formData.append("file", videoFile);
+
+            const response = await fetch(
+              "http://localhost:8080/api/uploadVideo",
+              {
+                method: "POST",
+                body: formData,
+              }
+            );
+
             const responseData = await response.json();
-    const {result,success} = responseData;
-            console.log('Server Response:', responseData);
-            console.log('Server Response result:', result);
-            setResultVideosrc(`https://d1yt4919vxgwb5.cloudfront.net/${result.key}`);
-            onRecordingComplete(resultVideosrc);
+            const { result, success } = responseData;
+            console.log("Server Response:", responseData);
+            console.log("Server Response result:", result.key);
+            setResultVideosrc(
+              `https://d1yt4919vxgwb5.cloudfront.net/${result.key}`
+            );
             try {
-              
-            } catch (error) {
-              
-            }
+            } catch (error) {}
             // let state = {
             //   resultVideosrc:`https://d1yt4919vxgwb5.cloudfront.net/${result.key}`, // Set a default value
             // };
-          
-    console.log(resultVideosrc);
+
+            console.log(resultVideosrc);
             if (responseData.success) {
-              alert('Video uploaded successfully');
+              alert("Video uploaded successfully");
             } else {
-              alert('Video upload failed');
+              alert("Video upload failed");
             }
           } catch (error) {
-            console.error('Error uploading video:', error);
-            alert('Error uploading video');
+            console.error("Error uploading video:", error);
+            alert("Error uploading video");
           }
         });
       }
