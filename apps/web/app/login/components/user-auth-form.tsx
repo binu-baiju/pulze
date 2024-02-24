@@ -174,14 +174,13 @@ import { cn } from "ui/lib/utils";
 //     }
 //   }
 // `;
-import SigninButton from "../../../components/SigninButton"
+import SigninButton from "../../../components/SigninButton";
 export function UserAuthForm() {
-
   const { push } = useRouter();
   const [isLoading, setIsLoading] = React.useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const phonenumber = "123456789";
+  const [phonenumber, setPhonenumber] = useState("");
   // const [error, setError] = useState("");
   // const [token, setToken] = useState(localStorage.getItem("token") || "");
   // const [login, { data }] = useMutation(LOGIN_MUTATION);
@@ -208,31 +207,32 @@ export function UserAuthForm() {
       // console.log("Login successful!", data);
       // // console.log("User:", user);
 
-      const response = await fetch("http://localhost:8080/api/registerOrLogin", {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        email,
-        password,
-        phonenumber
-      }),
-    });
-    const data = await response.json();
-    console.log(data);
-    
-    if(data.token){
-      localStorage.setItem('token',data.token)
-      alert(data.message);
-      // window.location.href = '/dashboard'
-      console.log(data.token);
-      push("/dashboard");
-    }
-    else {
-      alert('Please check your username and password')
-    }
-     
+      const response = await fetch(
+        "http://localhost:8080/api/registerOrLogin",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email,
+            password,
+            phonenumber,
+          }),
+        }
+      );
+      const data = await response.json();
+      console.log(data);
+
+      if (data.token) {
+        localStorage.setItem("token", data.token);
+        alert(data.message);
+        // window.location.href = '/dashboard'
+        console.log(data.token);
+        push("/dashboard");
+      } else {
+        alert("Please check your username and password");
+      }
     } catch (error) {
       console.error("Login failed:", error.message);
       // setError(error.message);
@@ -248,29 +248,37 @@ export function UserAuthForm() {
   // }, [token]);
 
   return (
-    <form onSubmit={handleSubmit}>
-      {/* {error && <p>Error: {error}</p>} */}
-      <Label htmlFor="email">Email</Label>
-      <Input
-        type="email"
-        id="email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        required
-      />
-      <Label htmlFor="password">Password</Label>
-      <Input
-        type="password"
-        id="password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        required
-      />
-      {/* onClick={handleSubmit} */}
-      <Button type="submit" disabled={isLoading} >
-        {isLoading ? "Logging up..." : "Login"}
-      </Button>
-      <SigninButton/>
-    </form>
+    <div className="flex flex-col">
+      <form onSubmit={handleSubmit}>
+        {/* {error && <p>Error: {error}</p>} */}
+        <Input
+          className="h-8 mb-4 bg-[#E5E7EB]"
+          type="phonenumber"
+          id="phonenumber"
+          placeholder="Phonenumber"
+          value={phonenumber}
+          onChange={(e) => setPhonenumber(e.target.value)}
+          required
+        />
+        <Input
+          className="h-8 mb-4 bg-[#CACACA] bg-opacity-30"
+          type="email"
+          id="email"
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+        />
+        <Input
+          className="h-8 bg-[#CACACA] bg-opacity-30"
+          type="password"
+          id="password"
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
+      </form>
+    </div>
   );
 }
