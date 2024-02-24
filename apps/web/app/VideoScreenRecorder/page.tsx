@@ -1,11 +1,14 @@
- "use client";
+"use client";
 import React, { useRef, useState } from "react";
 // import RecordRTC, { RecordRTCPromisesHandler } from "recordrtc";
 // import { Player } from "video-react";
 // import "video-react/dist/video-react.css";
 // import { S3Upload } from "./Utils";
-import dynamic from 'next/dynamic';
-const VideoScreenRecorder = dynamic(() => import('./components/VideoScreenRecorderRest'), { ssr: false });
+import dynamic from "next/dynamic";
+const VideoScreenRecorder = dynamic(
+  () => import("./components/VideoScreenRecorderRest_old"),
+  { ssr: false }
+);
 
 // import client from "../components/apolloClient";
 import { ApolloProvider } from "@apollo/client";
@@ -36,22 +39,21 @@ const MyPage = () => {
   };
   return (
     // <ApolloProvider client={client}>
-      <div style={{ marginTop: "20px", display: "flex", flexDirection: "column" }}>
-        <div>
-          {/* <HelloMessage/> */}
-          <VideoScreenRecorder onRecordingComplete={handleRecordingComplete} />
-          hello
-        </div>
-        <div>
-          <VideoRecorderCompleted recordedVideoLink={recordedVideoLink}/>
-        </div>
-        <div>
-          <CommandMenu/>
-        </div>
-       
-        
-
+    <div
+      style={{ marginTop: "20px", display: "flex", flexDirection: "column" }}
+    >
+      <div>
+        {/* <HelloMessage/> */}
+        <VideoScreenRecorder onRecordingComplete={handleRecordingComplete} />
+        hello
       </div>
+      <div>
+        <VideoRecorderCompleted recordedVideoLink={recordedVideoLink} />
+      </div>
+      <div>
+        <CommandMenu />
+      </div>
+    </div>
     // </ApolloProvider>
   );
 };
