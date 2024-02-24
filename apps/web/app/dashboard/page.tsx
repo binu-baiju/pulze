@@ -251,8 +251,8 @@ const Dashboard = () => {
         <Sidebar />
       </div>
       <div className="grow">
-        <ActivityPage />
-        {/* <MyPulzePage /> */}
+        {/* <ActivityPage /> */}
+        <MyPulzePage />
       </div>
       {/* <div className="flex items-center justify-center h-screen">
         <div className="text-center mt-[-30vh]">
