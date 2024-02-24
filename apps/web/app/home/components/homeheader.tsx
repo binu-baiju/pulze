@@ -5,7 +5,7 @@ import HelpIcon from "../../../icons/HelpIcon";
 const HomeHeader = () => {
   return (
     <div>
-      <nav className="bg-white border-gray-200 px-4 lg:px-6 py-2.5 dark:bg-gray-800 border-[3px] w-full">
+      <nav className="bg-white border-gray-200 py-2.5 dark:bg-gray-800 border-[3px] w-full">
         <div className="flex flex-wrap justify-between items-center mx-auto max-w-screen-xl">
           <a href="/home" className="flex items-center">
             <span className="ml-[20px] self-center text-2xl font-bold font-poppins whitespace-nowrap dark:text-white">
