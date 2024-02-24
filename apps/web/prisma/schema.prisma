@@ -1,13 +1,107 @@
+// // This is your Prisma schema file,
+// // learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// generator client {
+//   provider = "prisma-client-js"
+// }
+
+
+// datasource db {
+//   provider = "mysql"
+//   url      = env("DATABASE_URL")
+//   relationMode = "prisma"
+// }
+
+
+// // schema.prisma
+// model Account {
+//   id                 String  @id @default(cuid())
+//   userId             String
+//   type               String
+//   provider           String
+//   providerAccountId  String
+//   refresh_token      String?  @db.Text
+//   access_token       String?  @db.Text
+//   expires_at         Int?
+//   token_type         String?
+//   scope              String?
+//   id_token           String?  @db.Text
+//   session_state      String?
+
+//   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+//   @@unique([provider, providerAccountId])
+// }
+// model Session {
+//   id           String   @id @default(cuid())
+//   sessionToken String   @unique
+//   userId       String
+//   expires      DateTime
+//   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+// }
+// model User {
+//     id       String          @id @default(uuid()) @map("_user_id") // Primary key with UUID
+//     name          String
+//     email         String          @unique
+//     password      String?
+//     phonenumber   String?
+//     emailVerified DateTime?
+//     image         String?
+//     accounts      Account[]
+//     sessions      Session[]
+//     videos        Video[]         // Reference to Video model
+//     workspaces    Workspace[]     // Reference to Workspace model
+//     workspaceMembers WorkspaceMember[] // Added opposite relation
+// }
+// model VerificationToken {
+//   identifier String
+//   token      String   @unique
+//   expires    DateTime
+
+//   @@unique([identifier, token])
+// }
+
+// model Video {
+//     video_id      String          @id @default(uuid()) @map("_video_id") // Primary key with UUID
+//     title         String
+//     description   String
+//     s3Key         String
+//     workspace_id  String          // Foreign key of Workspace model
+//     workspace     Workspace       @relation(fields: [workspace_id], references: [workspace_id])
+//     shared_with   User[]          // Array of User model
+// }
+
+// model Workspace {
+//     workspace_id          String               @id @default(uuid()) @map("_workspace_id") // Primary key with UUID
+//     name                  String
+//     workspace_creator_id  String               // Foreign key of User model
+//     workspace_creator     User                 @relation(fields: [workspace_creator_id], references: [id])
+//     workspace_members     WorkspaceMember[]    // Reference to WorkspaceMember model
+//     videos                Video[]               // Added opposite relation
+// }
+
+// model WorkspaceMember {
+//     workspace_member_id   String               @id @default(uuid()) @map("_workspace_member_id") // Primary key with UUID
+//     user_id               String               // Foreign key of User model
+//     workspace_id          String               // Foreign key of Workspace model
+//     user                  User                 @relation(fields: [user_id], references: [id])
+//     workspace             Workspace            @relation(fields: [workspace_id], references: [workspace_id])
+// }
+
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
   provider = "prisma-client-js"
+  // output   = "../nodem"
 }
 
 datasource db {
   provider = "mysql"
   url      = env("DATABASE_URL")
+  
+  
+
   relationMode = "prisma"
 }
 
@@ -39,7 +133,7 @@ model Session {
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 model User {
-    id       String          @id @default(uuid()) @map("_user_id") // Primary key with UUID
+    id      String          @id @default(uuid()) @map("_user_id") // Primary key with UUID
     name          String
     email         String          @unique
     password      String?
@@ -48,27 +142,55 @@ model User {
     image         String?
     accounts      Account[]
     sessions      Session[]
-    videos        Video[]         // Reference to Video model
+    videos        Video[]         //Reference
     workspaces    Workspace[]     // Reference to Workspace model
     workspaceMembers WorkspaceMember[] // Added opposite relation
-}
-model VerificationToken {
-  identifier String
-  token      String   @unique
-  expires    DateTime
-
-  @@unique([identifier, token])
+    comments Comment[]
 }
 
 model Video {
     video_id      String          @id @default(uuid()) @map("_video_id") // Primary key with UUID
-    title         String
-    description   String
-    s3Key         String
+    title         String?
+    description   String?
+    ETag          String
+    Location      String
+   
+    Key           String
+    Bucket        String
+    creatorId  String          // Foreign key of User model
+    creator       User            @relation(fields: [creatorId], references: [id])  // Reference to User model
+
     workspace_id  String          // Foreign key of Workspace model
     workspace     Workspace       @relation(fields: [workspace_id], references: [workspace_id])
-    shared_with   User[]          // Array of User model
+    // shared_with   User[]          // Array of User model
+    // comments  Comment[] @relation(fields: [video_id], references: [id], onDelete: Cascade) // Added onDelete: Cascade
+    //  comments      Comment[]      
 }
+
+model Comment {
+  id        String      @id @default(uuid())
+  content   String
+  type      String
+  timeStamp String?
+  ETag          String?
+  Location      String?
+  Key           String?
+  Bucket        String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime? @updatedAt
+  userId    String      // Add this field to associate comments with users
+  videoId   String
+  parentCommentId String?
+  // video     Video    @relation(fields: [videoId], references: [video_id])
+                              
+  // video     Video    @relation(fields: [videoId], references: [video_id])
+  user      User     @relation(fields: [userId], references: [id])
+  // replies   Reply[]
+  parentComment Comment? @relation("CommentToComment", fields: [parentCommentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  replies Comment[] @relation("CommentToComment")
+}
+
 
 model Workspace {
     workspace_id          String               @id @default(uuid()) @map("_workspace_id") // Primary key with UUID
@@ -84,5 +206,7 @@ model WorkspaceMember {
     user_id               String               // Foreign key of User model
     workspace_id          String               // Foreign key of Workspace model
     user                  User                 @relation(fields: [user_id], references: [id])
-    workspace             Workspace            @relation(fields: [workspace_id], references: [workspace_id])
+    // workspace             Workspace            @relation(fields: [workspace_id], references: [workspace_id])
+    workspace             Workspace            @relation(fields: [workspace_id], references: [workspace_id], onDelete: Cascade)
+
 }

@@ -1,4 +1,5 @@
 import sharedConfig from "tailwind-config/tailwind.config.js";
+import { plugins } from "./postcss.config";
 
 export const presets = [sharedConfig];
 
@@ -9,3 +10,7 @@ export const theme = {
     },
   },
 };
+export const plugins = [
+  // ...
+  require("tailwind-scrollbar"),
+];

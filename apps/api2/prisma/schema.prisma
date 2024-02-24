@@ -124,6 +124,7 @@ model User {
     videos        Video[]         //Reference
     workspaces    Workspace[]     // Reference to Workspace model
     workspaceMembers WorkspaceMember[] // Added opposite relation
+    comments Comment[]
 }
 
 model Video {
@@ -141,13 +142,33 @@ model Video {
     workspace_id  String          // Foreign key of Workspace model
     workspace     Workspace       @relation(fields: [workspace_id], references: [workspace_id])
     // shared_with   User[]          // Array of User model
-
+    // comments  Comment[] @relation(fields: [video_id], references: [id], onDelete: Cascade) // Added onDelete: Cascade
+    //  comments      Comment[]      
 }
 
+model Comment {
+  id        String      @id @default(uuid())
+  content   String
+  type      String
+  timeStamp String?
+  ETag          String?
+  Location      String?
+  Key           String?
+  Bucket        String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime? @updatedAt
+  userId    String      // Add this field to associate comments with users
+  videoId   String
+  parentCommentId String?
+  // video     Video    @relation(fields: [videoId], references: [video_id])
+                              
+  // video     Video    @relation(fields: [videoId], references: [video_id])
+  user      User     @relation(fields: [userId], references: [id])
+  // replies   Reply[]
+  parentComment Comment? @relation("CommentToComment", fields: [parentCommentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
-
-
-
+  replies Comment[] @relation("CommentToComment")
+}
 
 
 model Workspace {

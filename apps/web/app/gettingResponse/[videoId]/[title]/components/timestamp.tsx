@@ -2,7 +2,7 @@ import React from "react";
 import { Checkbox } from "ui/components/checkbox";
 
 interface TimeStampProps {
-  currentTime: number | null;
+  currentTime: string | null;
 }
 
 const TimeStamp: React.FC<TimeStampProps> = ({ currentTime }) => {
@@ -13,10 +13,9 @@ const TimeStamp: React.FC<TimeStampProps> = ({ currentTime }) => {
 
   return (
     <div className="flex flex-row justify-center gap-2">
-      <Checkbox />
       {currentTime !== null && (
         <span className="subtitle text-xs font-light">
-          Insert at {formatTime(currentTime)}
+          Insert at {currentTime}
         </span>
       )}
     </div>
