@@ -11,6 +11,7 @@ module.exports = {
       },
       colors: {
         charcoal: "#474545",
+        hex: "#F5F3FF",
       },
     },
   },
