@@ -7,7 +7,7 @@ const ActivityPage = () => {
   return (
     <div>
       <Header headerTitle="My Pulzes" />
-      {/* <Modal /> */}
+      <Modal />
       <div className="notification-container">
         <div className="flex flex-col mx-3 my-6">
           <div>Open</div>

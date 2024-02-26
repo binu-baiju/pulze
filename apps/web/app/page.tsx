@@ -107,19 +107,13 @@ const Page = () => {
   //   }
   // };
 
-  useEffect(()=>{
-    fetch("http://localhost:8080/api/home").then(
-      response => response.json()
-    ).then(
-      data => {
-        
-          console.log(data);
-
-        }
-        
-      
-    )
-  })
+  useEffect(() => {
+    fetch("http://localhost:8080/api/home")
+      .then((response) => response.json())
+      .then((data) => {
+        console.log(data);
+      });
+  });
 
   return (
     <h1>Hello</h1>
