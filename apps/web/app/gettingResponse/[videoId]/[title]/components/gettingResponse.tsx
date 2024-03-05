@@ -8,6 +8,16 @@ const VideoScreenRecorder = dynamic(
     ),
   { ssr: false }
 );
+const VideoAndAudioRecorder = dynamic(
+  () =>
+    import("../../../../VideoScreenRecorder/components/VideoAndAudioRecorder"),
+  { ssr: false }
+);
+const ScreenAndAudioRecorder = dynamic(
+  () =>
+    import("../../../../VideoScreenRecorder/components/ScreenAndAudioRecrding"),
+  { ssr: false }
+);
 import Image from "next/image";
 import VideoPlayer from "./VideoPlayer";
 import { Button } from "ui";
@@ -34,13 +44,16 @@ import {
 } from "lucide-react";
 import TimeStamp from "./timestamp";
 import { POST } from "../../../../api/auth/[...nextauth]/route";
-import { title } from "process";
+// import { title } from "process";
 import { formatDistanceToNow, isToday, isYesterday, parseISO } from "date-fns";
 // import VideoScreenRecorder from "../../../../VideoScreenRecorder/components/VideoScreenRecorder";
 import {
   MyContextProvider,
   useMyContext,
 } from "../../../../../context/MyContext";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useSession } from "next-auth/react";
+
 interface User {
   id: string;
   name: string;
@@ -58,6 +71,16 @@ interface Comment {
   user: User;
   timeStamp: String;
 }
+interface Creator {
+  name: string;
+  image: string;
+  // Add other properties if needed
+}
+const initialCreator: Creator = {
+  name: "",
+  image: "",
+  // Initialize other properties if needed
+};
 const GettinResponse = () => {
   const [currentTime, setCurrentTime] = useState<number | null>(null);
   const [isTopCommentTextareaFocused, setIsTopCommentTextareaFocused] =
@@ -71,8 +94,10 @@ const GettinResponse = () => {
   const topCommentTextareaRef = useRef<HTMLTextAreaElement | null>(null);
   const replyCommentTextareaRef = useRef<HTMLTextAreaElement | null>(null);
 
-  const videoId = "58fda409-4d60-4eb6-8e51-d17ce61c6c9c";
-  const userId = "d68e3f11-bdab-430f-9dc2-54c2c088864d";
+  // const videoId = "58fda409-4d60-4eb6-8e51-d17ce61c6c9c";
+  // let videoId;
+
+  // const userId = "d68e3f11-bdab-430f-9dc2-54c2c088864d";
   const [comments, setComments] = useState<Comment[]>([]);
   const [content, setContent] = useState("");
   const [timeStamp, setTimeStamp] = useState("3:15");
@@ -83,10 +108,17 @@ const GettinResponse = () => {
   const [postbuttonShow, setPostButtonShow] = useState(true);
   //for videoRecording
   const [recordedVideoLink, setRecordedVideoLink] = useState(null);
+
   const videoScreenRecorderRef = useRef(null);
+  const cameraAudioRecorderRef = useRef(null);
+  const screenAudioRecorderRef = useRef(null);
+
   const [isIcon1Visible, setIsIcon1Visible] = useState(true);
   const [isNotRecording, setIsNotRecording] = useState(true);
-  const [isRecording, setIsRecording] = useState(false);
+  const [mainCommentPostButtonShow, setMainCommentPostButtonShow] =
+    useState(true);
+  const [replyCommentPostButtonShow, setReplyCommentPostButtonShow] =
+    useState(true);
   const [selectedTimeStamp, setSelectedTimeStamp] = useState("");
 
   const [topLevelCommentTabsValue, setTopLevelCommentTabsValue] = useState("");
@@ -96,6 +128,31 @@ const GettinResponse = () => {
     useState(false);
 
   const { resultVideosrccontext } = useMyContext();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const [videoId, setVideoId] = useState("");
+  const [title, setTitle] = useState("");
+  const [createdOnFromVideoPlayer, setcreatedOnFromVideoPlayer] = useState("");
+
+  const [creatorFromVideoPlayer, setcreatorFromVideoPlayer] =
+    useState<Creator>(initialCreator);
+
+  // const [userId, setUserId] = useState<string | undefined>(undefined);
+  const opendStatus = "Opened";
+  const respondedStatus = "Responded";
+  const { data: session, status } = useSession();
+  let userId;
+  let userName;
+  let image;
+  if (session) {
+    userId = session?.user?.id;
+    userName = session?.user?.name;
+    image = session?.user?.image;
+    // setUserId(session?.user?.id);
+  }
+  console.log("userId", userId);
+
+  // const [title, setTitle] = useState("");
 
   const handleTimeUpdate = (time: number) => {
     setCurrentTime(time);
@@ -149,6 +206,8 @@ const GettinResponse = () => {
 
   const fetchComments = async () => {
     try {
+      console.log("videoId", videoId);
+
       const response = await fetch(
         `http://localhost:8080/api/comments/${videoId}`
       );
@@ -176,7 +235,10 @@ const GettinResponse = () => {
   if (topLevelCommentTabsValue === "text") {
     typeComment = "text";
     // console.log(`set type:${typeComment}`);
-  } else if (topLevelCommentTabsValue === "screen") {
+  } else if (
+    topLevelCommentTabsValue === "screen" ||
+    topLevelCommentTabsValue === "camera"
+  ) {
     typeComment = "video";
     // console.log(`set type:${typeComment}`);
     // console.log(topLevelCommentRequestBody);
@@ -184,7 +246,10 @@ const GettinResponse = () => {
   if (replyCommentTabsValue === "text") {
     typeReplyComment = "text";
     console.log(`set replytype:${typeReplyComment}`);
-  } else if (replyCommentTabsValue === "screen") {
+  } else if (
+    replyCommentTabsValue === "screen" ||
+    replyCommentTabsValue === "camera"
+  ) {
     typeReplyComment = "video";
     console.log(`set replytype:${typeReplyComment}`);
   }
@@ -207,7 +272,10 @@ const GettinResponse = () => {
     typeComment = "text";
     console.log(`set type:${typeComment}`);
     console.log(`toplevelCommentRequestbody${topLevelCommentRequestBody}`);
-  } else if (topLevelCommentTabsValue === "screen") {
+  } else if (
+    topLevelCommentTabsValue === "screen" ||
+    topLevelCommentTabsValue === "camera"
+  ) {
     typeComment = "video";
     console.log(`set type:${typeComment}`);
     console.log("toplevelCommentRequestbody", topLevelCommentRequestBody);
@@ -269,6 +337,7 @@ const GettinResponse = () => {
   };
   const handleCreateComment = async () => {
     console.log("called top level comment creation");
+    await handleUpdateStatus(respondedStatus);
     await createComment(); // Assuming you want to create a top-level comment here
   };
 
@@ -277,12 +346,15 @@ const GettinResponse = () => {
     setRecordedVideoLink(data);
   };
 
-  const handleToggle = () => {
+  const handleToggle = (event) => {
+    event.preventDefault();
     setIsIcon1Visible(!isIcon1Visible);
   };
 
   const handleStartRecording = (event) => {
     event.preventDefault();
+    setMainCommentPostButtonShow(false);
+    setReplyCommentPostButtonShow(false);
     console.log("hadleStartRecord111");
 
     console.log("hadleStartRecord222");
@@ -298,25 +370,146 @@ const GettinResponse = () => {
 
     console.log("hadleStartRecord222");
     try {
-      setIsRecording(true);
       await (videoScreenRecorderRef.current as any).stopRecording();
       setIsNotRecording(true);
       console.log(`resultvideosrc in grandparent:${resultVideosrccontext}`);
       setMoveToRecordingCompleted(true);
+      setMainCommentPostButtonShow(true);
+      setReplyCommentPostButtonShow(true);
     } catch (error) {
       console.error("Error stopping recording:", error);
     } finally {
-      setIsRecording(false);
+      // setIsRecording(true);
     }
   };
+  const handleCameraAndAudioStartRecording = () => {
+    setMainCommentPostButtonShow(false);
+    setReplyCommentPostButtonShow(false);
 
+    console.log("hadleStartRecord111");
+
+    console.log("hadleStartRecord222");
+
+    (cameraAudioRecorderRef.current as any).startRecording();
+    setIsNotRecording(false);
+  };
+
+  const handleCameraAndAudioStopRecording = () => {
+    console.log("hadleStartRecord111");
+
+    console.log("hadleStartRecord222");
+
+    (cameraAudioRecorderRef.current as any).stopRecording();
+    // setIsNotRecording(true);
+    setIsNotRecording(true);
+    setMoveToRecordingCompleted(true);
+    setMainCommentPostButtonShow(true);
+    setReplyCommentPostButtonShow(true);
+  };
+
+  const handleScreenAndAudioStartRecording = () => {
+    setMainCommentPostButtonShow(false);
+    setReplyCommentPostButtonShow(false);
+
+    console.log("hadleStartRecord111");
+
+    console.log("hadleStartRecord222");
+
+    (screenAudioRecorderRef.current as any).startRecording();
+    setIsNotRecording(false);
+  };
+
+  const handleScreenAndAudioStopRecording = () => {
+    console.log("hadleStartRecord111");
+
+    console.log("hadleStartRecord222");
+
+    (screenAudioRecorderRef.current as any).stopRecording();
+    // setIsNotRecording(true);
+    setMoveToRecordingCompleted(true);
+    setIsNotRecording(true);
+    setMainCommentPostButtonShow(true);
+    setReplyCommentPostButtonShow(true);
+  };
+  const handleUpdateStatus = async (recipientVideoStatus: String) => {
+    try {
+      const response = await fetch(
+        "http://localhost:8080/api/updateRecipientStatus",
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ userId, videoId, recipientVideoStatus }),
+        }
+      );
+
+      if (!response.ok) {
+        // Handle non-successful response
+        console.error(
+          `Error updating recipient status: ${response.statusText}`
+        );
+        return;
+      }
+
+      const responseData = await response.json();
+      // Handle the response data if needed
+      console.log(responseData);
+    } catch (error) {
+      // Handle errors
+      console.error("Error updating recipient status:", error);
+    }
+  };
   const handleCreateVideoComment = async (event, parentCommentId?: string) => {
     event.preventDefault();
 
     console.log("called top level video comment creation");
-    await (videoScreenRecorderRef.current as any).createVideoComment(
-      parentCommentId
-    );
+    // await handleUpdateStatus(respondedStatus);
+    if (!parentCommentId) {
+      if (topLevelCommentTabsValue === "screen") {
+        console.log("have parentid ,createComment");
+
+        await (videoScreenRecorderRef.current as any).createVideoComment(
+          parentCommentId
+        );
+      } else if (
+        topLevelCommentTabsValue === "camera" &&
+        isIcon1Visible === true
+      ) {
+        console.log("have parentid ,createCameraComment");
+        (cameraAudioRecorderRef.current as any).createVideoCameraComment(
+          parentCommentId
+        );
+      } else if (
+        topLevelCommentTabsValue === "camera" &&
+        isIcon1Visible === false
+      ) {
+        console.log("have parentid ,createscreenComment");
+        (screenAudioRecorderRef.current as any).createVideoScreenComment(
+          parentCommentId
+        );
+      }
+    } else {
+      if (replyCommentTabsValue === "screen") {
+        await (videoScreenRecorderRef.current as any).createVideoComment(
+          parentCommentId
+        );
+      } else if (
+        replyCommentTabsValue === "camera" &&
+        isIcon1Visible === true
+      ) {
+        (cameraAudioRecorderRef.current as any).createVideoCameraComment(
+          parentCommentId
+        );
+      } else if (
+        replyCommentTabsValue === "camera" &&
+        isIcon1Visible === false
+      ) {
+        (screenAudioRecorderRef.current as any).createVideoScreenComment(
+          parentCommentId
+        );
+      }
+    }
   };
 
   const handlePostButton = (selectedTab) => {
@@ -324,7 +517,7 @@ const GettinResponse = () => {
     // // Call your function here
     // setPostButtonShow(false);
     // console.log(postbuttonShow);
-    console.log(selectedTab);
+    console.log("selected Tab", selectedTab);
     // }
   };
 
@@ -348,31 +541,63 @@ const GettinResponse = () => {
         : formatDistanceToNow(parsedDate, { addSuffix: true });
     return formattedDate;
   };
+
+  const handlecreatedAndCreatorOnFromVideoPlayer = (
+    createdOn: string,
+    creator: Object
+  ) => {
+    console.log("creator from function dashbaord", creator);
+
+    setcreatedOnFromVideoPlayer(createdOn);
+    setcreatorFromVideoPlayer(creator as Creator);
+  };
+  const router = useRouter();
   useEffect(() => {
-    fetchComments();
-  }, []);
+    let parts = pathname.split("/");
+    setVideoId(parts[2]);
+    // if (session) {
+    //   userName = session?.user?.name;
+    // }
+    setTitle(decodeURIComponent(parts[3]));
+    console.log("title", title);
+    if (videoId && userId && status) {
+      // handleUpdateStatus(opendStatus);
+    } else {
+      console.log("couldnt update");
+    }
+    if (videoId) {
+      fetchComments();
+    }
+
+    console.log("testing", videoId);
+  }, [pathname, videoId, userId]);
 
   return (
     <>
-      <div className="flex justify-left items-center bg-white  h-[42px]  ">
-        <div className="flex  w-48 justify-around ">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="lucide lucide-arrow-left-to-line"
+      <div className="flex justify-left items-center bg-white w-full h-[42px]  ">
+        <div className="flex w-48 justify-around  h-full items-center">
+          <button
+            className="hover:bg-slate-200 h-3/4"
+            onClick={() => router.back()}
           >
-            <path d="M3 19V5" />
-            <path d="m13 6-6 6 6 6" />
-            <path d="M7 12h14" />
-          </svg>
-          <p className="">Pulze Title</p>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="lucide lucide-arrow-left-to-line"
+            >
+              <path d="M3 19V5" />
+              <path d="m13 6-6 6 6 6" />
+              <path d="M7 12h14" className="" />
+            </svg>
+          </button>
+          <p className="">{title}</p>
         </div>
       </div>
       <div className="flex flex-grow flex-col lg:flex-row">
@@ -380,25 +605,31 @@ const GettinResponse = () => {
           <div className="flex  h-16 gap-2 items-center ">
             <div className="ml-12">
               <img
-                src="/apps/web/public/images/Ellipse 1.png"
-                width={10}
-                height={10}
+                src={creatorFromVideoPlayer.image}
+                className="w-[45px] h-[44.35px] rounded-full"
                 alt="Picture of the author"
               />
             </div>
 
             <div className="flex gap-2">
-              <span className="title text-xs font-semibold ">Binu Baiju</span>
+              <span className="title text-xs font-semibold ">
+                {creatorFromVideoPlayer.name}
+              </span>
               <span className="subtitle text-xs font-light">
-                Created on 13 AUG 2019
+                {/* Created on 13 AUG 2019 */}
+                {createdOnFromVideoPlayer}
               </span>
             </div>
           </div>
-          <div className="flex-1    flex items-center justify-center md:items-start ">
-            <div className="flex  justify-center items-center  h-11/12 w-full  md:h-4/6 px-10 md:px-0 ">
+          <div className="flex    flex  justify-center md:items-start  h-full ">
+            <div className="flex   items-center h-[185px]  lg:h-11/12 w-full  md:h-[400px] px-2 md:px-2 lg:px-10 md:px-0 ">
               <VideoPlayer
                 onTimeUpdate={handleTimeUpdate}
                 timeStamp={selectedTimeStamp}
+                videoId={videoId}
+                functionToPassCreatedOnToDashboard={
+                  handlecreatedAndCreatorOnFromVideoPlayer
+                }
               />
               {/* <VideoPlayer videoUrl="/docs/videos/flowbite.mp4" /> */}
             </div>
@@ -427,15 +658,15 @@ const GettinResponse = () => {
                     <article className=" w-11/12 h-5/6 flex flex-col justify-start items-start font-poppins">
                       {/* <div className="bg-green-500 h-5 flex justify-start"> */}
 
-                      <header className=" h-6 flex  ">
+                      <header className=" h-6 flex  items-center mt-2   ">
                         <img
                           src={comment.user.image}
                           width={10}
                           height={10}
                           alt="Picture of the author"
-                          className="rounded-full w-5 h-5 mt-1 mr-2"
+                          className="rounded-full w-[24.35px] h-[24px] mt-1 mr-2"
                         />
-                        <h1 className="text-md flex justify-center items-center text-[13px] truncate">
+                        <h1 className="text-md flex justify-center items-center font-medium text-[13px] truncate">
                           {comment.user.name}
                           {/* {comment.user.name.length > 5 ? (
                           <>{comment.user.name.slice(0, 5)}...</>
@@ -449,7 +680,7 @@ const GettinResponse = () => {
                             className="flex items-center mt-0.5"
                           />
                           {/* <p className="text-sm/[17px]">{comment.createdAt}</p> */}
-                          <p className="text-sm/[17px]">
+                          <p className="font-light text-[13px] mr-10">
                             {formattedDate(comment.createdAt)}
                           </p>
                         </h1>
@@ -458,38 +689,46 @@ const GettinResponse = () => {
                         <div
                           className={`flex gap-2  ${comment.timeStamp != null ? `ml-5` : `ml-7`} ${comment.type === "video" ? `flex flex-col` : null}`}
                         >
-                          {comment.timeStamp != null ? (
-                            <a
-                              href="#"
-                              className=""
-                              onClick={() =>
-                                handleTimeStampClick(comment.timeStamp)
-                              }
-                            >
-                              <p className="text-gray-500 flex">
-                                <span className="text-violet-700 font-medium">
-                                  {comment.timeStamp}
-                                </span>
-                              </p>
-                            </a>
-                          ) : null}
+                          {comment.timeStamp != null &&
+                            comment.timeStamp != "null" && (
+                              <a
+                                href="#"
+                                className=""
+                                onClick={() =>
+                                  handleTimeStampClick(comment.timeStamp)
+                                }
+                              >
+                                <p className="text-gray-500 flex">
+                                  <span className="text-violet-700 font-medium">
+                                    {comment.timeStamp}
+                                  </span>
+                                </p>
+                              </a>
+                            )}
                           {comment.type === "text" ? (
-                            <p className="max-h-[50px] whitespace-normal break-all overflow-y-hidden hover:overflow-y-auto ">
+                            <p className="max-h-[50px] whitespace-normal break-all overflow-y-hidden hover:overflow-y-auto mt-5">
                               {comment.content}
                             </p>
                           ) : (
-                            <video
-                              className="h-full w-5/6 lg:mr-10  rounded-r-lg rounded-l-lg"
-                              controls
-                            >
-                              <source src={comment.content} type="video/mp4" />
-                            </video>
+                            <>
+                              {/* <div className="bg-red-500 h-[200px]"> */}
+                              <video
+                                className="h-[170px] w-5/6 lg:mr-10 mt-5  rounded-r-lg rounded-l-lg"
+                                controls
+                              >
+                                <source
+                                  src={comment.content}
+                                  type="video/mp4"
+                                />
+                              </video>
+                              {/* </div> */}
+                            </>
                           )}
                         </div>
                       </section>
                       {comment.replies.map((reply, index) => {
                         return (
-                          <div key={reply.id} className="mt-2">
+                          <div key={reply.id} className="mt-5">
                             <header className="h-6 flex">
                               <img
                                 src={reply.user.image}
@@ -512,24 +751,39 @@ const GettinResponse = () => {
                             </header>{" "}
                             <section className="w-full mt-2">
                               <div
-                                className={`flex gap-2 ${comment.timeStamp != null ? `ml-5` : `ml-7`}`}
+                                className={`flex gap-2 ${comment.timeStamp != null ? `ml-5` : `ml-7`} ${comment.type === "video" ? `flex flex-col` : null}`}
                               >
-                                {comment.timeStamp != null ? (
-                                  <a href="#" className="">
-                                    <p className="text-gray-500 flex">
-                                      <Dot
-                                        strokeWidth={1.5}
-                                        className="flex items-center"
-                                      />
-                                      <span className="">
-                                        {reply.timeStamp}
-                                      </span>
-                                    </p>
-                                  </a>
-                                ) : null}
-                                <p className="max-h-[50px] whitespace-normal break-all overflow-y-hidden hover:overflow-y-auto">
-                                  {reply.content}
-                                </p>
+                                {reply.timeStamp != "null" &&
+                                  reply.timeStamp != null && (
+                                    <a
+                                      href="#"
+                                      className=""
+                                      onClick={() =>
+                                        handleTimeStampClick(comment.timeStamp)
+                                      }
+                                    >
+                                      <p className="text-gray-500 flex">
+                                        <span className="text-violet-700 font-medium bg-red-500">
+                                          {reply.timeStamp}
+                                        </span>
+                                      </p>
+                                    </a>
+                                  )}
+                                {reply.type === "text" ? (
+                                  <p className="max-h-[50px] whitespace-normal break-all overflow-y-hidden hover:overflow-y-auto mt-5">
+                                    {reply.content}
+                                  </p>
+                                ) : (
+                                  <video
+                                    className="h-1/6 w-5/6 lg:mr-10  rounded-r-lg rounded-l-lg mt-5"
+                                    controls
+                                  >
+                                    <source
+                                      src={reply.content}
+                                      type="video/mp4"
+                                    />
+                                  </video>
+                                )}
                               </div>
                             </section>
                           </div>
@@ -548,13 +802,13 @@ const GettinResponse = () => {
                                 <TabsList className="flex h-1/3 justify-around items-center gap-2 bg-white focus:bg-gray-100">
                                   <TabsTrigger
                                     value="text"
-                                    className="  w-1/3 ring-0 focus:bg-violet-600 bg-violet-200 flex gap-3 focus:ring-0"
+                                    className="  w-1/3 ring-0 focus:bg-violet-300 bg-violet-200 flex gap-3 focus:ring-0"
                                   >
                                     <Type />
                                   </TabsTrigger>
                                   <TabsTrigger
                                     value="screen"
-                                    className=" w-1/3 focus:bg-violet-600 bg-violet-200 flex  justify-center items-center"
+                                    className=" w-1/3 focus:bg-violet-300 bg-violet-200 flex  justify-center items-center"
                                   >
                                     <svg
                                       className="w-6 h-6"
@@ -581,7 +835,7 @@ const GettinResponse = () => {
                                   </TabsTrigger>
                                   <TabsTrigger
                                     value="camera"
-                                    className="  w-1/3 focus:bg-violet-600 bg-violet-200 flex gap-3"
+                                    className="  w-1/3 focus:bg-violet-300 bg-violet-200 flex gap-3"
                                   >
                                     <svg
                                       className="w-6 h-6"
@@ -612,7 +866,7 @@ const GettinResponse = () => {
                                   </TabsTrigger>
                                   <TabsTrigger
                                     value="upload"
-                                    className="  w-1/3 ring-0 focus-visible:bg-violet-600 bg-violet-200 flex gap-3 focus:ring-0"
+                                    className="  w-1/3 ring-0 focus:bg-violet-300 bg-violet-200 flex gap-3 focus:ring-0"
                                   >
                                     <svg
                                       className="w-6 h-6"
@@ -658,99 +912,93 @@ const GettinResponse = () => {
                                   value="screen"
                                   className="flex flex-col justify-between items-center  h-5/6"
                                 >
-                                  <TabsContent
-                                    value="screen"
-                                    className="flex flex-col justify-between items-center  h-full"
-                                  >
-                                    <div className="w-full  flex h-5/6 ">
-                                      <VideoScreenRecorder
-                                        onRecordingComplete={
-                                          handleRecordingComplete
+                                  <div className="w-full  flex h-5/6 ">
+                                    <VideoScreenRecorder
+                                      onRecordingComplete={
+                                        handleRecordingComplete
+                                      }
+                                      playerRef={videoScreenRecorderRef}
+                                      title={undefined}
+                                      description={undefined}
+                                      videoId={videoId}
+                                      requestBody={replyCommentRequestBody}
+                                      typeComment1={typeReplyComment}
+                                      saveVideoAfterStopRecordingOrNot={false}
+                                      onRecordingCompleteAndGettingVideoId={
+                                        undefined
+                                      }
+                                    />
+                                  </div>
+                                  <div className="flex flex-col items-start w-full ml-9 gap-3  mr-10 ">
+                                    <div className=" w-full flex gap-2 ml-2">
+                                      <ToggleButton
+                                        icon1={
+                                          <Video
+                                            color="#000000"
+                                            className="w-5 h-5"
+                                          />
                                         }
-                                        playerRef={videoScreenRecorderRef}
-                                        title={undefined}
-                                        description={undefined}
-                                        videoId={videoId}
-                                        requestBody={replyCommentRequestBody}
-                                        typeComment1={typeComment}
-                                        saveVideoAfterStopRecordingOrNot={false}
-                                        onRecordingCompleteAndGettingVideoId={
-                                          undefined
-                                        }
+                                        icon2={<VideoOff className="w-4 h-4" />}
+                                        isIcon1Visible={isIcon1Visible}
+                                        onToggle={() => handleToggle(event)}
                                       />
+                                      <div className="bg-white w-5/6 rounded-lg flex  items-center justify-between">
+                                        <span className="ml-3">
+                                          Camera Access
+                                        </span>
+                                        <Button className="bg-white text-violet-600  hover:text-violet-900 hover:bg-white">
+                                          Allow
+                                        </Button>
+                                      </div>
                                     </div>
-                                    <div className="flex flex-col items-start w-full ml-9 gap-3  mr-10 ">
-                                      <div className=" w-full flex gap-2 ml-2">
-                                        <ToggleButton
-                                          icon1={
-                                            <Video
-                                              color="#000000"
-                                              className="w-5 h-5"
-                                            />
-                                          }
-                                          icon2={
-                                            <VideoOff className="w-4 h-4" />
-                                          }
-                                          isIcon1Visible={isIcon1Visible}
-                                          onToggle={handleToggle}
-                                        />
-                                        <div className="bg-white w-5/6 rounded-lg flex  items-center justify-between">
-                                          <span className="ml-3">
-                                            Camera Access
-                                          </span>
-                                          <Button className="bg-white text-violet-600  hover:text-violet-900 hover:bg-white">
-                                            Allow
-                                          </Button>
-                                        </div>
+                                    <div className=" w-full flex gap-2 ml-2">
+                                      <ToggleButton
+                                        icon1={
+                                          <Mic
+                                            color="#000000"
+                                            className="w-5 h-5"
+                                          />
+                                        }
+                                        icon2={
+                                          <MicOff
+                                            color="#000000"
+                                            className="w-5 h-5"
+                                          />
+                                        }
+                                        isIcon1Visible={isIcon1Visible}
+                                        onToggle={() => handleToggle(event)}
+                                      />
+                                      <div className="bg-white  w-5/6 rounded-lg flex  items-center justify-between">
+                                        <span className="ml-3">
+                                          Microphone Access
+                                        </span>
+                                        <Button className="bg-white text-violet-600  hover:text-violet-900 hover:bg-white">
+                                          Allow
+                                        </Button>
                                       </div>
-                                      <div className=" w-full flex gap-2 ml-2">
-                                        <ToggleButton
-                                          icon1={
-                                            <Mic
-                                              color="#000000"
-                                              className="w-5 h-5"
-                                            />
-                                          }
-                                          icon2={
-                                            <MicOff
-                                              color="#000000"
-                                              className="w-5 h-5"
-                                            />
-                                          }
-                                          isIcon1Visible={isIcon1Visible}
-                                          onToggle={handleToggle}
-                                        />
-                                        <div className="bg-white  w-5/6 rounded-lg flex  items-center justify-between">
-                                          <span className="ml-3">
-                                            Microphone Access
-                                          </span>
-                                          <Button className="bg-white text-violet-600  hover:text-violet-900 hover:bg-white">
-                                            Allow
-                                          </Button>
-                                        </div>
-                                      </div>
-                                      {/* </div> */}
+                                    </div>
+                                    {/* </div> */}
 
-                                      <div className=" w-full  flex justify-center">
-                                        {isNotRecording ? (
-                                          <Button
-                                            className="w-full flex justify-center gap-2 bg-red-400 hover:bg-red-500 mb-3 mx-2"
-                                            onClick={handleStartRecording}
-                                          >
-                                            <Disc2 />
-                                            Start Recording
-                                          </Button>
-                                        ) : (
-                                          <Button
-                                            className="w-full flex justify-center gap-2 bg-red-400 hover:bg-red-500 mb-3 mx-2"
-                                            onClick={handleStopRecording}
-                                          >
-                                            <Disc2 />
-                                            Stop Recording
-                                          </Button>
-                                        )}
+                                    <div className=" w-full  flex justify-center">
+                                      {isNotRecording ? (
+                                        <Button
+                                          className="w-full flex justify-center gap-2 bg-red-400 hover:bg-red-500 mb-3 mx-2"
+                                          onClick={handleStartRecording}
+                                        >
+                                          <Disc2 />
+                                          Start Recording
+                                        </Button>
+                                      ) : (
+                                        <Button
+                                          className="w-full flex justify-center gap-2 bg-red-400 hover:bg-red-500 mb-3 mx-2"
+                                          onClick={handleStopRecording}
+                                        >
+                                          <Disc2 />
+                                          Stop Recording
+                                        </Button>
+                                      )}
 
-                                        {/* <Button
+                                      {/* <Button
                           className="w-full flex justify-center gap-2 bg-red-400 hover:bg-red-500 mb-3 mx-2"
                           onClick={handleStartRecording}
                          >
@@ -764,19 +1012,143 @@ const GettinResponse = () => {
                           <Disc2 />
                           Stop Recording
                          </Button> */}
-                                      </div>
                                     </div>
-                                  </TabsContent>
+                                  </div>
                                 </TabsContent>
+
                                 <TabsContent
                                   value="camera"
-                                  className="flex justify-center"
+                                  className="flex flex-col justify-between items-center  h-full"
                                 >
-                                  Change your password here.
-                                  {/* <ToggleButton
-                                    icon1={<Icons.audioOn />}
-                                    icon2={<Icons.audioOff />}
-                                  /> */}
+                                  <div className="w-full flex h-5/6  ">
+                                    {isIcon1Visible ? (
+                                      <VideoAndAudioRecorder
+                                        onRecordingComplete={
+                                          handleRecordingComplete
+                                        }
+                                        playerRef={cameraAudioRecorderRef}
+                                        title={undefined}
+                                        description={undefined}
+                                        saveVideoAfterStopRecordingOrNot={false}
+                                        onRecordingCompleteAndGettingVideoId={
+                                          undefined
+                                        }
+                                        requestBody={replyCommentRequestBody}
+                                        typeComment1={typeReplyComment}
+                                        videoId={videoId}
+                                      />
+                                    ) : (
+                                      <ScreenAndAudioRecorder
+                                        onRecordingComplete={
+                                          handleRecordingComplete
+                                        }
+                                        playerRef={screenAudioRecorderRef}
+                                        title={undefined}
+                                        description={undefined}
+                                        saveVideoAfterStopRecordingOrNot={false}
+                                        onRecordingCompleteAndGettingVideoId={
+                                          undefined
+                                        }
+                                        requestBody={replyCommentRequestBody}
+                                        typeComment1={typeReplyComment}
+                                        videoId={videoId}
+                                      />
+                                    )}
+                                  </div>
+
+                                  <div className="flex flex-col items-start w-full ml-9   gap-3 mr-10  ">
+                                    {/* {moveToRecordingCompleted === false ? ( */}
+                                    <div className=" w-full flex gap-2 ml-2">
+                                      <ToggleButton
+                                        icon1={
+                                          <Video
+                                            color="#000000"
+                                            className="w-5 h-5"
+                                          />
+                                        }
+                                        icon2={
+                                          <VideoOff
+                                            color="#000000"
+                                            className="w-5 h-5"
+                                          />
+                                        }
+                                        isIcon1Visible={isIcon1Visible}
+                                        onToggle={() => handleToggle(event)}
+                                      />
+                                      <div className="bg-white w-5/6 rounded-lg flex  items-center justify-between">
+                                        <span className="ml-3">
+                                          Camera Access
+                                        </span>
+                                        <Button className="bg-white text-violet-600  hover:text-violet-900 hover:bg-white">
+                                          Allow
+                                        </Button>
+                                      </div>
+                                    </div>
+                                    {/* ) : null} */}
+                                    <div className=" w-full flex gap-2 ml-2">
+                                      {/* <ToggleButton
+                          icon1={<Mic color="#000000" className="w-5 h-5" />}
+                          icon2={<MicOff color="#000000" className="w-5 h-5" />}
+                          isIcon1Visible={isIcon1Visible}
+                          onToggle={handleToggle}
+                        /> */}
+                                      {/* <div className="bg-white  w-5/6 rounded-lg flex  items-center justify-between">
+                          <span className="ml-3">Microphone Access</span>
+                          <Button className="bg-white text-violet-600  hover:text-violet-900 hover:bg-white">
+                            Allow
+                          </Button>
+                        </div> */}
+                                    </div>
+                                    {/* </div> */}
+
+                                    <div className=" w-full  flex justify-center">
+                                      {isNotRecording ? (
+                                        <Button
+                                          className="w-full flex justify-center gap-2 bg-red-400 hover:bg-red-500 mb-3 mx-2"
+                                          onClick={
+                                            isIcon1Visible
+                                              ? handleCameraAndAudioStartRecording
+                                              : handleScreenAndAudioStartRecording
+                                          }
+                                        >
+                                          <Disc2 />
+                                          Start Recording
+                                        </Button>
+                                      ) : (
+                                        <>
+                                          <div>{moveToRecordingCompleted}</div>
+                                          <Button
+                                            className="w-full flex justify-center gap-2 bg-red-400 hover:bg-red-500 mb-3 mx-2"
+                                            onClick={
+                                              isIcon1Visible
+                                                ? handleCameraAndAudioStopRecording
+                                                : handleScreenAndAudioStopRecording
+                                            }
+                                          >
+                                            <Disc2 />
+                                            Stop Recording
+                                          </Button>
+                                        </>
+                                      )}
+                                      {/* {isNotRecording ? (
+                          <Button
+                            className="w-full flex justify-center gap-2 bg-green-400 hover:bg-red-500 mb-3 mx-2"
+                            onClick={handleScreenAndAudioStartRecording}
+                          >
+                            <Disc2 />
+                            Start Recording 2
+                          </Button>
+                        ) : (
+                          <Button
+                            className="w-full flex justify-center gap-2 bg-red-400 hover:bg-red-500 mb-3 mx-2"
+                            onClick={handleScreenAndAudioStopRecording}
+                          >
+                            <Disc2 />
+                            Stop Recording
+                          </Button>
+                        )} */}
+                                    </div>
+                                  </div>
                                 </TabsContent>
                                 <TabsContent
                                   value="upload"
@@ -821,7 +1193,7 @@ const GettinResponse = () => {
                               <Button
                                 variant="default"
                                 size="sm" // You can adjust the size here
-                                disabled={!topcommenttextareaValue}
+                                disabled={!replyCommentPostButtonShow}
                                 // onClick={() => createComment(comment.id)}
                                 onClick={(event) => {
                                   replyCommentTabsValue === "text"
@@ -865,16 +1237,15 @@ const GettinResponse = () => {
           </div>
 
           {/* <div className="bg-white  h-[171px] min-h-[300px] rounded-lg  w-11/12 mb-4 flex items-center justify-center   "> */}
-          <div className="bg-white lg:absolute right-0 bottom-0 min-h-[100px]  lg:min-h-[171px] rounded-xl border border-slate-300  w-11/12 mb-4 flex items-center justify-center mr-5    ">
-            <div className="">
+          <div className="bg-white lg:absolute right-0 bottom-0 min-h-[100px]  lg:min-h-[171px] rounded-xl border border-slate-300 w-[690px] lg:w-11/12  mb-4 flex items-start  justify-center mr-5   ">
+            <div className=" w-2/12 flex justify-end items-start ">
               <img
-                src="/apps/web/public/images/Ellipse 1.png"
-                width={10}
-                height={10}
+                src={image}
+                className="w-[35px] lg:w-[35px] h-[35px] lg:h-[35.3px] rounded-full mt-2 mr-2"
                 alt="Picture of the author"
               />
             </div>
-            <div className="flex flex-col justify-center items-center bg-white   h-5/6 w-11/12">
+            <div className="flex flex-col justify-center items-center bg-white   h-5/6 w-10/12">
               <div className="h-4/6 w-11/12    flex justify-center items-center">
                 <Tabs
                   defaultValue="text"
@@ -887,7 +1258,7 @@ const GettinResponse = () => {
                   <TabsList className="flex h-1/3 justify-around items-center gap-2 bg-white focus:bg-gray-100">
                     <TabsTrigger
                       value="text"
-                      className="  w-1/3 ring-0 focus:bg-violet-600 bg-violet-200 flex gap-3 focus:ring-0"
+                      className="  w-1/3 ring-0 focus:bg-violet-300 bg-violet-200 flex gap-3 focus:ring-0"
                     >
                       <Type />
                     </TabsTrigger>
@@ -896,7 +1267,7 @@ const GettinResponse = () => {
                       // onClick={() => {
                       //   handlePostButton();
                       // }}
-                      className=" w-1/3 focus:bg-violet-600 bg-violet-200 flex  justify-center items-center"
+                      className=" w-1/3 focus:bg-violet-300 bg-violet-200 flex  justify-center items-center"
                     >
                       <svg
                         className="w-6 h-6"
@@ -920,7 +1291,7 @@ const GettinResponse = () => {
                     </TabsTrigger>
                     <TabsTrigger
                       value="camera"
-                      className="  w-1/3 focus:bg-violet-600 bg-violet-200 flex gap-3"
+                      className="  w-1/3 focus:bg-violet-300 bg-violet-200 flex gap-3"
                     >
                       <svg
                         className="w-6 h-6"
@@ -948,7 +1319,7 @@ const GettinResponse = () => {
                     </TabsTrigger>
                     <TabsTrigger
                       value="upload"
-                      className="  w-1/3 ring-0 focus-visible:bg-violet-600 bg-violet-200 flex gap-3 focus:ring-0"
+                      className="  w-1/3 ring-0 focus:bg-violet-300 bg-violet-200 flex gap-3 focus:ring-0"
                     >
                       <svg
                         className="w-6 h-6"
@@ -1007,7 +1378,7 @@ const GettinResponse = () => {
                           icon1={<Video color="#000000" className="w-5 h-5" />}
                           icon2={<VideoOff className="w-4 h-4" />}
                           isIcon1Visible={isIcon1Visible}
-                          onToggle={handleToggle}
+                          onToggle={() => handleToggle(event)}
                         />
                         <div className="bg-white w-5/6 rounded-lg flex  items-center justify-between">
                           <span className="ml-3">Camera Access</span>
@@ -1021,7 +1392,7 @@ const GettinResponse = () => {
                           icon1={<Mic color="#000000" className="w-5 h-5" />}
                           icon2={<MicOff color="#000000" className="w-5 h-5" />}
                           isIcon1Visible={isIcon1Visible}
-                          onToggle={handleToggle}
+                          onToggle={() => handleToggle(event)}
                         />
                         <div className="bg-white  w-5/6 rounded-lg flex  items-center justify-between">
                           <span className="ml-3">Microphone Access</span>
@@ -1066,6 +1437,122 @@ const GettinResponse = () => {
                         </Button> */}
                       </div>
                     </div>{" "}
+                  </TabsContent>
+                  <TabsContent
+                    value="camera"
+                    className="flex flex-col justify-between items-center  h-full"
+                  >
+                    <div className="w-full flex h-5/6  ">
+                      {isIcon1Visible ? (
+                        <VideoAndAudioRecorder
+                          onRecordingComplete={handleRecordingComplete}
+                          playerRef={cameraAudioRecorderRef}
+                          title={undefined}
+                          description={undefined}
+                          saveVideoAfterStopRecordingOrNot={false}
+                          onRecordingCompleteAndGettingVideoId={undefined}
+                          requestBody={topLevelCommentRequestBody}
+                          typeComment1={typeComment}
+                          videoId={videoId}
+                        />
+                      ) : (
+                        <ScreenAndAudioRecorder
+                          onRecordingComplete={handleRecordingComplete}
+                          playerRef={screenAudioRecorderRef}
+                          title={undefined}
+                          description={undefined}
+                          saveVideoAfterStopRecordingOrNot={false}
+                          onRecordingCompleteAndGettingVideoId={undefined}
+                          requestBody={topLevelCommentRequestBody}
+                          typeComment1={typeComment}
+                          videoId={videoId}
+                        />
+                      )}
+                    </div>
+
+                    <div className="flex flex-col items-start w-full ml-9   gap-3 mr-10  ">
+                      {/* {moveToRecordingCompleted === false ? ( */}
+                      <div className=" w-full flex gap-2 ml-2">
+                        <ToggleButton
+                          icon1={<Video color="#000000" className="w-5 h-5" />}
+                          icon2={
+                            <VideoOff color="#000000" className="w-5 h-5" />
+                          }
+                          isIcon1Visible={isIcon1Visible}
+                          onToggle={() => handleToggle(event)}
+                        />
+                        <div className="bg-white w-5/6 rounded-lg flex  items-center justify-between">
+                          <span className="ml-3">Camera Access</span>
+                          <Button className="bg-white text-violet-600  hover:text-violet-900 hover:bg-white">
+                            Allow
+                          </Button>
+                        </div>
+                      </div>
+                      {/* ) : null} */}
+                      <div className=" w-full flex gap-2 ml-2">
+                        {/* <ToggleButton
+                          icon1={<Mic color="#000000" className="w-5 h-5" />}
+                          icon2={<MicOff color="#000000" className="w-5 h-5" />}
+                          isIcon1Visible={isIcon1Visible}
+                          onToggle={handleToggle}
+                        /> */}
+                        {/* <div className="bg-white  w-5/6 rounded-lg flex  items-center justify-between">
+                          <span className="ml-3">Microphone Access</span>
+                          <Button className="bg-white text-violet-600  hover:text-violet-900 hover:bg-white">
+                            Allow
+                          </Button>
+                        </div> */}
+                      </div>
+                      {/* </div> */}
+
+                      <div className=" w-full  flex justify-center">
+                        {isNotRecording ? (
+                          <Button
+                            className="w-full flex justify-center gap-2 bg-red-400 hover:bg-red-500 mb-3 mx-2"
+                            onClick={
+                              isIcon1Visible
+                                ? handleCameraAndAudioStartRecording
+                                : handleScreenAndAudioStartRecording
+                            }
+                          >
+                            <Disc2 />
+                            Start Recording
+                          </Button>
+                        ) : (
+                          <>
+                            <div>{moveToRecordingCompleted}</div>
+                            <Button
+                              className="w-full flex justify-center gap-2 bg-red-400 hover:bg-red-500 mb-3 mx-2"
+                              onClick={
+                                isIcon1Visible
+                                  ? handleCameraAndAudioStopRecording
+                                  : handleScreenAndAudioStopRecording
+                              }
+                            >
+                              <Disc2 />
+                              Stop Recording
+                            </Button>
+                          </>
+                        )}
+                        {/* {isNotRecording ? (
+                          <Button
+                            className="w-full flex justify-center gap-2 bg-green-400 hover:bg-red-500 mb-3 mx-2"
+                            onClick={handleScreenAndAudioStartRecording}
+                          >
+                            <Disc2 />
+                            Start Recording 2
+                          </Button>
+                        ) : (
+                          <Button
+                            className="w-full flex justify-center gap-2 bg-red-400 hover:bg-red-500 mb-3 mx-2"
+                            onClick={handleScreenAndAudioStopRecording}
+                          >
+                            <Disc2 />
+                            Stop Recording
+                          </Button>
+                        )} */}
+                      </div>
+                    </div>
                   </TabsContent>
                   <TabsContent value="upload" className="flex justify-center">
                     Change your password here.
@@ -1119,7 +1606,7 @@ const GettinResponse = () => {
                           : handleCreateComment
                     }
                     className="bg-violet-600 hover:bg-violet-700 mb-2 w-2/5 "
-                    disabled={isRecording}
+                    disabled={!mainCommentPostButtonShow}
                   >
                     Post <Send />
                   </Button>

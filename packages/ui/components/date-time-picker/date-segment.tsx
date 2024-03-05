@@ -41,7 +41,7 @@ function DateSegment({ segment, state }: DateSegmentProps) {
       )}
     >
       {segment.text}
-      {/* {hello} */}
+      {/* hello */}
     </div>
   );
 }

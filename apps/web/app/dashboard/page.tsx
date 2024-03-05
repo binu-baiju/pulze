@@ -58,9 +58,11 @@ import Dashboard from "./components/dashboard";
 
 const Page = () => {
   return (
-    <MyContextProvider>
-      <Dashboard />
-    </MyContextProvider>
+    <div className="h-screen w-screen">
+      <MyContextProvider>
+        <Dashboard />
+      </MyContextProvider>
+    </div>
   );
 };
 

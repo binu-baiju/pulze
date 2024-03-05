@@ -342,3 +342,7 @@ export function UserAuthForm() {
     </form>
   );
 }
+
+function push(arg0: string) {
+  throw new Error("Function not implemented.");
+}

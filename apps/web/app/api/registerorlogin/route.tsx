@@ -28,9 +28,13 @@ export async function POST(request) {
     // const token = jwt.sign({
     //   email: email,
     // }, process.env.SECRET_KEY!);
-
-    const user = await prisma.user.findUnique({ where: { email: email } });
-    console.log("user from registerorlogin", user);
+    let user;
+    try {
+      user = await prisma.user.findUnique({ where: { email: email } });
+      console.log("user from registerorlogin", user);
+    } catch (error) {
+      console.error("error to find user", error);
+    }
 
     if (!user) {
       console.log("enter register");

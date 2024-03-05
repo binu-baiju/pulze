@@ -105,7 +105,7 @@
 
 //   return workspace;
 // }
-import { AuthOptions } from "next-auth";
+import { AuthOptions, DefaultSession, User } from "next-auth";
 import NextAuth from "next-auth/next";
 import prisma from "../../../lib/prisma";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
@@ -113,12 +113,58 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 import GithubProvider from "next-auth/providers/github";
 import bcrypt from "bcrypt";
-type User = {
-  id: string;
-  name: string;
-  email: string;
-  password: string | null;
-};
+// type User = {
+//   id: string;
+//   name: string;
+//   email: string;
+//   // password: string | null;
+// };
+
+// interface Session {
+//   session: {
+//     // Add the 'id' property to the session
+//     id: string;
+//     name: string;
+//     email: string;
+//   };
+
+//   user: {
+//     id: string;
+//     name: string;
+//     email: string;
+//     password: string | null;
+//     phonenumber: string | null;
+//     emailVerified: Date | null;
+//     image: string | null;
+
+//     // userId: string; // Add this line
+//   };
+// }
+// interface Session {
+//   user: {
+//     id: string;
+//     name: string;
+//     email: string;
+//     password: string | null;
+//     phonenumber: string | null;
+//     emailVerified: Date | null;
+//     image: string | null;
+//   };
+// }
+declare module "next-auth" {
+  interface User {
+    id: string;
+    email: string;
+    name: string;
+  }
+
+  interface Session extends DefaultSession {
+    user: User;
+    expires: string;
+    error: string;
+  }
+}
+
 export const authOptions: AuthOptions = {
   adapter: PrismaAdapter(prisma),
   providers: [
@@ -188,18 +234,67 @@ export const authOptions: AuthOptions = {
         //   email: "brett@gmail.com",
         //   password: "123456",
         // };
-        // console.log("user from nextauth", user);
+        // const session: Session = {
+        //   user: {
+        //     id: user.id,
+        //     name: user.name,
+        //     email: user.email,
+        //     password: user.password,
+        //     phonenumber: user.phonenumber,
+        //     emailVerified: user.emailVerified,
+        //     image: user.image,
+        //   },
+        // };
+
+        console.log("user from nextauth", user);
 
         return user;
+        // Add other fields as needed
       },
     }),
   ],
+
   secret: process.env.SECRET_KEY,
   session: {
     strategy: "jwt",
     // jwt: true,
   },
   debug: process.env.NODE_ENV === "development",
+  callbacks: {
+    async jwt({ token, user, session }) {
+      // the processing of JWT occurs before handling sessions.
+      console.log("jwt callback ", { token, user, session });
+
+      if (user) {
+        // token.accessToken = user.accessToken;
+        // token.refreshToken = user.refreshToken;
+        // token.accessTokenExpires = user.accessTokenExpires;
+        // token.role = user.role;
+        token.email = user.email;
+        token.name = user.name;
+        token.id = user.id;
+      }
+
+      return token;
+    },
+
+    //  The session receives the token from JWT
+    async session({ session, token, user }) {
+      console.log("session callback ", { token, user, session });
+
+      return {
+        ...session,
+        user: {
+          ...session.user,
+          // accessToken: token.accessToken as string,
+          // refreshToken: token.refreshToken as string,
+          // role: token.role,
+          id: token.id,
+        },
+        error: token.error,
+      };
+    },
+  },
 };
 
 const handler = NextAuth(authOptions);

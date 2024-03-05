@@ -41,7 +41,8 @@ import {
 import { User as UserType } from "../../../types";
 
 import { MyContextProvider, useMyContext } from "../../../context/MyContext";
-
+import MyPulzePage from "../sideComponents/MyPulzeComponent";
+import ActivityPage from "../sideComponents/ActivityComponent";
 // import { Popover } from "ui/components/popover";
 
 import {
@@ -60,7 +61,19 @@ import { log } from "console";
 import AutoComplete from "./Autocomplete";
 // import { VideoScreenRecorder } from "../VideoScreenRecorder/components/VideoScreenRecorderRest";
 // import MyTabs from "./components/tabs";
-
+interface ReceivedVideo {
+  id: string;
+  userId: string;
+  sendVideo: {
+    video: {
+      video_id: string;
+      title: string; // Add other properties as needed
+    };
+  };
+  FYI: boolean;
+  email: string;
+  // Add other properties as needed
+}
 const Dashboard = () => {
   const [recordedVideoLink, setRecordedVideoLink] = useState(null);
   const videoScreenRecorderRef = useRef(null);
@@ -78,8 +91,16 @@ const Dashboard = () => {
   const [selectedUsers, setSelectedUsers] = useState<UserType[]>([]);
 
   const { resultVideosrccontext } = useMyContext();
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
 
+  // const [videoIdFromVideoScreenRecorder, setVideoIdFromVideoScreenRecorder] =
+  //   useState("");
+  const [videoIdFromRecorder, setVideoIdFromRecorder] = useState("");
+  const [userVideos, setUserVideos] = useState([]);
+  const [recievedVideos, setRecievedVideos] = useState([]);
+  const receivedVideosArray: ReceivedVideo[] = [];
+  receivedVideosArray.push(...recievedVideos);
+  const [currentComponent, setCurrentComponent] = useState("activity");
   // const videoScreenRecorderRef = React.createRef();
   // Function to set the recorded data
   const handleRecordingComplete = (data) => {
@@ -128,7 +149,8 @@ const Dashboard = () => {
     console.log("hadleStartRecord222");
 
     (cameraAudioRecorderRef.current as any).stopRecording();
-    setIsNotRecording(true);
+    // setIsNotRecording(true);
+    setMoveToRecordingCompleted(true);
   };
 
   const handleScreenAndAudioStartRecording = () => {
@@ -145,7 +167,8 @@ const Dashboard = () => {
     console.log("hadleStartRecord222");
 
     (screenAudioRecorderRef.current as any).stopRecording();
-    setIsNotRecording(true);
+    // setIsNotRecording(true);
+    setMoveToRecordingCompleted(true);
   };
   const handleTitleChange = (event) => {
     setTitle(event.target.value);
@@ -174,18 +197,141 @@ const Dashboard = () => {
     // Handle the selected users in the parent component
     console.log("src when button pressed", src);
   };
-  let videoIdFromVideoScreenRecorder;
+
   const handleRecordingCompleteAndGettingVideoId = (videoId) => {
     console.log("Video ID from stopRecording(parent):", videoId);
-    videoIdFromVideoScreenRecorder = videoId;
-    console.log(videoIdFromVideoScreenRecorder);
+    // setVideoIdFromVideoScreenRecorder(videoId);
+    setVideoIdFromRecorder(videoId);
+
+    // console.log("videoId in variable", videoIdFromVideoScreenRecorder);
+    console.log("videoId in variable", videoIdFromRecorder);
 
     // Now you can use the videoIdFromStopRecording as needed in your parent component
   };
+  // const userId = "d68e3f11-bdab-430f-9dc2-54c2c088864d";
+  const workspaceId = "1bd89f4c-36eb-4411-9232-acb129219e8f";
+  const userId = session?.user.id;
+
+  const handleSendVideo = async () => {
+    try {
+      const response = await fetch("http://localhost:8080/api/sendVideo", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          senderId: userId,
+          recipientData: selectedUsers,
+          // videoId: videoIdFromVideoScreenRecorder,
+          videoId: videoIdFromRecorder,
+
+          responseTime: "2024-02-27T12:00:00.000Z",
+          workspaceId: workspaceId,
+        }),
+      });
+
+      if (response.ok) {
+        console.log("Video sent successfully!");
+        const data = await response.json();
+        console.log("SendVideo response:", data);
+      } else {
+        console.error("Failed to send video.");
+        const data = await response.json();
+        console.error("Error response:", data);
+      }
+    } catch (error) {
+      console.error("Error sending video:", error);
+    }
+  };
+  const fetchUserVideos = async () => {
+    try {
+      if (session) {
+        const userId = session?.user.id;
+        console.log("userId from session", userId);
+
+        const response = await fetch(
+          `http://localhost:8080/api/getvideos/${session?.user.id}`
+        );
+        const data = await response.json();
+        console.log("user videos in db", data);
+        setUserVideos(data);
+      } else {
+        console.error("No active session");
+      }
+    } catch (error) {
+      console.error("Error fetching user videos:", error);
+    }
+  };
+
+  const fetchRecievedVideos = async () => {
+    try {
+      const response = await fetch(
+        `http://localhost:8080/api/recievedvideos/${session?.user.id}`
+      );
+      const data = await response.json();
+      console.log("recieved videos in db", data);
+
+      // if (response.ok) {
+      setRecievedVideos(data);
+
+      // } else {
+      //   console.error(data.error || "Error fetching video details");
+      // }
+    } catch (error) {
+      console.error("An error occurred while fetching video details");
+    }
+  };
+
+  const handleSidebarClick = (page: string) => {
+    setCurrentComponent(page);
+  };
+
+  // const handleSidecomponentClick = () => {
+  //   setIsSidebarOpen(!isSidebarOpen);
+  // };
+
+  // const handleButtonClick = () => {
+  //   setIsSidebarOpen(true);
+  // };
+  useEffect(() => {
+    if (status === "authenticated") {
+      fetchUserVideos();
+    }
+    if (userId) {
+      fetchRecievedVideos();
+    }
+  }, [session, userId]);
+  console.log(userVideos);
+
   return (
-    <div className="bg-slate-100 h-screen w-screen flex">
-      {/* {JSON.stringify(session)} */}
-      <div className="h-screen bg-gray-200 w-1/4 lg:w-2/12">
+    <div className="bg-slate-100 h-full w-full flex">
+      {/* {JSON.stringify(session?.user.id)} */}
+      <button
+        data-drawer-target="default-sidebar"
+        data-drawer-toggle="default-sidebar"
+        aria-controls="default-sidebar"
+        type="button"
+        className="inline-flex items-center p-2 mt-2 ms-3 text-sm text-gray-500 rounded-lg sm:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600"
+      >
+        <span className="sr-only">Open sidebar</span>
+        <svg
+          className="w-6 h-6"
+          aria-hidden="true"
+          fill="currentColor"
+          viewBox="0 0 20 20"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            clip-rule="evenodd"
+            fill-rule="evenodd"
+            d="M2 4.75A.75.75 0 012.75 4h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 4.75zm0 10.5a.75.75 0 01.75-.75h7.5a.75.75 0 010 1.5h-7.5a.75.75 0 01-.75-.75zM2 10a.75.75 0 01.75-.75h14.5a.75.75 0 010 1.5H2.75A.75.75 0 012 10z"
+          ></path>
+        </svg>
+      </button>
+      <div
+        id="default-sidebar"
+        className="hidden md:block md:translate-x-0 h-screen bg-gray-200 w-2/12 "
+      >
         <h1 className="mt-2 ml-5 font-bold">Pulzez</h1>
         <div className=" mt-5 flex flex-col justify-center">
           {/* <Button type="submit" className="h-10 mx-4" size="lg">
@@ -272,7 +418,10 @@ const Dashboard = () => {
                         <Link size={20} />
                         Copy Link
                       </Button>
-                      <Button className=" flex w-2/5 justify-center gap-1 bg-violet-600 border border-violet-600 hover:bg-violet-700 mb-3 ">
+                      <Button
+                        className=" flex w-2/5 justify-center gap-1 bg-violet-600 border border-violet-600 hover:bg-violet-700 mb-3 "
+                        onClick={handleSendVideo}
+                      >
                         <Send size={20} />
                         Send
                       </Button>
@@ -479,43 +628,61 @@ const Dashboard = () => {
                     <TabsContent
                       // style={{ minHeight: "300px", height: "auto" }}
                       value="camera"
-                      className="flex flex-col items-start justify-between   "
+                      className="flex flex-col items-start items-center   "
                     >
                       <div className="w-full flex h-5/6  ">
                         {isIcon1Visible ? (
                           <VideoAndAudioRecorder
+                            onRecordingComplete={handleRecordingComplete}
                             playerRef={cameraAudioRecorderRef}
                             title={title}
                             description={description}
+                            saveVideoAfterStopRecordingOrNot={true}
+                            onRecordingCompleteAndGettingVideoId={
+                              handleRecordingCompleteAndGettingVideoId
+                            }
+                            typeComment1={undefined}
+                            requestBody={undefined}
+                            videoId={undefined}
                           />
                         ) : (
                           <ScreenAndAudioRecorder
+                            onRecordingComplete={handleRecordingComplete}
                             playerRef={screenAudioRecorderRef}
                             title={title}
                             description={description}
+                            saveVideoAfterStopRecordingOrNot={true}
+                            onRecordingCompleteAndGettingVideoId={
+                              handleRecordingCompleteAndGettingVideoId
+                            }
+                            typeComment1={undefined}
+                            requestBody={undefined}
+                            videoId={undefined}
                           />
                         )}
                       </div>
 
-                      <div className="flex flex-col items-start w-full  gap-3  ">
-                        <div className=" w-full flex gap-2 ml-2">
-                          <ToggleButton
-                            icon1={
-                              <Video color="#000000" className="w-5 h-5" />
-                            }
-                            icon2={
-                              <VideoOff color="#000000" className="w-5 h-5" />
-                            }
-                            isIcon1Visible={isIcon1Visible}
-                            onToggle={handleToggle}
-                          />
-                          <div className="bg-white w-5/6 rounded-lg flex  items-center justify-between">
-                            <span className="ml-3">Camera Access</span>
-                            <Button className="bg-white text-violet-600  hover:text-violet-900 hover:bg-white">
-                              Allow
-                            </Button>
+                      <div className="flex flex-col items-start w-full ml-9   gap-3 mr-10  ">
+                        {moveToRecordingCompleted === false ? (
+                          <div className=" w-full flex gap-2 ml-2">
+                            <ToggleButton
+                              icon1={
+                                <Video color="#000000" className="w-5 h-5" />
+                              }
+                              icon2={
+                                <VideoOff color="#000000" className="w-5 h-5" />
+                              }
+                              isIcon1Visible={isIcon1Visible}
+                              onToggle={handleToggle}
+                            />
+                            <div className="bg-white w-5/6 rounded-lg flex  items-center justify-between">
+                              <span className="ml-3">Camera Access</span>
+                              <Button className="bg-white text-violet-600  hover:text-violet-900 hover:bg-white">
+                                Allow
+                              </Button>
+                            </div>
                           </div>
-                        </div>
+                        ) : null}
                         <div className=" w-full flex gap-2 ml-2">
                           {/* <ToggleButton
                           icon1={<Mic color="#000000" className="w-5 h-5" />}
@@ -545,18 +712,39 @@ const Dashboard = () => {
                               <Disc2 />
                               Start Recording
                             </Button>
+                          ) : moveToRecordingCompleted ? (
+                            <div className="flex justify-between  w-full mt-2">
+                              <Button
+                                className=" flex w-2/5 justify-center gap-1 text-violet-600 hover:text-violet-600 border border-violet-600 bg-transparent mb-3 "
+                                variant="outline"
+                                // onClick={handleStopRecording}
+                              >
+                                <Link size={20} />
+                                Copy Link
+                              </Button>
+                              <Button
+                                className=" flex w-2/5 justify-center gap-1 bg-violet-600 border border-violet-600 hover:bg-violet-700 mb-3 "
+                                // onClick={handleStopRecording}
+                              >
+                                <Send size={20} />
+                                Send
+                              </Button>
+                            </div>
                           ) : (
-                            <Button
-                              className="w-full flex justify-center gap-2 bg-red-400 hover:bg-red-500 mb-3 mx-2"
-                              onClick={
-                                isIcon1Visible
-                                  ? handleCameraAndAudioStopRecording
-                                  : handleScreenAndAudioStopRecording
-                              }
-                            >
-                              <Disc2 />
-                              Stop Recording
-                            </Button>
+                            <>
+                              <div>{moveToRecordingCompleted}</div>
+                              <Button
+                                className="w-full flex justify-center gap-2 bg-red-400 hover:bg-red-500 mb-3 mx-2"
+                                onClick={
+                                  isIcon1Visible
+                                    ? handleCameraAndAudioStopRecording
+                                    : handleScreenAndAudioStopRecording
+                                }
+                              >
+                                <Disc2 />
+                                Stop Recording
+                              </Button>
+                            </>
                           )}
                           {/* {isNotRecording ? (
                           <Button
@@ -657,80 +845,23 @@ const Dashboard = () => {
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
-        <Sidebar />
+        <Sidebar onSidebarClick={handleSidebarClick} />
       </div>
-      <div className="w-3/4 bg-slate-100 flex ">
-        <div>
-          <h1 className="font-bold">Activity</h1>
+      {currentComponent === "activity" && (
+        <div className=" bg-green-500 w-10/12">
+          {/* <ActivityPage /> */}
+          <MyPulzePage
+            userVideos={userVideos}
+            receivedVideos={receivedVideosArray}
+          />
         </div>
-        <div>
-          <div className="relative w-80">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="absolute top-0 bottom-0 w-6 h-6 my-auto text-gray-500 left-3"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-              />
-            </svg>
-            <Input type="text" placeholder="Search" className="pl-12 pr-4" />
-          </div>
+      )}
+      {currentComponent === "myPulzez" && (
+        <div className=" bg-green-500 w-10/12">
+          {/* <ActivityPage /> */}
+          <ActivityPage />
         </div>
-        {/* <Button size="sm" className="flex">
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <g id="SVGRepo_bgCarrier" strokeWidth="0"></g>
-            <g
-              id="SVGRepo_tracerCarrier"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            ></g>
-            <g id="SVGRepo_iconCarrier">
-              {" "}
-              <path
-                fillRule="evenodd"
-                clipRule="evenodd"
-                d="M6.83333 11.8333C8.44167 11.8333 9.75 10.525 9.75 8.91667C9.75 7.30833 8.44167 6 6.83333 6C5.225 6 3.91667 7.30833 3.91667 8.91667C3.91667 10.525 5.225 11.8333 6.83333 11.8333ZM21 15.3333V12.8333H23.5V11.1667H21V8.66666H19.3333V11.1667H16.8333V12.8333H19.3333V15.3333H21ZM6.83333 13.2917C4.88333 13.2917 1 14.2667 1 16.2083V17.6667H12.6667V16.2083C12.6667 14.2667 8.78333 13.2917 6.83333 13.2917ZM6.83333 14.9583C5.34166 14.9583 3.65 15.5167 2.95 16H10.7167C10.0167 15.5167 8.325 14.9583 6.83333 14.9583ZM8.08333 8.91667C8.08333 8.225 7.525 7.66667 6.83333 7.66667C6.14167 7.66667 5.58333 8.225 5.58333 8.91667C5.58333 9.60833 6.14167 10.1667 6.83333 10.1667C7.525 10.1667 8.08333 9.60833 8.08333 8.91667ZM11 11.8333C12.6083 11.8333 13.9167 10.525 13.9167 8.91667C13.9167 7.30833 12.6083 6 11 6C10.8 6 10.6 6.01667 10.4083 6.05833C11.0417 6.84167 11.4167 7.83333 11.4167 8.91667C11.4167 10 11.025 10.9833 10.3917 11.7667C10.5917 11.8083 10.7917 11.8333 11 11.8333ZM14.3333 16.2083C14.3333 15.075 13.7667 14.1917 12.9333 13.5167C14.8 13.9083 16.8333 14.8 16.8333 16.2083V17.6667H14.3333V16.2083Z"
-                fill="#ffffff"
-              ></path>{" "}
-            </g>
-          </svg>
-        </Button> */}
-        {/* <VideoScreenRecorder /> */}
-        <Button>
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <g id="SVGRepo_bgCarrier" strokeWidth="0"></g>
-            <g
-              id="SVGRepo_tracerCarrier"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            ></g>
-            <g id="SVGRepo_iconCarrier">
-              {" "}
-              <path
-                fillRule="evenodd"
-                clipRule="evenodd"
-                d="M6.83333 11.8333C8.44167 11.8333 9.75 10.525 9.75 8.91667C9.75 7.30833 8.44167 6 6.83333 6C5.225 6 3.91667 7.30833 3.91667 8.91667C3.91667 10.525 5.225 11.8333 6.83333 11.8333ZM21 15.3333V12.8333H23.5V11.1667H21V8.66666H19.3333V11.1667H16.8333V12.8333H19.3333V15.3333H21ZM6.83333 13.2917C4.88333 13.2917 1 14.2667 1 16.2083V17.6667H12.6667V16.2083C12.6667 14.2667 8.78333 13.2917 6.83333 13.2917ZM6.83333 14.9583C5.34166 14.9583 3.65 15.5167 2.95 16H10.7167C10.0167 15.5167 8.325 14.9583 6.83333 14.9583ZM8.08333 8.91667C8.08333 8.225 7.525 7.66667 6.83333 7.66667C6.14167 7.66667 5.58333 8.225 5.58333 8.91667C5.58333 9.60833 6.14167 10.1667 6.83333 10.1667C7.525 10.1667 8.08333 9.60833 8.08333 8.91667ZM11 11.8333C12.6083 11.8333 13.9167 10.525 13.9167 8.91667C13.9167 7.30833 12.6083 6 11 6C10.8 6 10.6 6.01667 10.4083 6.05833C11.0417 6.84167 11.4167 7.83333 11.4167 8.91667C11.4167 10 11.025 10.9833 10.3917 11.7667C10.5917 11.8083 10.7917 11.8333 11 11.8333ZM14.3333 16.2083C14.3333 15.075 13.7667 14.1917 12.9333 13.5167C14.8 13.9083 16.8333 14.8 16.8333 16.2083V17.6667H14.3333V16.2083Z"
-                fill="#ffffff"
-              ></path>{" "}
-            </g>
-          </svg>
-        </Button>
-      </div>
-
+      )}
       {/* <Popover /> */}
     </div>
   );

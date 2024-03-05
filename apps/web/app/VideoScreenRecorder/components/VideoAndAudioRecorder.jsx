@@ -344,7 +344,7 @@
 
 // Import necessary modules and components
 
-"use client";
+// "use client";
 // Import necessary modules and components
 // Import necessary modules and components
 // import React, { useEffect, useRef, useState } from "react";
@@ -441,6 +441,7 @@
 // };
 
 // export default VideoAndAudioRecorder;
+"use client";
 import React, {
   forwardRef,
   useEffect,
@@ -449,20 +450,39 @@ import React, {
   useImperativeHandle,
 } from "react";
 import RecordRTC from "recordrtc";
+// import { useState } from "react";
+import { useMyContext } from "../../../context/MyContext";
+import toast from "react-hot-toast";
 
 const VideoAndAudioRecorder = forwardRef((props, ref) => {
-  const { title, description } = props;
+  const {
+    title,
+    description,
+    saveVideoAfterStopRecordingOrNot,
+    onRecordingCompleteAndGettingVideoId,
+    typeComment1,
+    requestBody,
+    videoId,
+  } = props;
   console.log(`title:${title}`);
   console.log(`description:${description}`);
+  console.log(`VideoId:${videoId}`);
+  console.log("Requestbody from VideoAndAudioRecorder", requestBody);
+  console.log(`typecomment1:${typeComment1}`);
+  console.log("saveVideoAfterStopRecording", saveVideoAfterStopRecordingOrNot);
   useImperativeHandle(ref, () => ({
     startRecording,
     stopRecording,
+    createVideoCameraComment,
   }));
   const videoElement = useRef(null);
   const recorderRef = useRef(null);
   const [recording, setRecording] = useState(false);
   const [paused, setPaused] = useState(false);
-
+  const [shouldVideoVisible, setVideoVisible] = useState(false);
+  const [videoFile, setVideoFile] = useState(null);
+  const { resultVideosrccontext, setResultVideosrccontext } = useMyContext();
+  const [resultVideosrc, setResultVideosrc] = useState("hlo");
   const captureCamera = (callback) => {
     navigator.mediaDevices
       .getUserMedia({ audio: true, video: true })
@@ -488,40 +508,174 @@ const VideoAndAudioRecorder = forwardRef((props, ref) => {
     const videoFile = new File([videoBlob], videoFileName, {
       type: "video/mp4",
     });
+    setVideoFile(videoFile);
+    console.log("videoFile is below from stop recording");
+
+    console.log(videoFile);
+    // try {
+    //   const formData = new FormData();
+    //   formData.append("file", videoFile);
+    //   formData.append("title", title);
+    //   formData.append("description", description);
+
+    //   const response = await fetch("http://localhost:8080/api/uploadVideo", {
+    //     method: "POST",
+    //     body: formData,
+    //   });
+
+    //   const responseData = await response.json();
+    //   console.log("Server Response:", responseData);
+
+    //   if (responseData.success) {
+    //     alert("Video uploaded successfully");
+    //   } else {
+    //     alert("Video upload failed");
+    //   }
+    // } catch (error) {
+    //   console.error("Error uploading video:", error);
+    //   alert("Error uploading video");
+    // }
+    if (saveVideoAfterStopRecordingOrNot) {
+      setVideoVisible(false);
+      try {
+        const formData = new FormData();
+        formData.append("file", videoFile);
+        formData.append("title", title);
+        formData.append("description", description);
+
+        const response = await fetch(
+          "http://localhost:8080/api/uploadVideo",
+          // `http://localhost:8080/api/comments/createvideocomment/${videoId}`,
+          {
+            method: "POST",
+            body: formData,
+          }
+        );
+
+        const responseData = await response.json();
+        const { result } = responseData;
+        setResultVideosrccontext(
+          `https://d1yt4919vxgwb5.cloudfront.net/${result.VideoUploadedToS3Details.key}`
+        );
+        console.log("Server Response:", responseData);
+        console.log("Server Response result:", result);
+        console.log(
+          "Server Response result,VideoId:",
+          result.VideoUploadedtoVideoMySqlDetails.video_id
+        );
+
+        setResultVideosrc(
+          `https://d1yt4919vxgwb5.cloudfront.net/${result.VideoUploadedToS3Details.key}`
+        );
+
+        // console.log(` src:${resultVideosrccontext}`);
+        // onRecordingComplete(resultVideosrc);
+
+        // let state = {
+        //   resultVideosrc:`https://d1yt4919vxgwb5.cloudfront.net/${result.key}`, // Set a default value
+        // };
+
+        console.log(resultVideosrc);
+        if (responseData.success) {
+          console.log(`src:${resultVideosrccontext}`);
+          if (typeof onRecordingCompleteAndGettingVideoId === "function") {
+            try {
+              onRecordingCompleteAndGettingVideoId(
+                result.VideoUploadedtoVideoMySqlDetails.video_id
+              );
+            } catch (error) {
+              console.error("Error doing the function:", error);
+            }
+          } else {
+            console.error(
+              "onRecordingCompleteAndGettingVideoId is not a function"
+            );
+          }
+
+          toast("Video uploaded successfully");
+        } else {
+          toast("Video upload failed");
+        }
+      } catch (error) {
+        console.error("Error uploading video:", error);
+        alert("Error uploading video");
+      }
+    }
+    recorderRef.current.camera.stop();
+    recorderRef.current.destroy();
+    recorderRef.current = null;
+
+    setPaused(false);
+  };
+
+  const createVideoCameraComment = async (parentCommentId = null) => {
+    // console.log(requestBody);
+    console.log("videoFile from create videoComment below");
+    console.log(videoFile);
+    const { userId, timeStamp, type } = requestBody;
+
+    console.log(`userId:${userId}`);
+    console.log(`timeStamp:${timeStamp}`);
+    console.log(`type:${type}`);
+    console.log(`parentId:${parentCommentId}`);
+    console.log(
+      `typecomment1 from inside createvideoComment function:${typeComment1}`
+    );
 
     try {
       const formData = new FormData();
       formData.append("file", videoFile);
-      formData.append("title", title);
-      formData.append("description", description);
+      formData.append("userId", userId);
+      formData.append("timeStamp", timeStamp);
+      // formData.append("parentCommentId", parentCommentId);
+      if (parentCommentId !== null) {
+        formData.append("parentCommentId", parentCommentId);
+      }
+      formData.append("typeComment", type);
 
-      const response = await fetch("http://localhost:8080/api/uploadVideo", {
-        method: "POST",
-        body: formData,
-      });
+      console.log(formData);
+      const response = await fetch(
+        `http://localhost:8080/api/comments/createvideocomment/${videoId}`,
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
 
       const responseData = await response.json();
+      const { result, success } = responseData;
+      setResultVideosrccontext(
+        `https://d1yt4919vxgwb5.cloudfront.net/${result.VideoUploadedToS3Details.key}`
+      );
       console.log("Server Response:", responseData);
+      console.log("Server Response result:", result);
+      setResultVideosrc(
+        `https://d1yt4919vxgwb5.cloudfront.net/${result.VideoUploadedToS3Details.key}`
+      );
 
+      // console.log(` src:${resultVideosrccontext}`);
+      // onRecordingComplete(resultVideosrc);
+
+      // let state = {
+      //   resultVideosrc:`https://d1yt4919vxgwb5.cloudfront.net/${result.key}`, // Set a default value
+      // };
+
+      console.log(resultVideosrc);
       if (responseData.success) {
-        alert("Video uploaded successfully");
+        console.log(`src:${resultVideosrccontext}`);
+        toast("Video uploaded successfully");
       } else {
-        alert("Video upload failed");
+        toast("Video upload failed");
       }
     } catch (error) {
       console.error("Error uploading video:", error);
-      alert("Error uploading video");
+      alert("Error uploading video from frontend");
     }
-
-    recorderRef.current.camera.stop();
-    recorderRef.current.destroy();
-    recorderRef.current = null;
-    setRecording(false);
-    setPaused(false);
   };
 
   const startRecording = () => {
     if (!recording) {
+      setVideoVisible(true);
       captureCamera((camera) => {
         videoElement.current.muted = true;
         videoElement.current.volume = 0;
@@ -540,6 +694,7 @@ const VideoAndAudioRecorder = forwardRef((props, ref) => {
   };
 
   const stopRecording = () => {
+    setRecording(false);
     if (recording) {
       recorderRef.current.stopRecording(stopRecordingCallback);
     }
@@ -560,8 +715,8 @@ const VideoAndAudioRecorder = forwardRef((props, ref) => {
   };
 
   return (
-    <div>
-      <title>Video Recording | RecordRTC</title>
+    <div className=" flex flex-col justify-center w-full h-full">
+      {/* <title>Video Recording | RecordRTC</title>
       <h1>Simple Video and Audio </h1>
 
       <br />
@@ -579,22 +734,50 @@ const VideoAndAudioRecorder = forwardRef((props, ref) => {
         Resume Recording
       </button>
 
-      <hr />
-      <video ref={videoElement} controls autoPlay playsInline></video>
-
-      <footer style={{ marginTop: "20px" }}>
+      <hr /> */}
+      {videoElement && (
+        <video
+          ref={videoElement}
+          className={`bg-gray-900 ${shouldVideoVisible ? "visible" : "hidden"}`}
+          controls
+          autoPlay
+          playsInline
+          style={{ width: "100%", height: "100%" }}
+        ></video>
+      )}
+      {/* <footer style={{ marginTop: "20px" }}>
         <small id="send-message"></small>
       </footer>
-      <script src="https://www.webrtc-experiment.com/common.js"></script>
+      <script src="https://www.webrtc-experiment.com/common.js"></script> */}
     </div>
   );
 });
-const VideoScreen = ({ playerRef, title, description }) => {
+const VideoScreen = ({
+  playerRef,
+  onRecordingComplete,
+  title,
+  description,
+  saveVideoAfterStopRecordingOrNot,
+  onRecordingCompleteAndGettingVideoId,
+  requestBody,
+  typeComment1,
+  videoId,
+}) => {
+  const handleRecordingComplete = (data) => {
+    setRecordedVideoLink(data);
+  };
   return (
     <VideoAndAudioRecorder
       ref={playerRef}
       title={title}
       description={description}
+      saveVideoAfterStopRecordingOrNot={saveVideoAfterStopRecordingOrNot}
+      onRecordingCompleteAndGettingVideoId={
+        onRecordingCompleteAndGettingVideoId
+      }
+      requestBody={requestBody}
+      typeComment1={typeComment1}
+      videoId={videoId}
     />
   );
 };

@@ -1,15 +1,27 @@
+"use client";
+import { useState } from "react";
 import { cn } from "../lib/utils";
 import { Button } from "./button";
 
-export function Sidebar() {
+interface SidebarProps {
+  onSidebarClick: (page: string) => void;
+}
+
+export function Sidebar({ onSidebarClick }: SidebarProps) {
+  const [activeButton, setActiveButton] = useState<string | null>("activity");
+  const handleButtonClick = (page: string) => {
+    onSidebarClick(page);
+    setActiveButton(page);
+  };
   return (
     <div className={cn("pb-12")}>
       <div className="space-y-4 py-4">
         <div className="px-3 py-2">
           <div className="space-y-1">
             <Button
-              className="w-full justify-start hover:bg-purple-200"
+              className={`w-full justify-start ${activeButton === "activity" ? "bg-purple-200" : "hover:bg-purple-200"}`}
               variant="ghost"
+              onClick={() => handleButtonClick("activity")}
             >
               <svg
                 className="h-4 w-4 mr-2 "
@@ -44,6 +56,7 @@ export function Sidebar() {
             <Button
               className="w-full justify-start hover:bg-purple-200"
               variant="ghost"
+              onClick={() => handleButtonClick("myPulzez")}
             >
               <svg
                 className="h-4 w-4 mr-2"

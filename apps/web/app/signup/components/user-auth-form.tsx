@@ -147,7 +147,7 @@ import { Label } from "../../../../../packages/ui/components/label";
 import { Input } from "../../../../../packages/ui/components/input";
 
 import { Button } from "ui";
-import { useMutation, gql } from "@apollo/client";
+// import { useMutation, gql } from "@apollo/client";
 import { useRouter } from "next/navigation";
 import { cn } from "ui/lib/utils";
 // import { Button, Label, Input, Icons } from "ui";
@@ -163,51 +163,78 @@ import { cn } from "ui/lib/utils";
 //   }
 // `;
 
-const SIGNUP_MUTATION = gql`
-  mutation Signup($email: String!, $password: String!) {
-    signup(email: $email, password: $password) {
-      user {
-        id
-        email
-      }
-      token
-    }
-  }
-`;
-
+// const LOGIN_MUTATION = gql`
+//   mutation Login($email: String!, $password: String!) {
+//     login(email: $email, password: $password) {
+//       user {
+//         id
+//         email
+//       }
+//       token
+//     }
+//   }
+// `;
+import SigninButton from "../../../components/SigninButton";
 export function UserAuthForm() {
   const { push } = useRouter();
   const [isLoading, setIsLoading] = React.useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [phonenumber, setPhonenumber] = useState("");
   // const [error, setError] = useState("");
   // const [token, setToken] = useState(localStorage.getItem("token") || "");
-  const [signup, { error }] = useMutation(SIGNUP_MUTATION);
+  // const [login, { data }] = useMutation(LOGIN_MUTATION);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
 
     try {
-      const { data } = await signup({
-        variables: { email, password },
-      });
-      console.log(data);
-      const { user, token } = data.signup;
-      // const { user, token } = data.signup;
-      // const user = data.signup;
-      localStorage.setItem("token", token);
-
-      console.log("Signup successful!");
-      console.log("User:", user);
-      // Save the token in localStorage
+      // const { data } = await login({
+      //   variables: { email, password },
+      // });
+      // console.log(data);
+      // const { user, token } = data.login;
+      // // const { user, token } = data.signup;
+      // // const user = data.signup;
       // localStorage.setItem("token", token);
 
-      console.log("Signup successful!", data);
+      // console.log("Login successful!");
       // console.log("User:", user);
-      push("/dashboard");
+      // // Save the token in localStorage
+      // // localStorage.setItem("token", token);
+
+      // console.log("Login successful!", data);
+      // // console.log("User:", user);
+
+      const response = await fetch(
+        "http://localhost:8080/api/registerOrLogin",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email,
+            password,
+            phonenumber,
+          }),
+        }
+      );
+      const data = await response.json();
+      console.log(data);
+
+      if (data.token) {
+        localStorage.setItem("token", data.token);
+        alert(data.message);
+        // window.location.href = '/dashboard'
+        console.log(data.token);
+        push("/dashboard");
+      } else {
+        alert("Please check your username and password");
+      }
     } catch (error) {
-      console.error("Signup failed:", error.message);
+      console.error("Login failed:", error.message);
       // setError(error.message);
     }
 
@@ -221,27 +248,37 @@ export function UserAuthForm() {
   // }, [token]);
 
   return (
-    <form onSubmit={handleSubmit}>
-      {/* {error && <p>Error: {error}</p>} */}
-      <Label htmlFor="email">Email</Label>
-      <Input
-        type="email"
-        id="email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        required
-      />
-      <Label htmlFor="password">Password</Label>
-      <Input
-        type="password"
-        id="password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        required
-      />
-      <Button type="submit" disabled={isLoading} onClick={handleSubmit}>
-        {isLoading ? "Signing up..." : "Sign Up"}
-      </Button>
-    </form>
+    <div className="flex flex-col">
+      <form onSubmit={handleSubmit}>
+        {/* {error && <p>Error: {error}</p>} */}
+        <Input
+          className="h-8 mb-4 bg-[#E5E7EB]"
+          type="phonenumber"
+          id="phonenumber"
+          placeholder="Phonenumber"
+          value={phonenumber}
+          onChange={(e) => setPhonenumber(e.target.value)}
+          required
+        />
+        <Input
+          className="h-8 mb-4 bg-[#CACACA] bg-opacity-30"
+          type="email"
+          id="email"
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+        />
+        <Input
+          className="h-8 mb-4 bg-[#CACACA] bg-opacity-30"
+          type="password"
+          id="password"
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
+      </form>
+    </div>
   );
 }
