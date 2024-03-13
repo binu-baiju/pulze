@@ -16,8 +16,8 @@ export const bucket = "pulze-bucket-new";
 
 export const s3 = new AWS.S3({
   endpoint: "http://s3-ap-south-1.amazonaws.com",
-  accessKeyId: "AKIAS5RNQ32LXOR7TBLP",
-  secretAccessKey: "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",
+  accessKeyId: ACCESSKEYID,
+  secretAccessKey: SECRETACCESSKEY,
   sslEnabled: false,
   s3ForcePathStyle: true,
   region: "Asia Pacific (Mumbai) ap-south-1",
