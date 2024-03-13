@@ -377,7 +377,7 @@ const Dashboard = () => {
                       placeholder="Type a name or email"
                     /> */}
                   </div>
-                  <Button onClick={handleUsers}>Hello</Button>
+                  {/* <Button onClick={handleUsers}>Hello</Button> */}
                 </div>
                 <div className="flex flex-col gap-0">
                   <BorderLessInput
@@ -432,7 +432,7 @@ const Dashboard = () => {
                     <TabsList className="flex justify-around gap-2 bg-white focus:bg-gray-100">
                       <TabsTrigger
                         value="screen"
-                        className=" w-1/3 focus:bg-gray-900 flex gap-3 justify-center items-center"
+                        className=" w-1/3 focus:bg-gray-200 flex gap-3 justify-center items-center"
                       >
                         <svg
                           className="w-6 h-6"
@@ -456,7 +456,7 @@ const Dashboard = () => {
                       </TabsTrigger>
                       <TabsTrigger
                         value="camera"
-                        className="  w-1/3 focus:bg-red-500 flex gap-3 justify-center items-center"
+                        className="  w-1/3 focus:bg-gray-200  flex gap-3 justify-center items-center"
                       >
                         <svg
                           className="w-6 h-6"
@@ -485,7 +485,7 @@ const Dashboard = () => {
                       </TabsTrigger>
                       <TabsTrigger
                         value="upload"
-                        className="  w-1/3 ring-0 focus-visible:bg-red-500 flex gap-3 focus:ring-0"
+                        className="  w-1/3 ring-0 focus:bg-gray-200  flex gap-3 focus:ring-0"
                       >
                         <svg
                           className="w-6 h-6"
@@ -632,19 +632,21 @@ const Dashboard = () => {
                     >
                       <div className="w-full flex h-5/6  ">
                         {isIcon1Visible ? (
-                          <VideoAndAudioRecorder
-                            onRecordingComplete={handleRecordingComplete}
-                            playerRef={cameraAudioRecorderRef}
-                            title={title}
-                            description={description}
-                            saveVideoAfterStopRecordingOrNot={true}
-                            onRecordingCompleteAndGettingVideoId={
-                              handleRecordingCompleteAndGettingVideoId
-                            }
-                            typeComment1={undefined}
-                            requestBody={undefined}
-                            videoId={undefined}
-                          />
+                          <>
+                            <VideoAndAudioRecorder
+                              onRecordingComplete={handleRecordingComplete}
+                              playerRef={cameraAudioRecorderRef}
+                              title={title}
+                              description={description}
+                              saveVideoAfterStopRecordingOrNot={true}
+                              onRecordingCompleteAndGettingVideoId={
+                                handleRecordingCompleteAndGettingVideoId
+                              }
+                              typeComment1={undefined}
+                              requestBody={undefined}
+                              videoId={undefined}
+                            />
+                          </>
                         ) : (
                           <ScreenAndAudioRecorder
                             onRecordingComplete={handleRecordingComplete}

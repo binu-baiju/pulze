@@ -146,6 +146,9 @@ model User {
     workspaces    Workspace[]     // Reference to Workspace model
     workspaceMembers WorkspaceMember[] // Added opposite relation
     comments Comment[]
+    // sendVideos       SendVideo[]
+    sendVideos      SendVideo[]       @relation("SenderRelation")  // Provide a unique name for the foreign key constraint
+    receivedVideos  Recipient[]  
 }
 
 model Video {
@@ -157,14 +160,16 @@ model Video {
    
     Key           String
     Bucket        String
+    createdOn     DateTime        @default(now())
     creatorId  String          // Foreign key of User model
     creator       User            @relation(fields: [creatorId], references: [id])  // Reference to User model
 
     workspace_id  String          // Foreign key of Workspace model
     workspace     Workspace       @relation(fields: [workspace_id], references: [workspace_id])
+    sendVideos    SendVideo[]
     // shared_with   User[]          // Array of User model
     // comments  Comment[] @relation(fields: [video_id], references: [id], onDelete: Cascade) // Added onDelete: Cascade
-    //  comments      Comment[]      
+     comments      Comment[]      @relation("video_comments")      
 }
 
 model Comment {
@@ -189,6 +194,7 @@ model Comment {
   parentComment Comment? @relation("CommentToComment", fields: [parentCommentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   replies Comment[] @relation("CommentToComment")
+   video          Video       @relation("video_comments", fields: [videoId], references: [video_id])
 }
 
 
@@ -199,6 +205,7 @@ model Workspace {
     workspace_creator     User                 @relation(fields: [workspace_creator_id], references: [id])
     workspace_members     WorkspaceMember[]    // Reference to WorkspaceMember model
     videos                Video[]               // Added opposite relation
+    sendVideos    SendVideo[] 
 }
 
 model WorkspaceMember {
@@ -210,3 +217,30 @@ model WorkspaceMember {
     workspace             Workspace            @relation(fields: [workspace_id], references: [workspace_id], onDelete: Cascade)
 
 }
+
+model SendVideo {
+  id            String    @id @default(uuid()) @map("_send_video_id") // Primary key with UUID
+  videoId      String    @unique // Foreign key of Video model
+  senderId      String    // Foreign key of User model (sender)
+  responseTime  DateTime
+  workspaceId  String    // Foreign key of Workspace model
+  video         Video     @relation(fields: [videoId], references: [video_id])
+  sender        User      @relation("SenderRelation", fields: [senderId], references: [id])
+  recipients    Recipient[]
+  workspace     Workspace @relation(fields: [workspaceId], references: [workspace_id])
+}
+
+model Recipient {
+  id          String @id @default(uuid())
+  userId      String
+  sendVideoId String
+  FYI    Boolean  // Add your additional fields
+  email         String?  // Add your additional fields
+  status        String?
+  sendVideo   SendVideo @relation(fields: [sendVideoId], references: [videoId])
+  user        User   @relation(fields: [userId], references: [id])
+
+  @@unique([userId, sendVideoId], name: "unique_user_sendVideo_recipient")
+}
+
+

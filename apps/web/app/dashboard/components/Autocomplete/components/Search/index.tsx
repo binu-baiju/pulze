@@ -49,7 +49,7 @@ const UserSearch: React.FC<UserSearchProps> = ({
               }}
             >
               <Image
-                src={user.image ? user.image : ""}
+                src={user.image ? user.image : "/icons8-user-50.png"}
                 height={50}
                 width={50}
                 className="rounded-full"

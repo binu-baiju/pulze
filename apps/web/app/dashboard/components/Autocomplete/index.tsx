@@ -277,12 +277,14 @@ export default function AutoComplete({
             <div className="flex  justify-start w-3/4 bg-gray-100 ">
               <b className="mt-2">To: </b>
               <div className="flex flex-col">
-                <UserList
-                  users={selectedUsers}
-                  handleRemove={handleRemove}
-                  lastSelectedIndex={lastSelectedIndex}
-                  handleToggle={handleToggle}
-                />
+                {selectedUsers.length > 0 && (
+                  <UserList
+                    users={selectedUsers}
+                    handleRemove={handleRemove}
+                    lastSelectedIndex={lastSelectedIndex}
+                    handleToggle={handleToggle}
+                  />
+                )}
 
                 <UserSearch
                   searchQuery={searchQuery}

@@ -30,6 +30,7 @@ import ToggleButton from "../../../../dashboard/components/toggleButton";
 // import ToggleButton from "../../../VideoScreenRecorder/components/toggleButton";
 
 import {
+  BookOpenCheck,
   CheckCircle2,
   ChevronsRight,
   Disc2,
@@ -136,6 +137,7 @@ const GettinResponse = () => {
 
   const [creatorFromVideoPlayer, setcreatorFromVideoPlayer] =
     useState<Creator>(initialCreator);
+  const [videoStatus, setVideoStatus] = useState("");
 
   // const [userId, setUserId] = useState<string | undefined>(undefined);
   const opendStatus = "Opened";
@@ -445,6 +447,7 @@ const GettinResponse = () => {
       );
 
       if (!response.ok) {
+        console.log("Response from status update");
         // Handle non-successful response
         console.error(
           `Error updating recipient status: ${response.statusText}`
@@ -453,8 +456,12 @@ const GettinResponse = () => {
       }
 
       const responseData = await response.json();
+      if (responseData) {
+        console.log("response Data from status Update", responseData.Status);
+        setVideoStatus(responseData.Status);
+      }
+      return responseData;
       // Handle the response data if needed
-      console.log(responseData);
     } catch (error) {
       // Handle errors
       console.error("Error updating recipient status:", error);
@@ -464,7 +471,7 @@ const GettinResponse = () => {
     event.preventDefault();
 
     console.log("called top level video comment creation");
-    // await handleUpdateStatus(respondedStatus);
+
     if (!parentCommentId) {
       if (topLevelCommentTabsValue === "screen") {
         console.log("have parentid ,createComment");
@@ -510,6 +517,7 @@ const GettinResponse = () => {
         );
       }
     }
+    await handleUpdateStatus(respondedStatus);
   };
 
   const handlePostButton = (selectedTab) => {
@@ -560,8 +568,12 @@ const GettinResponse = () => {
     // }
     setTitle(decodeURIComponent(parts[3]));
     console.log("title", title);
+    console.log("from useeffect", videoId, userId, status);
+
     if (videoId && userId && status) {
-      // handleUpdateStatus(opendStatus);
+      console.log("from useeffect called");
+
+      handleUpdateStatus(opendStatus);
     } else {
       console.log("couldnt update");
     }
@@ -570,7 +582,7 @@ const GettinResponse = () => {
     }
 
     console.log("testing", videoId);
-  }, [pathname, videoId, userId]);
+  }, [pathname, videoId, userId, videoStatus]);
 
   return (
     <>
@@ -637,16 +649,26 @@ const GettinResponse = () => {
         </div>
         <div className="flex-[30%] flex flex-col justify-between items-center lg:relative  ">
           <div className=" w-11/12 h-full ">
-            <div className="h-16 w-full flex gap-3 flex items-center">
-              <ChevronsRight stroke-width="1" />
-              <div className="flex gap-2">
-                <CheckCircle2 color="#42d55a" strokeWidth={1.5} />
-
-                <span className="text-[#42d55a]">you responded</span>
+            {videoStatus && (
+              <div className="h-16 w-full flex gap-3 flex items-center">
+                <ChevronsRight stroke-width="1" />
+                <div className="flex justify-center items-center gap-2 ">
+                  <div>
+                    {videoStatus === "Opened" ? (
+                      <BookOpenCheck color="#42d55a" strokeWidth={1.5} />
+                    ) : (
+                      <CheckCircle2 color="#42d55a" strokeWidth={1.5} />
+                    )}
+                  </div>
+                  <span className="text-[#42d55a]  mb-2">
+                    you {videoStatus.toLowerCase()}
+                  </span>
+                </div>
               </div>
-            </div>
+            )}
+
             {/* //384 */}
-            <div className=" h-[130px] lg:h-[382px]  max-w-full  flex flex-col justify-start scrollbar scrollbar-thin scrollbar-thumb-rounded-md scrollbar-track-rounded-md overflow-y-auto overflow-x-hidden">
+            <div className=" h-[130px] lg:h-[435px]  max-w-full  flex flex-col justify-start scrollbar scrollbar-thin scrollbar-thumb-rounded-md scrollbar-track-rounded-md overflow-y-auto overflow-x-hidden">
               {comments.map((comment) => {
                 // const parsedDate =3;
 

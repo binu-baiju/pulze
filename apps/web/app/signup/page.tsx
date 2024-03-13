@@ -39,9 +39,7 @@ const App: React.FunctionComponent = () => {
           </h1>
           <div className=" w-[400px] h-[450px] mt-[100px] items-center">
             <UserAuthForm />
-            <button className="font-exbold bg-[#8645FF] h-10 text-[#F3E8FF] rounded-lg text-xl w-full mb-2">
-              Continue with email
-            </button>
+
             <div className="ml-[0px]">
               <p className=" text-center text-xs text-muted-foreground font-poppins font-light">
                 Have an account?

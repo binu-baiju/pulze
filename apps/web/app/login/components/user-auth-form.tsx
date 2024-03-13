@@ -217,12 +217,12 @@ export function UserAuthForm() {
 
     try {
       // Call your API endpoint for registration
-      const response = await fetch("/api/registerorlogin", {
+      const response = await fetch("/api/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email, password, phonenumber }),
+        body: JSON.stringify({ email, password }),
       });
       console.log("response:", response);
       // if (response.ok) {
@@ -243,11 +243,11 @@ export function UserAuthForm() {
         // }
       } else {
         console.log("reached responseData.success else");
-
         // const errorData = await response.json();
         // console.log("error data:", errorData);
 
         toast.error(`${responseData.message}`);
+        router.push("/signup");
       }
     } catch (error) {
       console.error("Error during registration:", error);
@@ -276,7 +276,7 @@ export function UserAuthForm() {
       // console.log("Login successful!", data);
       // // console.log("User:", user);
 
-      const response = await fetch("/api/registerOrLogin", {
+      const response = await fetch("/api/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -284,7 +284,6 @@ export function UserAuthForm() {
         body: JSON.stringify({
           email,
           password,
-          phonenumber,
         }),
       });
       const data = await response.json();
@@ -337,7 +336,7 @@ export function UserAuthForm() {
       <Button type="submit" disabled={isLoading}>
         {isLoading ? "Logging up..." : "Login"}
       </Button>
-      <SigninButton />
+      {/* <SigninButton /> */}
       {JSON.stringify(session)}
     </form>
   );
