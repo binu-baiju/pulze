@@ -11,16 +11,18 @@ import {
 import { Input } from "ui/components/input";
 import { Label } from "ui/components/label";
 import FlaggIcon from "../../../icons/FlaggIcon";
+import { FaPlus } from "react-icons/fa";
 
-export function DialogDemo() {
+export function CreatingWorkspace() {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="outline" className="font-bold">
+        <span className="flex flex-row font-[Inter] font-normal text-sm text-left items-center m-1 border-2 border-sky-600 ">
+          <FaPlus className="mx-1.5" />
           New Workspace
-        </Button>
+        </span>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px] flex flex-col justify-center items-center">
+      <DialogContent className="sm:max-w-[425px] flex flex-col justify-center items-center rounded-lg border border-slate-500">
         <DialogHeader>
           <div className="scale-50 mt-[-30px]">
             <FlaggIcon />
