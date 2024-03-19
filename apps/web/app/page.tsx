@@ -4,8 +4,9 @@
 import { log } from "console";
 
 import { useEffect, useState } from "react";
-
+import Document, { Html, Head, Main, NextScript } from "next/document";
 export const dynamic = "force-dynamic";
+import Script from "next/script";
 
 // const VIEW_STUDNETS = gql`
 //   query students {
@@ -116,7 +117,23 @@ const Page = () => {
   });
 
   return (
-    <h1>Hello</h1>
+    <>
+      <Head>
+        <title>Pulze</title>
+        <link
+          href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.css"
+          rel="stylesheet"
+        />
+        <Script
+          src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.3.0/flowbite.min.js"
+          strategy="lazyOnload"
+          onLoad={() =>
+            console.log(`script loaded correctly, cdn has been populated`)
+          }
+        />
+      </Head>
+      <h1>Hello</h1>
+    </>
     // <div className="flex">
     //   <div className="p-16 flex flex-col gap-6 w-1/3">
     //     <h2>Create a New Student</h2>

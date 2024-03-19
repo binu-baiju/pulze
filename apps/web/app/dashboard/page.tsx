@@ -1,5 +1,5 @@
 // dashboard.tsx
-
+"use client";
 import React, { useState } from "react";
 
 import { Button } from "ui/components/button";
@@ -9,6 +9,8 @@ import { BorderLessInput } from "ui/components/borderlessinput";
 import { Icons } from "ui/components/icons";
 import { Label } from "ui/components/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "ui/components/tabs";
+import { IoMdSettings } from "react-icons/io";
+
 import {
   Dialog,
   DialogContent,
@@ -34,6 +36,9 @@ import {
 import ToggleButton from "./components/toggleButton";
 import ActivityPage from "./sideComponents/ActivityComponent";
 import MyPulzePage from "./sideComponents/MyPulzeComponent";
+import Drawer from "./components/Drawer";
+import DropDown from "./components/DropDown";
+
 const Dashboard = () => {
   return (
     <div className="bg-slate-100 h-screen w-screen flex">
@@ -42,7 +47,7 @@ const Dashboard = () => {
         <div className=" mt-5 flex flex-col justify-center">
           <Dialog>
             <DialogTrigger asChild>
-              <Button className="h-10 mx-4 " size="lg">
+              <Button className="h-10 mx-4 bg-[#8645FF] " size="lg">
                 New Pulze
               </Button>
             </DialogTrigger>
@@ -209,51 +214,19 @@ const Dashboard = () => {
               {/* <DialogFooter>hwhud</DialogFooter> */}
             </DialogContent>
           </Dialog>
-
           {/* <!-- Modal toggle   */}
-
-          <DropdownMenu>
-            <DropdownMenuTrigger className="mt-2 bg-white mx-4 rounded-md h-9 flex justify-center items-center">
-              binubaiju's{"teams"}
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                className="w-6 mt-1"
-              >
-                <g id="SVGRepo_bgCarrier" strokeWidth="0"></g>
-                <g
-                  id="SVGRepo_tracerCarrier"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                ></g>
-                <g id="SVGRepo_iconCarrier">
-                  {" "}
-                  <path
-                    fill-rule="evenodd"
-                    clip-rule="evenodd"
-                    d="M12.7071 14.7071C12.3166 15.0976 11.6834 15.0976 11.2929 14.7071L6.29289 9.70711C5.90237 9.31658 5.90237 8.68342 6.29289 8.29289C6.68342 7.90237 7.31658 7.90237 7.70711 8.29289L12 12.5858L16.2929 8.29289C16.6834 7.90237 17.3166 7.90237 17.7071 8.29289C18.0976 8.68342 18.0976 9.31658 17.7071 9.70711L12.7071 14.7071Z"
-                    fill="#000000"
-                  ></path>{" "}
-                </g>
-              </svg>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              <DropdownMenuLabel>My Account</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem>Profile</DropdownMenuItem>
-              <DropdownMenuItem>Billing</DropdownMenuItem>
-              <DropdownMenuItem>Team</DropdownMenuItem>
-              <DropdownMenuItem>Subscription</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <div className="flex justify-center items-center mt-5">
+            <DropDown />
+          </div>
         </div>
         <Sidebar />
       </div>
+
       <div className="grow">
         {/* <ActivityPage /> */}
         <MyPulzePage />
       </div>
+
       {/* <div className="flex items-center justify-center h-screen">
         <div className="text-center mt-[-30vh]">
           <p className="font-bold mb-0 text-indigo-500">
