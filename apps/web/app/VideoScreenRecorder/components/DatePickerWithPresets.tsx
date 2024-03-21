@@ -1,27 +1,23 @@
-// "use client"
+// "use client";
 
-// import * as React from "react"
-// import { CalendarIcon } from "@radix-ui/react-icons"
-// import { addDays, format } from "date-fns"
+// import * as React from "react";
+// import { CalendarIcon } from "@radix-ui/react-icons";
+// import { addDays, format } from "date-fns";
 
-// import { cn } from "../lib/utils"
-// import { Button } from "./button"
-// import { Calendar } from "./Calender"
-// import {
-//   Popover,
-//   PopoverContent,
-//   PopoverTrigger,
-// } from "./popover"
+// import { cn } from "../lib/utils";
+// import { Button } from "./button";
+// import { Calendar } from "./Calender";
+// import { Popover, PopoverContent, PopoverTrigger } from "./popover";
 // import {
 //   Select,
 //   SelectContent,
 //   SelectItem,
 //   SelectTrigger,
 //   SelectValue,
-// } from "./select"
+// } from "./select";
 
 // export function DatePickerWithPresets() {
-//   const [date, setDate] = React.useState<Date>()
+//   const [date, setDate] = React.useState<Date>();
 
 //   return (
 //     <Popover>
@@ -61,6 +57,5 @@
 //         </div>
 //       </PopoverContent>
 //     </Popover>
-//   )
+//   );
 // }
- 

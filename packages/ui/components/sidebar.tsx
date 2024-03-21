@@ -1,15 +1,31 @@
+"use client";
+import { useState } from "react";
 import { cn } from "../lib/utils";
 import { Button } from "./button";
 
-export function Sidebar() {
+interface SidebarProps {
+  onSidebarClick: (page: string) => void;
+}
+
+export function Sidebar({ onSidebarClick }: SidebarProps) {
+  const [activeButton, setActiveButton] = useState<string | null>("activity");
+  const handleButtonClick = (page: string) => {
+    onSidebarClick(page);
+    setActiveButton(page);
+  };
   return (
     <div className={cn("pb-12")}>
       <div className="space-y-4 py-4">
         <div className="px-3 py-2">
           <div className="space-y-1">
             <Button
-              className="w-full justify-start hover:bg-purple-200"
+              className={`w-full justify-start hover:bg-purple-200 ${
+                activeButton === "activity"
+                  ? "bg-purple-200"
+                  : "hover:bg-purple-200"
+              }`}
               variant="ghost"
+              onClick={() => handleButtonClick("activity")}
             >
               <svg
                 className="h-4 w-4 mr-2 "
@@ -42,8 +58,13 @@ export function Sidebar() {
               Activity
             </Button>
             <Button
-              className="w-full justify-start hover:bg-purple-200"
+              className={`w-full justify-start hover:bg-purple-200 ${
+                activeButton === "myPulzez"
+                  ? "bg-purple-200"
+                  : "hover:bg-purple-200"
+              }`}
               variant="ghost"
+              onClick={() => handleButtonClick("myPulzez")}
             >
               <svg
                 className="h-4 w-4 mr-2"
@@ -60,33 +81,11 @@ export function Sidebar() {
                 <g id="SVGRepo_iconCarrier">
                   <path
                     d="M9.002 2.5a.75.75 0 01.691.464l6.302 15.305 2.56-6.301a.75.75 0 01.695-.468h4a.75.75 0 010 1.5h-3.495l-3.06 7.532a.75.75 0 01-1.389.004L8.997 5.21l-3.054 7.329A.75.75 0 015.25 13H.75a.75.75 0 010-1.5h4l3.558-8.538a.75.75 0 01.694-.462z"
-                    fill-rule="evenodd"
+                    fillRule="evenodd"
                   />
                 </g>
               </svg>
               My Pulzez
-            </Button>
-            <Button
-              className="w-full justify-start hover:bg-purple-200"
-              variant="ghost"
-            >
-              <svg
-                className="mr-2 h-4 w-4"
-                fill="none"
-                stroke="currentColor"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9" />
-                <path d="M7.8 16.2c-2.3-2.3-2.3-6.1 0-8.5" />
-                <circle cx="12" cy="12" r="2" />
-                <path d="M16.2 7.8c2.3 2.3 2.3 6.1 0 8.5" />
-                <path d="M19.1 4.9C23 8.8 23 15.1 19.1 19" />
-              </svg>
-              Channels
             </Button>
           </div>
         </div>

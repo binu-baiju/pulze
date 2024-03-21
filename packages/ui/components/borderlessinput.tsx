@@ -11,6 +11,7 @@ const BorderLessInput = React.forwardRef<
   HTMLInputElement,
   React.InputHTMLAttributes<HTMLInputElement>
 >(({ className, type, ...props }, ref) => {
+  const { value, ...restProps } = props;
   return (
     <input
       type={type}
@@ -19,7 +20,8 @@ const BorderLessInput = React.forwardRef<
         className
       )}
       ref={ref}
-      {...props}
+      value={value}
+      {...restProps}
     />
   );
 });
