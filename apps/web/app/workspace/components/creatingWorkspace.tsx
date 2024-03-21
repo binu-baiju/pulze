@@ -17,17 +17,17 @@ export function CreatingWorkspace() {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <span className="flex flex-row font-[Inter] font-normal text-sm text-left items-center m-1 border-2 border-sky-600 ">
+        <span className="flex flex-row font-[Inter] font-normal text-sm text-left justify-center items-center m-1">
           <FaPlus className="mx-1.5" />
           New Workspace
         </span>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px] flex flex-col justify-center items-center rounded-lg border border-slate-500">
         <DialogHeader>
-          <div className="scale-50 mt-[-30px]">
+          <div className="scale-50 mt-[-30px] ml-[70px] ">
             <FlaggIcon />
           </div>
-          <DialogTitle className="font-poppins font-bold ml-[30px] text-2xl absolute top-[150px]">
+          <DialogTitle className="font-poppins  font-bold ml-[70px] text-2xl absolute top-[150px]">
             Name your workspace
           </DialogTitle>
           <DialogDescription className="font-poppins font-normal text-xl text-center">
