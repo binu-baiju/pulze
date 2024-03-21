@@ -1,7 +1,12 @@
-import React from "react";
+"use client";
+import React, { useEffect, useState } from "react";
+import io from "socket.io-client";
+
 import Header from "../../components/header";
 import CaughtUp from "../../components/caughtUp";
 import NotificationTab from "../../components/notificationTab";
+import toast from "react-hot-toast";
+import { useSession } from "next-auth/react";
 // import Modal from "../../../../modals/ForgetPasswordModal";
 interface ReceivedVideo {
   id: string;
@@ -26,9 +31,52 @@ interface ReceivedVideosListProps {
   receivedVideos: Record<string, ReceivedVideo>; // Assuming your IDs are strings
   userVideos: Record<string, UserVideo>; // Assuming your IDs are strings
 }
-const ActivityPage = ({ userVideos, receivedVideos }) => {
+
+const socket = io("http://localhost:8080");
+
+const ActivityPage = ({
+  userVideos,
+  receivedVideos: initialReceivedVideos,
+  handleDeleteVideo,
+}) => {
+  const { data: session, status } = useSession();
   console.log("uservideos in pulze component", userVideos);
-  console.log("recievedVideos in pulze component", receivedVideos);
+  console.log("recievedVideos in pulze component", initialReceivedVideos);
+
+  // const [receivedVideos, setReceivedVideos] = useState(initialReceivedVideos);
+  const [currentTime, setCurrentTime] = useState(new Date());
+  let filteredUserVideos;
+  if (userVideos) {
+    filteredUserVideos = userVideos.filter((video) => {
+      const responseTime = new Date(video.sendVideos?.[0]?.responseTime);
+      return currentTime < responseTime;
+    });
+  }
+  const filteredReceivedVideos = initialReceivedVideos.filter(
+    (recievedvideo) => {
+      const responseTime = new Date(recievedvideo.sendVideo.responseTime);
+      return currentTime < responseTime;
+    }
+  );
+  console.log("filteredRecievedVideo", filteredReceivedVideos);
+
+  useEffect(() => {
+    const now = new Date();
+    const formattedTime = now.toISOString(); // Format the current time as ISO string
+    console.log("formatted time Activity", formattedTime);
+
+    setCurrentTime(new Date(formattedTime));
+    // socket.on("receiveVideo", (video) => {
+    //   alert(`received video:${video}`);
+    //   toast.success("recieved a new video", video);
+    //   setReceivedVideos((prevReceivedVideos) => [...prevReceivedVideos, video]);
+    // });
+
+    // return () => {
+    //   socket.disconnect();
+    // };
+    // }, [socket, receivedVideos, userVideos]);
+  }, [socket, initialReceivedVideos, userVideos]);
 
   return (
     <div className="app-wrapper  h-screen  sm:w-full w-full overflow-x-hidden  ">
@@ -36,24 +84,61 @@ const ActivityPage = ({ userVideos, receivedVideos }) => {
       {/* <Modal /> */}
       <div className="notification-container">
         <div className="flex flex-col mx-3 my-6">
-          <div>Open</div>
-          {userVideos.map((video) => {
-            return <NotificationTab key={video.video_id} video={video} />;
-          })}
+          {(filteredUserVideos || filteredReceivedVideos) &&
+          (filteredUserVideos.length > 0 ||
+            filteredReceivedVideos.length > 0) ? (
+            <>
+              <div>Open</div>
+              {/* {userVideos.map((video) => { */}
+              {filteredUserVideos.map((video) => {
+                const recipients = video?.sendVideos?.[0]?.recipients;
 
-          <div>recieved</div>
-
-          {receivedVideos.map((recievedvideo) => {
-            return (
-              <>
-                <div>{recievedvideo.sendVideo.video.video_id}</div>
+                // if (recipients && recipients.length > 0) {
+                //   const responseTime = new Date(
+                //     video.sendVideos?.[0]?.responseTime
+                //   );
+                //   if (currentTime < responseTime) {
+                //     return (
                 <NotificationTab
-                  key={recievedvideo.sendVideo.video.video_id}
-                  video={recievedvideo.sendVideo.video}
-                />
-              </>
-            );
-          })}
+                  key={video.video_id}
+                  video={video}
+                  session={session}
+                  isRecievedVideo={false}
+                  fullVideoObject={undefined}
+                  handleDeleteVideo={handleDeleteVideo}
+                />;
+                //     );
+                //   }
+                // }
+              })}
+
+              <div>recieved</div>
+
+              {/* {receivedVideos.map((recievedvideo) => { */}
+              {filteredReceivedVideos.map((recievedvideo) => {
+                // const responseTime = new Date(
+                //   recievedvideo.sendVideo.responseTime
+                // );
+                // if (currentTime < responseTime) {
+                // return (
+                <>
+                  <div>{recievedvideo.sendVideo.video.video_id}</div>
+                  <NotificationTab
+                    key={recievedvideo.sendVideo.video.video_id}
+                    video={recievedvideo.sendVideo.video}
+                    fullVideoObject={recievedvideo}
+                    session={session}
+                    isRecievedVideo={true}
+                    handleDeleteVideo={handleDeleteVideo}
+                  />
+                </>;
+                // );
+                // }
+              })}
+            </>
+          ) : (
+            <CaughtUp />
+          )}
           {/* {userVideos} */}
 
           {/* <NotificationTab /> */}
@@ -62,8 +147,50 @@ const ActivityPage = ({ userVideos, receivedVideos }) => {
       <div className="notification-container">
         <div className="flex flex-col mx-3 my-6">
           <div>Closed</div>
-          {/* {/* <NotificationTab key={undefined} video={undefined} /> */}
-          <NotificationTab key={undefined} video={undefined} />
+          {/* {receivedVideos.map((recievedvideo) => { */}
+
+          {initialReceivedVideos.map((recievedvideo) => {
+            const responseTime = new Date(recievedvideo.sendVideo.responseTime);
+            if (currentTime > responseTime) {
+              return (
+                <>
+                  <div>{recievedvideo.sendVideo.video.video_id}</div>
+                  <NotificationTab
+                    key={recievedvideo.sendVideo.video.video_id}
+                    video={recievedvideo.sendVideo.video}
+                    session={session}
+                    isRecievedVideo={true}
+                    fullVideoObject={recievedvideo}
+                    handleDeleteVideo={handleDeleteVideo}
+                  />
+                </>
+              );
+            }
+          })}
+          {userVideos.map((video) => {
+            const recipients = video?.sendVideos?.[0]?.recipients;
+
+            if (recipients && recipients.length > 0) {
+              const responseTime = new Date(
+                video.sendVideos?.[0]?.responseTime
+              );
+              if (currentTime > responseTime) {
+                return (
+                  <>
+                    {/* <div>{video.video_id}</div> */}
+                    <NotificationTab
+                      key={video.video_id}
+                      video={video}
+                      session={session}
+                      isRecievedVideo={false}
+                      fullVideoObject={undefined}
+                      handleDeleteVideo={handleDeleteVideo}
+                    />
+                  </>
+                );
+              }
+            }
+          })}
         </div>
       </div>
     </div>

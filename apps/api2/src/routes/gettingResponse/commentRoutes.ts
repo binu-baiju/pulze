@@ -2,6 +2,7 @@ import express, { Router } from "express";
 const multer = require("multer");
 import {
   createComments,
+  deleteComment,
   fetchComments,
   uploadVideoAndCreateComment,
 } from "../../controllers/gettingResponse/commentsController";
@@ -18,5 +19,6 @@ router.post(
   upload.single("file"),
   uploadVideoAndCreateComment
 );
+router.delete("/comments/deletecomment/:commentId", deleteComment);
 
 export default router;

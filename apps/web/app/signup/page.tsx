@@ -23,6 +23,7 @@ import {
   AvatarFallback,
   AvatarImage,
 } from "../../../../packages/ui/components/avatar";
+import SigninButton from "../../components/SigninButton";
 
 export const metadata: Metadata = {
   title: "Authentication",
@@ -37,7 +38,14 @@ const App: React.FunctionComponent = () => {
           <h1 className="font-semibold font-[Inter] sm:text-[33px] text-center">
             Visually Rich sync conversations - free forever
           </h1>
+
           <div className=" w-[400px] h-[450px] mt-[100px] items-center">
+            <SigninButton />
+            <div className="my-4 flex items-center before:mt-0.5 before:flex-1 before:border-t before:border-neutral-300 after:mt-0.5 after:flex-1 after:border-t after:border-neutral-300 dark:before:border-neutral-500 dark:after:border-neutral-500">
+              <p className="mx-4 mb-0 text-center font-semibold dark:text-white">
+                Or
+              </p>
+            </div>
             <UserAuthForm />
 
             <div className="ml-[0px]">
@@ -54,7 +62,7 @@ const App: React.FunctionComponent = () => {
           </div>
         </div>
       </div>
-      <div className="h-full w-[55%] relative">
+      <div className="hidden lg:block h-full  w-[55%] relative">
         <SignUpPAgeImage className="max-w-full max-h-full mr-[100px]" />
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-white mt-[20px] w-[540px] h-[450px]">
           <p className="font-semibold font-[Inter] text-[48px] tracking-wide ">

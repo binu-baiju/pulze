@@ -188,3 +188,25 @@ export const uploadVideoAndCreateComment = async (
     });
   }
 };
+
+export const deleteComment = async (req: Request, res: Response) => {
+  console.log("reached delete comment");
+
+  const { commentId } = req.params;
+
+  try {
+    // Delete the comment with the provided commentId
+    const deletedComment = await prisma.comment.delete({
+      where: {
+        id: commentId,
+      },
+    });
+
+    res.status(204).send(deletedComment); // Comment successfully deleted
+  } catch (error) {
+    console.error("Error deleting comment:", error);
+    res
+      .status(500)
+      .json({ error: "An error occurred while deleting the comment." });
+  }
+};

@@ -39,6 +39,8 @@ import {
   MicOff,
   Send,
   SendHorizontal,
+  Trash,
+  Trash2,
   Type,
   Video,
   VideoOff,
@@ -153,6 +155,9 @@ const GettinResponse = () => {
     // setUserId(session?.user?.id);
   }
   console.log("userId", userId);
+
+  const [hoveredMainCommentId, setHoveredMainCommentId] = useState(null);
+  const [hoveredReplyCommentId, setHoveredReplyCommentId] = useState(null);
 
   // const [title, setTitle] = useState("");
 
@@ -559,6 +564,62 @@ const GettinResponse = () => {
     setcreatedOnFromVideoPlayer(createdOn);
     setcreatorFromVideoPlayer(creator as Creator);
   };
+
+  // Function to handle hover over a comment
+  const handleMainCommentHover = (commentId) => {
+    console.log("commentId from handleMainCommentHover", commentId);
+
+    setHoveredMainCommentId(commentId);
+  };
+
+  // Function to handle mouse leave from a comment
+  const handleMainCommentLeave = () => {
+    setHoveredMainCommentId(null);
+  };
+
+  const handleReplyCommentHover = (commentId) => {
+    console.log("commentId from handleReplyCommentHover", commentId);
+
+    setHoveredReplyCommentId(commentId);
+  };
+
+  // Function to handle mouse leave from a comment
+  const handleReplyCommentLeave = () => {
+    setHoveredReplyCommentId(null);
+  };
+
+  const handleDeleteComment = async (replycommentId) => {
+    console.log(
+      "called handleDeleteCommment and replyCommendID:",
+      replycommentId
+    );
+
+    try {
+      const response = await fetch(
+        `http://localhost:8080/api/comments/deletecomment/${replycommentId}`,
+        {
+          method: "DELETE",
+        }
+      );
+      console.log("response delete comment:", response);
+
+      // Replace '/api/comments' with your actual endpoint
+      if (response.ok) {
+        setComments((prevComments) =>
+          prevComments.map((comment) => ({
+            ...comment,
+            replies: comment.replies.filter(
+              (reply) => reply.id !== replycommentId
+            ),
+          }))
+        );
+      } else {
+        throw new Error("Failed to delete reply");
+      }
+    } catch (error) {
+      console.error("Error deleting comment:", error);
+    }
+  };
   const router = useRouter();
   useEffect(() => {
     let parts = pathname.split("/");
@@ -671,7 +732,10 @@ const GettinResponse = () => {
             <div className=" h-[130px] lg:h-[435px]  max-w-full  flex flex-col justify-start scrollbar scrollbar-thin scrollbar-thumb-rounded-md scrollbar-track-rounded-md overflow-y-auto overflow-x-hidden">
               {comments.map((comment) => {
                 // const parsedDate =3;
-
+                const isCurrentUserMainComment = userId === comment.user.id;
+                const showDeleteButton =
+                  isCurrentUserMainComment &&
+                  comment.id === hoveredMainCommentId;
                 return (
                   <div
                     className={`w-full   mt-2 bg-white flex flex-col gap-2 items-center rounded-xl border border-slate-300`}
@@ -679,101 +743,144 @@ const GettinResponse = () => {
                   >
                     <article className=" w-11/12 h-5/6 flex flex-col justify-start items-start font-poppins">
                       {/* <div className="bg-green-500 h-5 flex justify-start"> */}
-
-                      <header className=" h-6 flex  items-center mt-2   ">
-                        <img
-                          src={comment.user.image}
-                          width={10}
-                          height={10}
-                          alt="Picture of the author"
-                          className="rounded-full w-[24.35px] h-[24px] mt-1 mr-2"
-                        />
-                        <h1 className="text-md flex justify-center items-center font-medium text-[13px] truncate">
-                          {comment.user.name}
-                          {/* {comment.user.name.length > 5 ? (
+                      <div
+                        className=" w-full"
+                        onMouseEnter={() => handleMainCommentHover(comment.id)}
+                        onMouseLeave={handleMainCommentLeave}
+                      >
+                        <header className=" h-5 flex w-full items-center justify-between mt-2   ">
+                          <div className=" h-full flex  items-center mt-2   ">
+                            <img
+                              src={comment.user.image}
+                              width={10}
+                              height={10}
+                              alt="Picture of the author"
+                              className="rounded-full w-[24.35px] h-[24px] mt-1 mr-2"
+                            />
+                            <h1 className="text-md flex justify-center items-center font-medium text-[13px] truncate">
+                              {comment.user.name}
+                              {/* {comment.user.name.length > 5 ? (
                           <>{comment.user.name.slice(0, 5)}...</>
                         ) : (
                           comment.user.name
                         )} */}
-                          {/* ... */}
+                              {/* ... */}
 
-                          <Dot
-                            strokeWidth={1.5}
-                            className="flex items-center mt-0.5"
-                          />
-                          {/* <p className="text-sm/[17px]">{comment.createdAt}</p> */}
-                          <p className="font-light text-[13px] mr-10">
-                            {formattedDate(comment.createdAt)}
-                          </p>
-                        </h1>
-                      </header>
-                      <section className={`w-full mt-2   `}>
-                        <div
-                          className={`flex gap-2  ${comment.timeStamp != null ? `ml-5` : `ml-7`} ${comment.type === "video" ? `flex flex-col` : null}`}
-                        >
-                          {comment.timeStamp != null &&
-                            comment.timeStamp != "null" && (
-                              <a
-                                href="#"
-                                className=""
-                                onClick={() =>
-                                  handleTimeStampClick(comment.timeStamp)
-                                }
-                              >
-                                <p className="text-gray-500 flex">
-                                  <span className="text-violet-700 font-medium">
-                                    {comment.timeStamp}
-                                  </span>
-                                </p>
-                              </a>
-                            )}
-                          {comment.type === "text" ? (
-                            <p className="max-h-[50px] whitespace-normal break-all overflow-y-hidden hover:overflow-y-auto mt-5">
-                              {comment.content}
-                            </p>
-                          ) : (
-                            <>
-                              {/* <div className="bg-red-500 h-[200px]"> */}
-                              <video
-                                className="h-[170px] w-5/6 lg:mr-10 mt-5  rounded-r-lg rounded-l-lg"
-                                controls
-                              >
-                                <source
-                                  src={comment.content}
-                                  type="video/mp4"
-                                />
-                              </video>
-                              {/* </div> */}
-                            </>
-                          )}
-                        </div>
-                      </section>
-                      {comment.replies.map((reply, index) => {
-                        return (
-                          <div key={reply.id} className="mt-5">
-                            <header className="h-6 flex">
-                              <img
-                                src={reply.user.image}
-                                width={10}
-                                height={10}
-                                alt="Picture of the author"
-                                className="rounded-full w-5 h-5 mt-1 mr-2"
+                              <Dot
+                                strokeWidth={1.5}
+                                className="flex items-center mt-0.5"
                               />
-                              <h1 className="text-md flex justify-center items-center text-[13px] truncate">
-                                {reply.user.name}
-                                {/* ... */}
-                                <Dot
-                                  strokeWidth={1.5}
-                                  className="flex items-center mt-0.5"
+                              {/* <p className="text-sm/[17px]">{comment.createdAt}</p> */}
+                              <p className="font-light text-[13px] mr-10">
+                                {formattedDate(comment.createdAt)}
+                              </p>
+                            </h1>
+                          </div>
+                          {showDeleteButton && (
+                            <button
+                              className="mr-4 mt-4 hover:text-red-500"
+                              // className="bg-red-500 text-white px-2 py-1 rounded"
+                              // onClick={() => handleDeleteComment(comment.id)}
+                            >
+                              <Trash
+                                size={20}
+                                strokeWidth={0.75}
+                                // fill="yellow"
+                              />
+                            </button>
+                          )}
+                        </header>
+                        <section className={`w-full mt-2   `}>
+                          <div
+                            className={`flex gap-1   ${comment.timeStamp != null ? `ml-8` : `ml-8`} ${comment.type === "video" ? `flex flex-col` : `items-center`}`}
+                          >
+                            {comment.timeStamp != null &&
+                              comment.timeStamp != "null" && (
+                                <a
+                                  href="#"
+                                  className=""
+                                  onClick={() =>
+                                    handleTimeStampClick(comment.timeStamp)
+                                  }
+                                >
+                                  <p className="text-gray-500 flex">
+                                    <span className="text-violet-700 font-medium">
+                                      {comment.timeStamp}
+                                    </span>
+                                  </p>
+                                </a>
+                              )}
+                            {comment.type === "text" ? (
+                              <p className="max-h-[50px] whitespace-normal break-all overflow-y-hidden hover:overflow-y-auto mt-0">
+                                {comment.content}
+                              </p>
+                            ) : (
+                              <>
+                                {/* <div className="bg-red-500 h-[200px]"> */}
+                                <video
+                                  className="h-[170px] w-5/6 lg:mr-10 mt-0  rounded-r-lg rounded-l-lg"
+                                  controls
+                                >
+                                  <source
+                                    src={comment.content}
+                                    type="video/mp4"
+                                  />
+                                </video>
+                                {/* </div> */}
+                              </>
+                            )}
+                          </div>
+                        </section>
+                      </div>
+                      {comment.replies.map((reply, index) => {
+                        const isCurrentUserReplyComment =
+                          userId === reply.user.id;
+                        const showDeleteButton =
+                          isCurrentUserReplyComment &&
+                          reply.id === hoveredReplyCommentId;
+                        return (
+                          <div
+                            key={reply.id}
+                            className="mt-0 ml-1  w-full "
+                            onMouseEnter={() =>
+                              handleReplyCommentHover(reply.id)
+                            }
+                            onMouseLeave={handleReplyCommentLeave}
+                          >
+                            <header className="h-5  flex w-full items-center justify-between mt-2 ">
+                              <div className="h-full flex items-center mt-2 ">
+                                <img
+                                  src={reply.user.image}
+                                  width={10}
+                                  height={10}
+                                  alt="Picture of the author"
+                                  className="rounded-full w-5 h-5 mt-1 mr-2"
                                 />
-                                <p className="text-sm/[17px]">
-                                  {formattedDate(reply.createdAt)}
-                                </p>
-                              </h1>
+                                <h1 className="text-md flex justify-center items-center font-medium text-[13px] truncate">
+                                  {reply.user.name}
+                                  {/* ... */}
+                                  <Dot
+                                    strokeWidth={1.5}
+                                    className="flex items-center mt-0.5"
+                                  />
+                                  <p className=" font-light text-[13px] mr-10">
+                                    {formattedDate(reply.createdAt)}
+                                  </p>
+                                </h1>
+                              </div>
+                              {showDeleteButton && (
+                                <button
+                                  className="mr-4 mt-4 hover:text-red-500"
+                                  // className="bg-red-500 text-white px-2 py-1 rounded"
+                                  onClick={() => handleDeleteComment(reply.id)}
+                                >
+                                  <Trash size={20} strokeWidth={0.75} />
+                                </button>
+                              )}
                             </header>{" "}
-                            <section className="w-full mt-2">
+                            <section className="w-full mt-2  h-10">
                               <div
-                                className={`flex gap-2 ${comment.timeStamp != null ? `ml-5` : `ml-7`} ${comment.type === "video" ? `flex flex-col` : null}`}
+                                className={`flex gap-2 ${comment.timeStamp != null ? `ml-7` : `ml-7`} ${comment.type === "video" ? `flex flex-col` : null}`}
                               >
                                 {reply.timeStamp != "null" &&
                                   reply.timeStamp != null && (
@@ -792,7 +899,7 @@ const GettinResponse = () => {
                                     </a>
                                   )}
                                 {reply.type === "text" ? (
-                                  <p className="max-h-[50px] whitespace-normal break-all overflow-y-hidden hover:overflow-y-auto mt-5">
+                                  <p className="max-h-[50px] whitespace-normal break-all overflow-y-hidden hover:overflow-y-auto mt-0  ">
                                     {reply.content}
                                   </p>
                                 ) : (
