@@ -1,5 +1,12 @@
 "use client";
-import React, { useState, useEffect, ChangeEvent, KeyboardEvent } from "react";
+import React, {
+  useState,
+  useEffect,
+  ChangeEvent,
+  KeyboardEvent,
+  Dispatch,
+  SetStateAction,
+} from "react";
 import { User as UserType } from "../../../../types";
 import { userList } from "./components/data";
 import Container from "./components/Container";
@@ -8,14 +15,32 @@ import UserList from "./components/User";
 // import { DatePickerWithPresets } from "ui/components/datepicker";
 import { DateTimePicker } from "ui/components/date-time-picker/date-time-picker";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "ui/components/tabs";
+import { Clock } from "lucide-react";
 
+interface DateFieldState {
+  year?: number;
+  month?: number;
+  day?: number;
+  hour?: number;
+  minute?: number;
+  second?: number;
+  millisecond?: number;
+}
 export interface AutoCompleteProps {
   // Add a prop for passing the selected users to the parent
   onSelectedUsersChange: (selectedUsers: UserType[]) => void;
+  onStateChange: (state: any) => void;
+  setDateFieldState: Dispatch<SetStateAction<DateFieldState | null>>;
+  dateFieldState: DateFieldState | null;
+  formattedHours: String;
 }
 
 export default function AutoComplete({
   onSelectedUsersChange,
+  onStateChange,
+  dateFieldState,
+  setDateFieldState,
+  formattedHours,
 }: AutoCompleteProps) {
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [users, setUsers] = useState<UserType[]>();
@@ -277,12 +302,14 @@ export default function AutoComplete({
             <div className="flex  justify-start w-3/4 bg-gray-100 ">
               <b className="mt-2">To: </b>
               <div className="flex flex-col">
-                <UserList
-                  users={selectedUsers}
-                  handleRemove={handleRemove}
-                  lastSelectedIndex={lastSelectedIndex}
-                  handleToggle={handleToggle}
-                />
+                {selectedUsers.length > 0 && (
+                  <UserList
+                    users={selectedUsers}
+                    handleRemove={handleRemove}
+                    lastSelectedIndex={lastSelectedIndex}
+                    handleToggle={handleToggle}
+                  />
+                )}
 
                 <UserSearch
                   searchQuery={searchQuery}
@@ -296,10 +323,23 @@ export default function AutoComplete({
                 />
               </div>
             </div>
-            <div className="  ">
+            <div className="">
               {/* <DatePickerWithPresets /> */}
-
-              <DateTimePicker granularity={"minute"} />
+              {dateFieldState != null ? (
+                <div
+                  onClick={() => setDateFieldState(null)}
+                  className="text-violet-600 flex justify-center  gap-1 cursor-pointer font-poppins font-light text-sm"
+                >
+                  <Clock size={18} className="mt-0.5" />
+                  <p>Respond in {formattedHours}</p>
+                </div>
+              ) : (
+                <DateTimePicker
+                  granularity={"minute"}
+                  onStateChange={onStateChange}
+                  // setShowRespondByComponent={setShowRespondByComponent}
+                />
+              )}
             </div>
           </ul>
         </div>

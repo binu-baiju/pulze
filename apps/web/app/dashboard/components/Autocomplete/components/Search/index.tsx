@@ -36,7 +36,7 @@ const UserSearch: React.FC<UserSearchProps> = ({
         onClick={() => setDropdownOpen(true)}
       />
       {isDropdownOpen && (
-        <ul className="bg-white border rounded shadow-2xl max-h-80 overflow-auto absolute">
+        <ul className="bg-white border rounded shadow-2xl max-h-80 overflow-auto absolute z-40">
           {(matchedUsers ?? []).map((user, index) => (
             <li
               key={user.id}
@@ -49,7 +49,7 @@ const UserSearch: React.FC<UserSearchProps> = ({
               }}
             >
               <Image
-                src={user.image ? user.image : ""}
+                src={user.image ? user.image : "/icons8-user-50.png"}
                 height={50}
                 width={50}
                 className="rounded-full"

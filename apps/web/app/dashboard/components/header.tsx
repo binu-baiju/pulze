@@ -10,7 +10,7 @@ interface Props {
 const Header = (props: Props) => {
   return (
     <>
-      <div className="container mb-2 w-full bg-red-500">
+      <div className="container mb-2 w-full ">
         <div className="flex flex-row grow justify-between py-3">
           <div className="font-bold">{props.headerTitle}</div>
           <div className="hidden  md:search-container ">

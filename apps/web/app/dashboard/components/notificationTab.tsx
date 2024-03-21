@@ -12,9 +12,25 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "ui/components/dropdown";
-import { ChevronDown, UserPlus } from "lucide-react";
+import { formattedDate } from "../../utils/formattedDate";
+import { formatToDays } from "../utils/formateDateToSmallDay";
+
+import { ChevronDown, Link, Send, UserPlus } from "lucide-react";
 import { Button } from "ui";
 import { useRouter } from "next/navigation";
+import { formatDistanceToNow, isToday, isYesterday, parseISO } from "date-fns";
+import { useSession } from "next-auth/react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "ui/components/dialog";
+import { BorderLessInput } from "ui/components/borderlessinput";
+import AutoComplete from "./Autocomplete";
+import { ReadyToShareDialog } from "./ReadyToShareDialog";
+
 // interface NotificationTabProps {
 //   key: any;
 //   video?: {
@@ -38,33 +54,61 @@ import { useRouter } from "next/navigation";
 // }
 type Key = string | null | undefined;
 interface Comment {
+  [x: string]: any;
   user?: User;
+  type: String;
+  content: String;
+  updatedAt: String;
 }
 interface User {
   name?: String;
   image?: string;
+  id: String;
 }
 interface recipients {
   user?: User;
   FYI: boolean;
   status: String;
 }
+interface sendVideo {
+  video: Video;
+  sender?: User;
+}
 interface sendVideos {
   recipients?: recipients[];
 }
 interface Video {
-  video_id: String;
-  comments?: Comment;
+  video_id?: String;
+  comments?: Comment[];
   title?: String;
   creator: User;
+  createdOn: String;
   sendVideos: sendVideos[];
+  sendVideo: sendVideo;
+  Key: String;
+  status: String;
+  FYI: String;
+}
+interface fullVideObject extends Video {
+  id: String;
 }
 
 interface NotificationTabProps {
   video?: Video;
-  key?: Key;
+  key?: string;
+  session: any;
+  isRecievedVideo: Boolean;
+  fullVideoObject: fullVideObject | undefined;
+  handleDeleteVideo: (videoId: string, isRecievedVideo: Boolean) => void;
 }
-const NotificationTab: React.FC<NotificationTabProps> = ({ key, video }) => {
+const NotificationTab: React.FC<NotificationTabProps> = ({
+  key,
+  video,
+  fullVideoObject,
+  session,
+  isRecievedVideo,
+  handleDeleteVideo,
+}) => {
   console.log("video in notification Tab", video);
   console.log("key in notification Tab", key);
 
@@ -74,7 +118,9 @@ const NotificationTab: React.FC<NotificationTabProps> = ({ key, video }) => {
   const creatorName = video?.creator?.name;
   const creatorImage = video?.creator?.image;
   const recipients = video?.sendVideos?.[0]?.recipients;
+  const recipients2 = video?.sendVideo;
   console.log("recipients", recipients);
+  console.log("recipients2", recipients2);
 
   const imageUrl = video?.comments?.[0]?.user?.image;
   console.log("imageurl in parent:", imageUrl);
@@ -85,12 +131,63 @@ const NotificationTab: React.FC<NotificationTabProps> = ({ key, video }) => {
     (recipient) => recipient.FYI === false
   );
   const lastNonFyiRecipient = nonFyiRecipients?.[nonFyiRecipients.length - 1];
+  const createdOn = video?.createdOn;
+  console.log("createdOn", createdOn);
+  let commentSaying;
+  if (session) {
+    const userId = session?.user.id;
+    console.log("session", session);
+    if (userId === video?.comments?.[0]?.user?.id) {
+      commentSaying = "you said";
+    } else {
+      commentSaying = `${video?.comments?.[0]?.user?.name} said`;
+    }
+  }
+  let latestComment;
+  if (video?.comments?.[0]?.type === "video") {
+    latestComment = "video Comment";
+  } else if (video?.comments?.[0]?.type === "text") {
+    latestComment = video?.comments?.[0]?.content;
+  }
+  let VideoSrc;
+  if (video?.Key) {
+    VideoSrc = `https://d1yt4919vxgwb5.cloudfront.net/${video?.Key}`;
+  }
+  let recievedVideoRecipientName;
+  let recievedVideoRecipientImage;
+  let recievedVideoRecipientStatus;
+  let recievedVideoFYICount = 0;
+  let recievedVideoNonFYICount = 0;
+  console.log("allvideo", video);
+
+  if (isRecievedVideo && session) {
+    recievedVideoRecipientName = session.user.name;
+    recievedVideoRecipientImage = session.user.image;
+    recievedVideoRecipientStatus = video?.status;
+    console.log("video FYI recieved", video);
+
+    if (fullVideoObject?.FYI) {
+      recievedVideoFYICount = 1;
+    } else {
+      recievedVideoNonFYICount = 1;
+    }
+  }
+  // const handleChildClick = (e) => {
+  //   // Prevent event propagation
+  //   e.stopPropagation();
+
+  //   // Open dialog or perform other actions
+  //   console.log("Dialog opened!");
+  // };
+
   const router = useRouter();
+  const videoId = video?.video_id || "";
+  console.log("videoId pass video", videoId);
 
   return (
     <div
       className="flex flex-row rounded-lg shadow-xl justify-between mt-3 p-1 items-center content-center select-none cursor-pointer max-w-full"
-      key={key}
+      key={videoId as React.Key}
       onClick={() =>
         router.push(`/gettingResponse/${video?.video_id}/${title}`)
       }
@@ -102,18 +199,29 @@ const NotificationTab: React.FC<NotificationTabProps> = ({ key, video }) => {
             {truncatedTitle}
           </h3>
           <div className="flex inline flex-row">
-            <AvatarDemo imageUrl={creatorImage} />
+            <AvatarDemo
+              imageUrl={
+                isRecievedVideo
+                  ? fullVideoObject?.sendVideo?.sender?.image
+                  : creatorImage
+              }
+            />
             <p className="font-semibold font-poppins text-[9px] pl-1.5 pt-1 text-[#474545]">
-              by {creatorName}
+              by{" "}
+              {isRecievedVideo
+                ? fullVideoObject?.sendVideo?.sender?.name
+                : creatorName}
+              {/* by {creatorName} */}
             </p>
             <p className="font-normal font-poppins mt-1 pl-2 text-[9px] text-[#474545] tracking-wider">
-              •Created 1 day before
+              {/* •Created 1 day before */}
+              •Created on {createdOn && formattedDate(createdOn)}
             </p>
           </div>
         </div>
       </div>
       <div className="hidden md:flex justify-start items-start  w-24">
-        {recipients ? (
+        {recipients || isRecievedVideo ? (
           <DropdownMenu>
             <DropdownMenuTrigger className="   rounded-md h-9 flex justify-center items-center hover:bg-gray-200 outline-none ">
               <AvatarDemo imageUrl={undefined} />
@@ -121,8 +229,72 @@ const NotificationTab: React.FC<NotificationTabProps> = ({ key, video }) => {
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-[236px]">
               <DropdownMenuLabel className="font-medium text-[16px] ">
-                Assigned-{nonFyiRecipients?.length}
+                Assigned-
+                {isRecievedVideo
+                  ? recievedVideoNonFYICount
+                  : nonFyiRecipients?.length}
               </DropdownMenuLabel>
+              {isRecievedVideo
+                ? recievedVideoNonFYICount > 0 && (
+                    <DropdownMenuItem>
+                      <div className="flex justify-start">
+                        <AvatarDemo imageUrl={session?.user?.image} />
+                        <div className="bg-re-500 font-poppins text-[10px] text-[#474545] ml-2 capitalize flex flex-col justify-start gap-0">
+                          <span
+                            className="font-semibold"
+                            style={{ lineHeight: "10px" }}
+                          >
+                            {session?.user?.name}
+                          </span>
+                          <span
+                            className="inline font-light"
+                            style={{ lineHeight: "14px" }}
+                          >
+                            {fullVideoObject?.status
+                              ? fullVideoObject?.status
+                              : "hasn't opened"}
+                          </span>
+                        </div>
+                      </div>
+                    </DropdownMenuItem>
+                  )
+                : nonFyiRecipients?.map((recipient) => (
+                    <DropdownMenuItem>
+                      <div className="flex justify-start  ">
+                        <AvatarDemo imageUrl={recipient?.user?.image} />
+                        <div className="bg-re-500 font-poppins text-[10px] text-[#474545] ml-2 capitalize flex flex-col justify-start gap-0  ">
+                          <span
+                            className="font-medium"
+                            style={{ lineHeight: "10px" }}
+                          >
+                            {recipient?.user?.name}
+                          </span>
+                          <span
+                            className="inline font-light "
+                            style={{ lineHeight: "14px" }}
+                          >
+                            {recipient?.status
+                              ? recipient?.status
+                              : "hasn't opened"}
+                          </span>
+                        </div>
+                      </div>
+                      {/* <div className="flex justify-start  ">
+                    <AvatarDemo imageUrl={undefined} />
+                    <div className="bg-re-500 font-poppins text-[10px] text-[#474545] ml-2 capitalize flex flex-col justify-start gap-0  ">
+                      <span className="font-medium" style={{ lineHeight: "10px" }}>
+                        person-1
+                      </span>
+                      <span
+                        className="inline font-light "
+                        style={{ lineHeight: "14px" }}
+                      >
+                        Hasn't responded
+                      </span>
+                    </div>
+                  </div> */}
+                    </DropdownMenuItem>
+                  ))}
               {nonFyiRecipients?.map((recipient) => (
                 <DropdownMenuItem>
                   <div className="flex justify-start  ">
@@ -138,7 +310,9 @@ const NotificationTab: React.FC<NotificationTabProps> = ({ key, video }) => {
                         className="inline font-light "
                         style={{ lineHeight: "14px" }}
                       >
-                        Hasn't responded
+                        {recipient?.status
+                          ? recipient?.status
+                          : "hasn't opened"}
                       </span>
                     </div>
                   </div>
@@ -162,62 +336,111 @@ const NotificationTab: React.FC<NotificationTabProps> = ({ key, video }) => {
               <DropdownMenuSeparator />
 
               <DropdownMenuLabel className="font-medium text-[16px] ">
-                FYI-{fyiRecipients?.length}
+                FYI-
+                {isRecievedVideo
+                  ? recievedVideoFYICount
+                  : fyiRecipients?.length}
               </DropdownMenuLabel>
-              {fyiRecipients?.map((recipient) => (
-                <DropdownMenuItem>
-                  <div className="flex justify-start  ">
-                    <AvatarDemo imageUrl={recipient?.user?.image} />
-                    <div className="bg-re-500 font-poppins text-[10px] text-[#474545] ml-2 capitalize flex flex-col justify-start gap-0  ">
-                      <span
-                        className="font-semibold"
-                        style={{ lineHeight: "10px" }}
-                      >
-                        {recipient?.user?.name}
-                      </span>
-                      <span
-                        className="inline font-light "
-                        style={{ lineHeight: "14px" }}
-                      >
-                        {recipient?.status ? recipient?.status : "no status"}
-                      </span>
-                    </div>
-                  </div>
-                </DropdownMenuItem>
-              ))}
+              {isRecievedVideo
+                ? recievedVideoFYICount > 0 && (
+                    <DropdownMenuItem>
+                      <div className="flex justify-start">
+                        <AvatarDemo imageUrl={session?.user?.image} />
+                        <div className="bg-re-500 font-poppins text-[10px] text-[#474545] ml-2 capitalize flex flex-col justify-start gap-0">
+                          <span
+                            className="font-semibold"
+                            style={{ lineHeight: "10px" }}
+                          >
+                            {session?.user?.name}
+                          </span>
+                          <span
+                            className="inline font-light"
+                            style={{ lineHeight: "14px" }}
+                          >
+                            {fullVideoObject?.status
+                              ? fullVideoObject?.status
+                              : "hasn't opened"}
+                          </span>
+                        </div>
+                      </div>
+                    </DropdownMenuItem>
+                  )
+                : fyiRecipients?.map((recipient) => (
+                    <DropdownMenuItem>
+                      <div className="flex justify-start">
+                        <AvatarDemo imageUrl={recipient?.user?.image} />
+                        <div className="bg-re-500 font-poppins text-[10px] text-[#474545] ml-2 capitalize flex flex-col justify-start gap-0">
+                          <span
+                            className="font-semibold"
+                            style={{ lineHeight: "10px" }}
+                          >
+                            {recipient?.user?.name}
+                          </span>
+                          <span
+                            className="inline font-light"
+                            style={{ lineHeight: "14px" }}
+                          >
+                            {recipient?.status
+                              ? recipient?.status
+                              : "hasn't opened"}
+                          </span>
+                        </div>
+                      </div>
+                    </DropdownMenuItem>
+                  ))}
             </DropdownMenuContent>
           </DropdownMenu>
         ) : (
-          <button className="flex hover:bg-violet-200 group">
-            <UserPlus size={16} className="group-hover:text-violet-400" />
-            <p className="font-normal font-poppins mt-1 pl-2 text-[9px] text-[#474545] tracking-wider group-hover:text-violet-400">
-              Ready to share
-            </p>
-          </button>
+          // <Dialog>
+          //   <DialogTrigger>
+          <>
+            {/* <Dialog>
+               <DialogTrigger> */}
+
+            <ReadyToShareDialog videosrc={VideoSrc} />
+          </>
+          //   </DialogTrigger>
+          // </Dialog>
         )}
       </div>
-      <div className="flex flex-row">
-        <AvatarDemo imageUrl={imageUrl} />
-        <div className="font-poppins text-[8px] text-[#474545] ml-2 capitalize">
-          <p className="font-semibold">you said</p>
-          <div className="flex inline font-light">
-            <p>3d</p>
-            <p className="ml-2">•hello</p>
+      {video?.comments && video.comments?.length > 0 ? (
+        <div className="flex flex-row">
+          <AvatarDemo imageUrl={imageUrl} />
+          <div className="font-poppins text-[8px] text-[#474545] ml-2 capitalize">
+            <p className="font-semibold">{commentSaying}</p>
+            <div className="flex inline font-light">
+              <p>{formatToDays(video?.comments?.[0]?.updatedAt)}</p>
+              {/* <p className="ml-2">•hello</p> */}
+              <p className="ml-2">•{latestComment}</p>
+            </div>
           </div>
         </div>
-      </div>
-      <div className="hidden md:flex flex-row items-center content-center">
-        <SuccessIcon />
-        <p className="text-[#42D55A] text-xs ml-2 tracking-wide">
-          you responded
-        </p>
-      </div>
+      ) : null}
+      {isRecievedVideo ? (
+        <div className="hidden md:flex flex-row items-center content-center">
+          <SuccessIcon />
+          <p className="text-[#42D55A] text-xs ml-2 tracking-wide">
+            you{" "}
+            {fullVideoObject?.status ? fullVideoObject.status : "didn't opened"}
+          </p>
+        </div>
+      ) : null}
+
       <div className="hidden md:flex flex-row mr-10">
         <div className="mx-2 cursor-pointer">
           <LinkIcon />
         </div>
-        <div className="mx-2 cursor-pointer">
-          <DustbinIcon />
+        <div
+          className="mx-2 cursor-pointer"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {videoId && (
+            <DustbinIcon
+              onClick={() =>
+                handleDeleteVideo(videoId.toString(), isRecievedVideo)
+              }
+            />
+          )}
         </div>
       </div>
     </div>

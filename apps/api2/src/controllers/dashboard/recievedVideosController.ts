@@ -24,6 +24,12 @@ export const recievedVideos = async (req: Request, res: Response) => {
         sendVideo: {
           include: {
             video: true,
+            recipients: {
+              include: {
+                user: true, // Include full details of the user associated with recipients
+              },
+            },
+            sender: true,
           },
         },
       },

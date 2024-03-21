@@ -479,7 +479,10 @@ const VideoScreenRecorder = forwardRef((props, ref) => {
               `https://d1yt4919vxgwb5.cloudfront.net/${result.VideoUploadedToS3Details.key}`
             );
             console.log("Server Response:", responseData);
-            console.log("Server Response result:", result);
+            console.log(
+              "Server Response result:",
+              result.VideoUploadedtoVideoMySqlDetails
+            );
             console.log(
               "Server Response result,VideoId:",
               result.VideoUploadedtoVideoMySqlDetails.video_id
@@ -501,8 +504,11 @@ const VideoScreenRecorder = forwardRef((props, ref) => {
               console.log(`src:${resultVideosrccontext}`);
               if (typeof onRecordingCompleteAndGettingVideoId === "function") {
                 try {
+                  console.log(result.VideoUploadedtoVideoMySqlDetails);
+                  // result.VideoUploadedtoVideoMySqlDetails.video_id
+
                   onRecordingCompleteAndGettingVideoId(
-                    result.VideoUploadedtoVideoMySqlDetails.video_id
+                    result.VideoUploadedtoVideoMySqlDetails
                   );
                 } catch (error) {
                   console.error("Error doing the function:", error);

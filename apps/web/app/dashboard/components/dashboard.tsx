@@ -54,11 +54,14 @@ import {
   DropdownMenuTrigger,
 } from "ui/components/dropdown";
 import ToggleButton from "./toggleButton";
+
 import { Disc2, Link, Mic, MicOff, Send, Video, VideoOff } from "lucide-react";
 import { log } from "console";
 // import { DatePickerWithPresets } from "ui/components/datepicker";
 
 import AutoComplete from "./Autocomplete";
+import { io } from "socket.io-client";
+import toast from "react-hot-toast";
 // import { VideoScreenRecorder } from "../VideoScreenRecorder/components/VideoScreenRecorderRest";
 // import MyTabs from "./components/tabs";
 interface ReceivedVideo {
@@ -72,8 +75,16 @@ interface ReceivedVideo {
   };
   FYI: boolean;
   email: string;
+  videoId: String;
   // Add other properties as needed
 }
+
+interface VideoObject {
+  video_id: string; // Assuming video_id is of type string
+  // Add other properties if needed
+}
+
+const socket = io("http://localhost:8080");
 const Dashboard = () => {
   const [recordedVideoLink, setRecordedVideoLink] = useState(null);
   const videoScreenRecorderRef = useRef(null);
@@ -95,12 +106,26 @@ const Dashboard = () => {
 
   // const [videoIdFromVideoScreenRecorder, setVideoIdFromVideoScreenRecorder] =
   //   useState("");
-  const [videoIdFromRecorder, setVideoIdFromRecorder] = useState("");
-  const [userVideos, setUserVideos] = useState([]);
-  const [recievedVideos, setRecievedVideos] = useState([]);
+  const [videoObjectFromRecorder, setVideoObjectFromRecorder] =
+    useState<VideoObject>({ video_id: "" });
+  const [userVideos, setUserVideos] = useState<ReceivedVideo[]>([]);
+  const [recievedVideos, setRecievedVideos] = useState<ReceivedVideo[]>([]);
   const receivedVideosArray: ReceivedVideo[] = [];
-  receivedVideosArray.push(...recievedVideos);
+  if (recievedVideos) {
+    receivedVideosArray.push(...recievedVideos);
+  }
   const [currentComponent, setCurrentComponent] = useState("activity");
+  const [dateFieldState, setDateFieldState] = useState<{
+    year?: number;
+    month?: number;
+    day?: number;
+    hour?: number;
+    minute?: number;
+    second?: number;
+    millisecond?: number;
+  } | null>(null);
+  const [responsetime, setResponseTime] = useState("");
+  // const [showRrespondByComponent, setShowRespondByComponent] = useState(false);
   // const videoScreenRecorderRef = React.createRef();
   // Function to set the recorded data
   const handleRecordingComplete = (data) => {
@@ -198,19 +223,65 @@ const Dashboard = () => {
     console.log("src when button pressed", src);
   };
 
-  const handleRecordingCompleteAndGettingVideoId = (videoId) => {
-    console.log("Video ID from stopRecording(parent):", videoId);
+  const handleRecordingCompleteAndGettingVideoId = (videoObject) => {
+    console.log("Video Object from stopRecording(parent):", videoObject);
     // setVideoIdFromVideoScreenRecorder(videoId);
-    setVideoIdFromRecorder(videoId);
+    setVideoObjectFromRecorder(videoObject);
 
     // console.log("videoId in variable", videoIdFromVideoScreenRecorder);
-    console.log("videoId in variable", videoIdFromRecorder);
+    console.log("videoId in variable", videoObjectFromRecorder);
 
     // Now you can use the videoIdFromStopRecording as needed in your parent component
   };
+
   // const userId = "d68e3f11-bdab-430f-9dc2-54c2c088864d";
   const workspaceId = "1bd89f4c-36eb-4411-9232-acb129219e8f";
   const userId = session?.user.id;
+  const userName = session?.user.name;
+  let responseTime;
+  let formattedHours;
+  if (dateFieldState) {
+    console.log("datefieldState", dateFieldState);
+    console.log("datefiledState month", dateFieldState.month);
+
+    const date = new Date(
+      dateFieldState.year ?? 0,
+      (dateFieldState.month ?? 0) - 1,
+      dateFieldState.day ?? 1,
+      dateFieldState.hour ?? 0,
+      dateFieldState.minute ?? 0,
+      dateFieldState.second ?? 0,
+      dateFieldState.millisecond ?? 0
+    );
+    console.log("date datefieldState", date);
+    const currentDate = new Date();
+    const differenceInMillis = date.getTime() - currentDate.getTime();
+    // const hours = date.getUTCHours();
+    if (differenceInMillis >= 24 * 60 * 60 * 1000) {
+      // Check if difference is at least 24 hours
+      const days = Math.floor(differenceInMillis / (24 * 60 * 60 * 1000));
+      formattedHours = `${days} day${days > 1 ? "s" : ""}`; // Display days
+    } else {
+      const hours = parseFloat(
+        (differenceInMillis / (1000 * 60 * 60)).toFixed(1)
+      );
+      const nonNegativeHours = Math.max(0, hours);
+      formattedHours = `${nonNegativeHours} hour${nonNegativeHours > 1 ? "s" : ""}`; // Display hours
+    }
+    // const hours = parseFloat(
+    //   (differenceInMillis / (1000 * 60 * 60)).toFixed(1)
+    // );
+
+    // console.log("date datefieldState hours", hours);
+    // const nonNegativeHours = Math.max(0, hours);
+    const isoString = date.toISOString();
+    // formattedHours = nonNegativeHours.toString() + "h";
+    console.log("date datefielstate", isoString);
+    if (isoString) {
+      // setResponseTime(isoString);
+      responseTime = isoString;
+    }
+  }
 
   const handleSendVideo = async () => {
     try {
@@ -223,9 +294,13 @@ const Dashboard = () => {
           senderId: userId,
           recipientData: selectedUsers,
           // videoId: videoIdFromVideoScreenRecorder,
-          videoId: videoIdFromRecorder,
+          videoId: videoObjectFromRecorder.video_id,
+          videoObject: videoObjectFromRecorder,
+          titleFromFrontend: title,
+          descriptionFromFrontend: description,
+          // responseTime: "2024-02-27T12:00:00.000Z",
+          responseTime: responseTime,
 
-          responseTime: "2024-02-27T12:00:00.000Z",
           workspaceId: workspaceId,
         }),
       });
@@ -233,7 +308,12 @@ const Dashboard = () => {
       if (response.ok) {
         console.log("Video sent successfully!");
         const data = await response.json();
+        const recipients = data.recipients;
         console.log("SendVideo response:", data);
+        socket.emit("sendVideo", {
+          recipients,
+          videoObjectFromRecorder,
+        });
       } else {
         console.error("Failed to send video.");
         const data = await response.json();
@@ -286,6 +366,58 @@ const Dashboard = () => {
     setCurrentComponent(page);
   };
 
+  const handleDateFieldState = (state) => {
+    console.log("DateTimePicker State:", state.value);
+    setDateFieldState(state.value);
+    // if (dateFieldState) {
+    //   setShowRespondByComponent(true);
+    // }
+
+    // setDateFieldState(state);
+  };
+
+  const handleDeleteVideo = async (videoId, isRecievedVideo) => {
+    // e.stopPropagation();
+
+    console.log("entered handleDeleteVideo");
+
+    try {
+      const response = await fetch("http://localhost:8080/api/deletevideo", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ videoId }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to delete video");
+      }
+      console.log("isRecievedVideo dashboard", isRecievedVideo);
+
+      if (isRecievedVideo) {
+        // Remove the video from receivedVideosArray
+        const updatedReceivedVideosArray = receivedVideosArray.filter(
+          (video) => video.videoId !== videoId
+        );
+        setRecievedVideos(updatedReceivedVideosArray);
+      } else {
+        // Remove the video from userVideos
+        const updatedUserVideos = userVideos.filter(
+          (video) => video.videoId !== videoId
+        );
+        setUserVideos(updatedUserVideos);
+      }
+
+      const data = await response.json();
+      toast.success("Video Deleted Successfully");
+      console.log("deleted Video", data);
+      // Handle success, e.g., show a success message or update UI
+    } catch (error) {
+      console.error("Error deleting video:", error);
+      // Handle error, e.g., show an error message or handle gracefully
+    }
+  };
   // const handleSidecomponentClick = () => {
   //   setIsSidebarOpen(!isSidebarOpen);
   // };
@@ -297,10 +429,21 @@ const Dashboard = () => {
     if (status === "authenticated") {
       fetchUserVideos();
     }
+    console.log("userId from dashbaord", userId);
+
     if (userId) {
       fetchRecievedVideos();
     }
-  }, [session, userId]);
+    // Listener for room creation and receiving video object
+    socket.on("roomCreated", (room) => {
+      console.log(`Room ${room} created`);
+    });
+
+    socket.on("receiveVideo", (videoObjectFromRecorder) => {
+      console.log("Received video object:", videoObjectFromRecorder);
+      // Handle received video object
+    });
+  }, [session, userId, socket]);
   console.log(userVideos);
 
   return (
@@ -367,6 +510,10 @@ const Dashboard = () => {
                   <div className="border rounded-md  focus:outline-none  flex justify-start col-span-10  w-full bg-gray-100 ">
                     <AutoComplete
                       onSelectedUsersChange={handleSelectedUsersChange}
+                      onStateChange={handleDateFieldState}
+                      dateFieldState={dateFieldState}
+                      setDateFieldState={setDateFieldState}
+                      formattedHours={formattedHours}
                     />
 
                     {/* <input
@@ -377,7 +524,7 @@ const Dashboard = () => {
                       placeholder="Type a name or email"
                     /> */}
                   </div>
-                  <Button onClick={handleUsers}>Hello</Button>
+                  {/* <Button onClick={handleUsers}>Hello</Button> */}
                 </div>
                 <div className="flex flex-col gap-0">
                   <BorderLessInput
@@ -395,6 +542,7 @@ const Dashboard = () => {
                 </div>
               </div>
               <div className="bg-gray-100 h-full rounded-lg  w-full ">
+                {/* {resultVideosrccontext ? ( */}
                 {resultVideosrccontext ? (
                   <>
                     <video
@@ -418,13 +566,16 @@ const Dashboard = () => {
                         <Link size={20} />
                         Copy Link
                       </Button>
-                      <Button
-                        className=" flex w-2/5 justify-center gap-1 bg-violet-600 border border-violet-600 hover:bg-violet-700 mb-3 "
-                        onClick={handleSendVideo}
-                      >
-                        <Send size={20} />
-                        Send
-                      </Button>
+                      {
+                        <Button
+                          disabled={selectedUsers.length > 0 ? false : true}
+                          className=" flex w-2/5 justify-center gap-1 bg-violet-600 border border-violet-600 hover:bg-violet-700 mb-3 "
+                          onClick={handleSendVideo}
+                        >
+                          <Send size={20} />
+                          Send
+                        </Button>
+                      }
                     </div>
                   </>
                 ) : (
@@ -432,7 +583,7 @@ const Dashboard = () => {
                     <TabsList className="flex justify-around gap-2 bg-white focus:bg-gray-100">
                       <TabsTrigger
                         value="screen"
-                        className=" w-1/3 focus:bg-gray-900 flex gap-3 justify-center items-center"
+                        className=" w-1/3 focus:bg-gray-200 flex gap-3 justify-center items-center"
                       >
                         <svg
                           className="w-6 h-6"
@@ -456,7 +607,7 @@ const Dashboard = () => {
                       </TabsTrigger>
                       <TabsTrigger
                         value="camera"
-                        className="  w-1/3 focus:bg-red-500 flex gap-3 justify-center items-center"
+                        className="  w-1/3 focus:bg-gray-200  flex gap-3 justify-center items-center"
                       >
                         <svg
                           className="w-6 h-6"
@@ -485,7 +636,7 @@ const Dashboard = () => {
                       </TabsTrigger>
                       <TabsTrigger
                         value="upload"
-                        className="  w-1/3 ring-0 focus-visible:bg-red-500 flex gap-3 focus:ring-0"
+                        className="  w-1/3 ring-0 focus:bg-gray-200  flex gap-3 focus:ring-0"
                       >
                         <svg
                           className="w-6 h-6"
@@ -632,19 +783,21 @@ const Dashboard = () => {
                     >
                       <div className="w-full flex h-5/6  ">
                         {isIcon1Visible ? (
-                          <VideoAndAudioRecorder
-                            onRecordingComplete={handleRecordingComplete}
-                            playerRef={cameraAudioRecorderRef}
-                            title={title}
-                            description={description}
-                            saveVideoAfterStopRecordingOrNot={true}
-                            onRecordingCompleteAndGettingVideoId={
-                              handleRecordingCompleteAndGettingVideoId
-                            }
-                            typeComment1={undefined}
-                            requestBody={undefined}
-                            videoId={undefined}
-                          />
+                          <>
+                            <VideoAndAudioRecorder
+                              onRecordingComplete={handleRecordingComplete}
+                              playerRef={cameraAudioRecorderRef}
+                              title={title}
+                              description={description}
+                              saveVideoAfterStopRecordingOrNot={true}
+                              onRecordingCompleteAndGettingVideoId={
+                                handleRecordingCompleteAndGettingVideoId
+                              }
+                              typeComment1={undefined}
+                              requestBody={undefined}
+                              videoId={undefined}
+                            />
+                          </>
                         ) : (
                           <ScreenAndAudioRecorder
                             onRecordingComplete={handleRecordingComplete}
@@ -848,18 +1001,19 @@ const Dashboard = () => {
         <Sidebar onSidebarClick={handleSidebarClick} />
       </div>
       {currentComponent === "activity" && (
-        <div className=" bg-green-500 w-10/12">
+        <div className="  w-10/12">
           {/* <ActivityPage /> */}
           <MyPulzePage
             userVideos={userVideos}
             receivedVideos={receivedVideosArray}
+            handleDeleteVideo={handleDeleteVideo}
           />
         </div>
       )}
       {currentComponent === "myPulzez" && (
-        <div className=" bg-green-500 w-10/12">
+        <div className="  w-10/12">
           {/* <ActivityPage /> */}
-          <ActivityPage />
+          <ActivityPage userVideos={userVideos} />
         </div>
       )}
       {/* <Popover /> */}
