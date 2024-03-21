@@ -1,5 +1,5 @@
 import React from "react";
-// import { Input, Button } from "ui/components";
+import { Input } from "ui/components";
 import { AvatarDemo } from "./avatar";
 import SuccessIcon from "../../../icons/SuccessIcon";
 import LinkIcon from "../../../icons/LinkIcon";

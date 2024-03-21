@@ -4,11 +4,17 @@ export const presets = [sharedConfig];
 
 // eslint-disable-next-line no-undef
 module.exports = {
-  // ... other Tailwind CSS configurations ...
-
-  extend: {
-    fontFamily: {
-      poppins: ["Poppins", "sans"],
+  theme: {
+    extend: {
+      fontFamily: {
+        poppins: ["Poppins", "sans-serif"],
+      },
+      colors: {
+        charcoal: "#474545",
+        hex: "#F5F3FF",
+      },
     },
   },
+  variants: {},
+  plugins: [],
 };

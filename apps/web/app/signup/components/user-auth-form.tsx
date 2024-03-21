@@ -248,10 +248,10 @@ export function UserAuthForm() {
         : null,
     });
 
-    if (emailError || passwordError || phoneNumberError) {
-      toast.error(emailError || passwordError || phoneNumberError);
-      return;
-    }
+    // if (emailError || passwordError || phoneNumberError) {
+    // toast.error(emailError || passwordError || phoneNumberError);
+    // return;
+    // }
 
     try {
       setIsLoading(true);

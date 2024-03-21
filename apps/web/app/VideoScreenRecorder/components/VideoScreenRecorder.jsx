@@ -4,7 +4,6 @@
 
 // import { useMutation, gql } from "@apollo/client";
 
-
 //Upload!
 // const UploadFileDocument = gql`
 //   mutation uploadVideo($file: Upload!) {
@@ -40,7 +39,6 @@
 // //   const [sendMessage1, { error: sendMessageError }] = useMutation(
 // //     SendMessageDocument
 // //   );
-
 
 // //   const [uploadTextFile] = useMutation(UPLOAD_TEXT_FILE);
 
@@ -84,7 +82,7 @@
 //         );
 //       }
 //     };
-    
+
 //     const captureCamera = async () => {
 //       try {
 //         cameraStream = await navigator.mediaDevices.getUserMedia({
@@ -167,7 +165,6 @@
 
 //         videoElement.current.muted = false;
 
-      
 //         if (screenStream && screenStream.getTracks) {
 //           if (screenStream.getTracks) {
 //             screenStream.getTracks().forEach((track) => {
@@ -178,7 +175,7 @@
 //         else{
 //           console.log("error screen stream");
 //         }
-  
+
 //         if (cameraStream && cameraStream.getTracks) {
 //           if (cameraStream.getTracks) {
 //             cameraStream.getTracks().forEach((track) => {
@@ -192,12 +189,11 @@
 //           theBlob.name = fileName;
 //           return theBlob;
 //         }
-        
+
 //           //     const sampleText = "This is a sample text file for testing purposes.";
 
 //           // // Create a Blob from the sample text
 //           // const blobb = new Blob([sampleText], { type: "text/plain" });
-
 
 //           // recorder.current.destroy();
 
@@ -227,7 +223,7 @@
 //       // } catch (error) {
 //       //   console.error("Error uploading text file:", error);
 //       // }
-       
+
 // // to here!!!!
 //         try {
 //           console.log("HELLO BINU HAIIIIIII");
@@ -247,7 +243,7 @@
 //             //     "Content-Type": "multipart/form-data",
 //             //   },
 //             // },
-              
+
 //           });
 //             // console.log("Response:::::"+response)
 //           if (response.data.fileUpload) {
@@ -259,7 +255,6 @@
 //           console.error("Error uploading video:", error);
 //         }
 
-
 //         // const message = "Hello from the frontenddddd!";
 //         // try {
 //         //   const response = await sendMessage1({
@@ -267,7 +262,7 @@
 //         //       message: message,
 //         //     },
 //         //   });
-    
+
 //         //   if (response.data.sendMessage1) {
 //         //     alert("Message sent successfully");
 //         //   } else {
@@ -468,7 +463,7 @@
 // };
 
 // export default VideoScreenRecorder;
-"use client"
+"use client";
 import React, { useEffect, useRef } from "react";
 import RecordRTC from "recordrtc";
 import { useMutation, gql } from "@apollo/client";
@@ -494,7 +489,7 @@ const VideoScreenRecorder = () => {
   const videoElement = useRef(null);
   const recorder = useRef(null);
   const videoBlob = useRef(typeof Blob);
-  const [uploadVideo,result] = useMutation(UploadFileDocument);
+  const [uploadVideo, result] = useMutation(UploadFileDocument);
   const { data, error } = result;
   useEffect(() => {
     const startRecordingButton = document.getElementById("btn-start-recording");
@@ -535,7 +530,7 @@ const VideoScreenRecorder = () => {
         );
       }
     };
-    
+
     const captureCamera = async () => {
       try {
         cameraStream = await navigator.mediaDevices.getUserMedia({
@@ -585,77 +580,74 @@ const VideoScreenRecorder = () => {
 
     const stopRecording = () => {
       if (recorder.current) {
-      recorder.current.stopRecording(async () => {
-        const blob = recorder.current.getBlob();
-        console.log(recorder.current)
-        // videoBlob.current = recorder.current.getBlob();
+        recorder.current.stopRecording(async () => {
+          const blob = recorder.current.getBlob();
+          console.log(recorder.current);
+          // videoBlob.current = recorder.current.getBlob();
 
-        videoElement.current.srcObject = null;
-        videoElement.current.src = URL.createObjectURL(blob);
-        // videoElement.current.src = URL.createObjectURL(videoBlob.current);
+          videoElement.current.srcObject = null;
+          videoElement.current.src = URL.createObjectURL(blob);
+          // videoElement.current.src = URL.createObjectURL(videoBlob.current);
 
-        videoElement.current.muted = false;
+          videoElement.current.muted = false;
 
-      
-        if (screenStream && screenStream.getTracks) {
-          if (screenStream.getTracks) {
-            screenStream.getTracks().forEach((track) => {
-              track.stop();
-            });
+          if (screenStream && screenStream.getTracks) {
+            if (screenStream.getTracks) {
+              screenStream.getTracks().forEach((track) => {
+                track.stop();
+              });
+            }
+          } else {
+            console.log("error screen stream");
           }
-        }
-        else{
-          console.log("error screen stream");
-        }
-  
-        if (cameraStream && cameraStream.getTracks) {
-          if (cameraStream.getTracks) {
-            cameraStream.getTracks().forEach((track) => {
-              track.stop();
-            });
+
+          if (cameraStream && cameraStream.getTracks) {
+            if (cameraStream.getTracks) {
+              cameraStream.getTracks().forEach((track) => {
+                track.stop();
+              });
+            }
           }
-        }
-        function blobToFile(theBlob, fileName){
-          //A Blob() is almost a File() - it's just missing the two properties below which we will add
-          theBlob.lastModifiedDate = new Date();
-          theBlob.name = fileName;
-          return theBlob;
-        }
-        
+          function blobToFile(theBlob, fileName) {
+            //A Blob() is almost a File() - it's just missing the two properties below which we will add
+            theBlob.lastModifiedDate = new Date();
+            theBlob.name = fileName;
+            return theBlob;
+          }
+
           //     const sampleText = "This is a sample text file for testing purposes.";
 
           // // Create a Blob from the sample text
           // const blobb = new Blob([sampleText], { type: "text/plain" });
 
-
           // recorder.current.destroy();
 
-        const videoFile = new File([blob], "recorded-video3.mp4",{ type: 'video/mp4' });
-        // const videoFile = blobToFile(blob,"recorded-video.webm")
-        console.log(videoFile)
-        try {
-        
-          const response = await uploadVideo({
-            variables: {
-              // file: new File([blob], "recorded-video.webm"),
-              file: videoFile,
-
-            },
-            
-            
+          const videoFile = new File([blob], "recorded-video3.mp4", {
+            type: "video/mp4",
           });
-console.log(response);
-          if (response.data.fileUpload) {
-            alert("Video uploaded successfully",response.data.fileUpload.Location);
-          } else {
-            alert("Video upload failed");
+          // const videoFile = blobToFile(blob,"recorded-video.webm")
+          console.log(videoFile);
+          try {
+            const response = await uploadVideo({
+              variables: {
+                // file: new File([blob], "recorded-video.webm"),
+                file: videoFile,
+              },
+            });
+            console.log(response);
+            if (response.data.fileUpload) {
+              alert(
+                "Video uploaded successfully",
+                response.data.fileUpload.Location
+              );
+            } else {
+              alert("Video upload failed");
+            }
+          } catch (error) {
+            console.error("Error uploading video:", error);
           }
-        } catch (error) {
-          console.error("Error uploading video:", error);
-        }
-    
-      });
-    }
+        });
+      }
     };
 
     startRecordingButton.addEventListener("click", startRecording);

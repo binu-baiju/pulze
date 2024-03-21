@@ -19,7 +19,11 @@ export function Sidebar({ onSidebarClick }: SidebarProps) {
         <div className="px-3 py-2">
           <div className="space-y-1">
             <Button
-              className={`w-full justify-start hover:bg-purple-200 ${activeButton === "activity" ? "bg-purple-200" : "hover:bg-purple-200"}`}
+              className={`w-full justify-start hover:bg-purple-200 ${
+                activeButton === "activity"
+                  ? "bg-purple-200"
+                  : "hover:bg-purple-200"
+              }`}
               variant="ghost"
               onClick={() => handleButtonClick("activity")}
             >
@@ -54,7 +58,11 @@ export function Sidebar({ onSidebarClick }: SidebarProps) {
               Activity
             </Button>
             <Button
-              className={`w-full justify-start hover:bg-purple-200 ${activeButton === "myPulzez" ? "bg-purple-200" : "hover:bg-purple-200"}`}
+              className={`w-full justify-start hover:bg-purple-200 ${
+                activeButton === "myPulzez"
+                  ? "bg-purple-200"
+                  : "hover:bg-purple-200"
+              }`}
               variant="ghost"
               onClick={() => handleButtonClick("myPulzez")}
             >
