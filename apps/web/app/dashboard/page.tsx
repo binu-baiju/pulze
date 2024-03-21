@@ -4,12 +4,9 @@ import React, { useState } from "react";
 
 import { Button } from "ui/components/button";
 import { Sidebar } from "ui/components/sidebar";
-import { Input } from "ui/components/input";
 import { BorderLessInput } from "ui/components/borderlessinput";
 import { Icons } from "ui/components/icons";
-import { Label } from "ui/components/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "ui/components/tabs";
-import { IoMdSettings } from "react-icons/io";
 
 import {
   Dialog,
@@ -38,13 +35,14 @@ import ActivityPage from "./sideComponents/ActivityComponent";
 import MyPulzePage from "./sideComponents/MyPulzeComponent";
 import Drawer from "./components/Drawer";
 import DropDown from "./components/DropDown";
+import Account from "./components/Account";
 
 const Dashboard = () => {
   return (
     <div className="bg-slate-100 h-screen w-screen flex">
-      <div className="h-screen bg-gray-200 w-1/4 lg:w-2/12">
-        <h1 className="mt-2 ml-5 font-bold">pulze</h1>
-        <div className=" mt-5 flex flex-col justify-center">
+      <div className="h-screen bg-gray-200 w-1/4 lg:w-2/12 flex justify-between flex-col">
+        <h1 className="mt-2 mb-[-50px] ml-5 font-bold">pulze</h1>
+        <div className="flex flex-col justify-center">
           <Dialog>
             <DialogTrigger asChild>
               <Button className="h-10 mx-4 bg-[#8645FF] " size="lg">
@@ -220,6 +218,9 @@ const Dashboard = () => {
           </div>
         </div>
         <Sidebar />
+        <div className="flex">
+          <Account />
+        </div>
       </div>
 
       <div className="grow">
