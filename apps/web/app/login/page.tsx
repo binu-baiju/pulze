@@ -121,7 +121,7 @@
 // };
 
 // export default App;
-
+// "use client";
 import * as React from "react";
 import { useMutation, useQuery, gql } from "@apollo/client";
 import { Metadata } from "next";
@@ -131,6 +131,9 @@ import Link from "next/link";
 import { cn } from "ui/lib/utils";
 
 //import { buttonVariants } from "@/registry/new-york/ui/button"
+// const UserAuthForm = dynamic(() => import("./components/user-auth-form"), {
+//   ssr: false,
+//   });
 import { UserAuthForm } from "./components/user-auth-form";
 import {
   // Avatar,
@@ -153,25 +156,34 @@ export const metadata: Metadata = {
   description: "Authentication forms built using the components.",
 };
 import CaughtIcon from "../../icons/FigmaIcon";
+import SigninButton from "../../components/SigninButton";
+import dynamic from "next/dynamic";
 
 const LogIn = () => {
   return (
-    <div className="bg-[#F5F3FF] flex flex-col justify-center items-center h-screen">
-      <div className="LoginContainer">
-        <div className="flex flex-col border-1 border-inherit bg-white w-[450px] h-[450px] justify-center items-center mt-8">
-          <div className="absolute top-12">
+    <div className="bg-[#F5F3FF] flex flex-col justify-center items-center h-screen ">
+      <div className="LoginContainer ">
+        <div className="flex flex-col border-1 border-inherit bg-white w-[450px] h-[500px] justify-center items-center mt-8">
+          <div className="absolute top-2">
             <CaughtIcon />
           </div>
-          <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
+          <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px] mt-12">
             <div className="flex flex-col space-y-2 text-center">
-              <h1 className="text-2xl font-semibold tracking-tight py-4">
+              <h1 className="text-2xl font-semibold tracking-tight py-2">
                 Login
               </h1>
             </div>
+
+            <SigninButton />
+            <div className="my-4 flex items-center before:mt-0.5 before:flex-1 before:border-t before:border-neutral-300 after:mt-0.5 after:flex-1 after:border-t after:border-neutral-300 dark:before:border-neutral-500 dark:after:border-neutral-500">
+              <p className="mx-4 mb-0 text-center font-semibold dark:text-white">
+                Or
+              </p>
+            </div>
             <UserAuthForm />
-            <button className="font-exbold bg-[#8645FF] h-10 text-[#F3E8FF] rounded-lg text-xl">
+            {/* <button className="font-exbold bg-[#8645FF] h-10 text-[#F3E8FF] rounded-lg text-xl">
               Continue with email
-            </button>
+            </button> */}
             <div className="ml-[70px]">
               <p className="px-8 text-center text-xs text-muted-foreground font-poppins font-light">
                 Not on pulze yet?

@@ -22,22 +22,27 @@ export const updateRecipientStatus = async (req: Request, res: Response) => {
 
     if (!recipient) {
       // Handle the case where the Recipient entry is not found
-      throw new Error("Recipient not found");
+      // throw new Error("Recipient not found");
+      console.log("No Recipient Found to update status");
     }
     console.log("recipient:", recipient);
 
     // Update the status of the Recipient entry
-    try {
-      const updatedRecipient = await prisma.recipient.update({
-        where: { id: recipient.id },
-        data: { status: recipientVideoStatus },
-      });
-      console.log("updated recipient", updatedRecipient);
-    } catch (error) {
-      console.error("error to update", error);
-    }
+    if (recipient) {
+      let updatedRecipient;
+      try {
+        updatedRecipient = await prisma.recipient.update({
+          where: { id: recipient.id },
+          data: { status: recipientVideoStatus },
+        });
+        console.log("updated recipient", updatedRecipient);
+      } catch (error) {
+        console.error("error to update", error);
+      }
 
-    console.log("Recipient status updated successfully");
+      console.log("Recipient status updated successfully");
+      res.json({ Status: updatedRecipient?.status });
+    }
   } catch (error) {
     console.error("Error updating recipient status:", error);
   } finally {

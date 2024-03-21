@@ -140,6 +140,7 @@
 // }
 "use client";
 import * as React from "react";
+import { signIn, useSession } from "next-auth/react";
 
 import { useEffect, useState } from "react";
 
@@ -175,70 +176,126 @@ import { cn } from "ui/lib/utils";
 //   }
 // `;
 import SigninButton from "../../../components/SigninButton";
+import toast from "react-hot-toast";
+import { z } from "zod";
+
+const schema = z.object({
+  email: z.string().email({ message: "Invalid email" }),
+  password: z
+    .string()
+    .min(6, { message: "Password should be at least 6 characters" }),
+  phonenumber: z
+    .string()
+    .min(10, { message: "Invalid phone number." }) // assuming a 10-digit phone number
+    .max(15, { message: "Invalid phone number." }) // assuming a maximum length of 15 characters
+    // .regex(/^\d+$/, { message: "Phone number should contain only digits" }),
+    .refine((value) => /^\d+$/.test(value), {
+      message: "Phone number should contain only digits",
+    }),
+});
+async function validateInput(data) {
+  try {
+    await schema.parseAsync(data);
+    return null;
+  } catch (error) {
+    return error.errors
+      .map((e) => e.message)
+      .filter((message) => !message.includes("Required"));
+  }
+}
+
 export function UserAuthForm() {
   const { push } = useRouter();
   const [isLoading, setIsLoading] = React.useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [phonenumber, setPhonenumber] = useState("");
+  const [errors, setErrors] = useState({
+    email: "",
+    password: "",
+    phonenumber: "",
+  });
   // const [error, setError] = useState("");
   // const [token, setToken] = useState(localStorage.getItem("token") || "");
   // const [login, { data }] = useMutation(LOGIN_MUTATION);
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const router = useRouter();
+  const validateField = async (name, value) => {
+    const validationResult = await validateInput({ [name]: value });
+    setErrors((prevErrors) => ({
+      ...prevErrors,
+      [name]: validationResult ? validationResult.join(",") : "",
+    }));
+  };
+  const registerUser = async (e) => {
     e.preventDefault();
-    setIsLoading(true);
+    const emailError = await validateInput({ email });
+    const passwordError = await validateInput({ password });
+    const phoneNumberError = await validateInput({ phonenumber });
 
-    try {
-      // const { data } = await login({
-      //   variables: { email, password },
-      // });
-      // console.log(data);
-      // const { user, token } = data.login;
-      // // const { user, token } = data.signup;
-      // // const user = data.signup;
-      // localStorage.setItem("token", token);
+    setErrors({
+      email: emailError
+        ? emailError.find((e) => e.includes("Invalid email"))
+        : null,
+      password: passwordError
+        ? passwordError.find((e) =>
+            e.includes("Password should be at least 6 characters")
+          )
+        : null,
+      phonenumber: phoneNumberError
+        ? phoneNumberError.find((e) =>
+            e.includes("Phone number should contain only digits")
+          )
+        : null,
+    });
 
-      // console.log("Login successful!");
-      // console.log("User:", user);
-      // // Save the token in localStorage
-      // // localStorage.setItem("token", token);
-
-      // console.log("Login successful!", data);
-      // // console.log("User:", user);
-
-      const response = await fetch(
-        "http://localhost:8080/api/registerOrLogin",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            email,
-            password,
-            phonenumber,
-          }),
-        }
-      );
-      const data = await response.json();
-      console.log(data);
-
-      if (data.token) {
-        localStorage.setItem("token", data.token);
-        alert(data.message);
-        // window.location.href = '/dashboard'
-        console.log(data.token);
-        push("/dashboard");
-      } else {
-        alert("Please check your username and password");
-      }
-    } catch (error) {
-      console.error("Login failed:", error.message);
-      // setError(error.message);
+    if (emailError || passwordError || phoneNumberError) {
+      toast.error(emailError || passwordError || phoneNumberError);
+      return;
     }
 
-    setIsLoading(false);
+    try {
+      setIsLoading(true);
+      // Call your API endpoint for registration
+      const response = await fetch("/api/signup", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password, phonenumber }),
+      });
+      console.log("response:", response);
+      // if (response.ok) {
+      const responseData = await response.json();
+      console.log("responseData:", responseData);
+      if (responseData.success) {
+        // Registration successful, sign in the user
+        await signIn("credentials", {
+          email: email,
+          password: password,
+          phonenumber: phonenumber,
+          redirect: false,
+          // Add other necessary fields if needed
+        });
+        setIsLoading(false);
+        toast.success(responseData.message);
+
+        // Registration successful, redirect to dashboard
+        router.push("/dashboard");
+        // toast.success(response.message);
+        // }
+      } else {
+        console.log("reached responseData.success else");
+        router.push("/login");
+        // const errorData = await response.json();
+        // console.log("error data:", errorData);
+
+        toast.error(`${responseData.message}`);
+      }
+    } catch (error) {
+      console.error("Error during registration:", error);
+      toast.error("Something went wrong during registration");
+      setIsLoading(false);
+    }
   };
 
   // useEffect(() => {
@@ -249,35 +306,73 @@ export function UserAuthForm() {
 
   return (
     <div className="flex flex-col">
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={registerUser}>
         {/* {error && <p>Error: {error}</p>} */}
-        <Input
-          className="h-8 mb-4 bg-[#E5E7EB]"
-          type="phonenumber"
-          id="phonenumber"
-          placeholder="Phonenumber"
-          value={phonenumber}
-          onChange={(e) => setPhonenumber(e.target.value)}
-          required
-        />
-        <Input
-          className="h-8 mb-4 bg-[#CACACA] bg-opacity-30"
-          type="email"
-          id="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
-        <Input
-          className="h-8 mb-4 bg-[#CACACA] bg-opacity-30"
-          type="password"
-          id="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
+        {/* <SigninButton /> */}
+        <div className="mb-4">
+          <Input
+            className="h-8 bg-[#E5E7EB]"
+            type="phonenumber"
+            id="phonenumber"
+            placeholder="Phonenumber"
+            value={phonenumber}
+            // onChange={(e) => setPhonenumber(e.target.value)}
+            onChange={(e) => {
+              setPhonenumber(e.target.value);
+              validateField("phonenumber", e.target.value);
+            }}
+            required
+          />
+          {errors.phonenumber && (
+            <p className="text-red-500 ">{errors.phonenumber}</p>
+          )}
+        </div>
+        <div className="mb-4">
+          <Input
+            className="h-8 bg-[#CACACA] bg-opacity-30"
+            type="email"
+            id="email"
+            placeholder="Email"
+            value={email}
+            // onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) => {
+              setEmail(e.target.value);
+              validateField("email", e.target.value);
+            }}
+            required
+          />
+          {errors.email && <p className="text-red-500">{errors.email}</p>}
+        </div>
+        <div className="mb-4">
+          <Input
+            className="h-8 bg-[#CACACA] bg-opacity-30"
+            type="password"
+            id="password"
+            placeholder="Password"
+            value={password}
+            // onChange={(e) => setPassword(e.target.value)}
+            onChange={(e) => {
+              setPassword(e.target.value);
+              validateField("password", e.target.value);
+            }}
+            required
+          />
+          {errors.password && <p className="text-red-500">{errors.password}</p>}
+        </div>
+        {/* <Button
+          type="submit"
+          disabled={isLoading}
+          className="font-exbold bg-[#8645FF] h-10 text-[#F3E8FF] rounded-lg text-xl w-full mb-2"
+        >
+          {isLoading ? "Signing up..." : "Continue With email"}
+        </Button> */}
+        <button
+          type="submit"
+          disabled={isLoading}
+          className="font-exbold bg-[#8645FF] h-10 text-[#F3E8FF] rounded-lg text-xl w-full mb-2"
+        >
+          {isLoading ? "Signing up..." : "Continue With email"}
+        </button>
       </form>
     </div>
   );

@@ -151,35 +151,14 @@ import { Button } from "ui";
 import { redirect, useRouter } from "next/navigation";
 import { cn } from "ui/lib/utils";
 import { signIn, useSession } from "next-auth/react";
-// import { Button, Label, Input, Icons } from "ui";
-// import { useMutation, gql } from "@apollo/client";
-// import { useEffect, useState } from "react";
 
-// const SIGNUP_MUTATION = gql`
-//   mutation Signup($email: String!, $password: String!) {
-//     signup(email: $email, password: $password) {
-//       id
-//       email
-//     }
-//   }
-// `;
-
-// const LOGIN_MUTATION = gql`
-//   mutation Login($email: String!, $password: String!) {
-//     login(email: $email, password: $password) {
-//       user {
-//         id
-//         email
-//       }
-//       token
-//     }
-//   }
-// `;
 import SigninButton from "../../../components/SigninButton";
 import toast from "react-hot-toast";
 import axios from "axios";
 import router from "next/router";
 import { Session } from "next-auth";
+import { z } from "zod";
+import { error } from "console";
 // type Response = {
 //   messsage: string;
 //   ok: string;
@@ -194,6 +173,24 @@ interface ApiResponse {
 // interface CustomSession extends NextAuthSession {
 //   status?: string; // Add the 'status' property
 // }
+
+const schema = z.object({
+  email: z.string().email({ message: "Invalid email" }),
+  password: z
+    .string()
+    .min(6, { message: "Password should be at least 6 characters" }),
+});
+
+async function validateInput(data) {
+  try {
+    await schema.parseAsync(data);
+    return null;
+  } catch (error) {
+    return error.errors
+      .map((e) => e.message)
+      .filter((message) => !message.includes("Required"));
+  }
+}
 export function UserAuthForm() {
   // const { push } = useRouter();
   const [isLoading, setIsLoading] = React.useState(false);
@@ -201,6 +198,7 @@ export function UserAuthForm() {
   const [password, setPassword] = useState("");
   const phonenumber = "123456789";
   const { data: session } = useSession() as { data: Session };
+  const [errors, setErrors] = useState({ email: "", password: "" });
 
   const router = useRouter();
   // const [error, setError] = useState("");
@@ -212,17 +210,43 @@ export function UserAuthForm() {
       // toast.success("Logged In");
     }
   });
+
+  const validateField = async (name, value) => {
+    const validationResult = await validateInput({ [name]: value });
+    setErrors((prevErrors) => ({
+      ...prevErrors,
+      [name]: validationResult ? validationResult : "",
+    }));
+  };
+
   const registerUser = async (e) => {
     e.preventDefault();
+    const emailError = await validateInput({ email });
+    const passwordError = await validateInput({ password });
+    setErrors({
+      email: emailError
+        ? emailError.find((e) => e.includes("Invalid email"))
+        : null,
+      password: passwordError
+        ? passwordError.find((e) =>
+            e.includes("Password should be at least 6 characters")
+          )
+        : null,
+    });
 
     try {
+      // if (errors) {
+      //   toast.error("Invalid email or password.");
+      //   return;
+      // }
+      setIsLoading(true);
       // Call your API endpoint for registration
-      const response = await fetch("/api/registerorlogin", {
+      const response = await fetch("/api/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email, password, phonenumber }),
+        body: JSON.stringify({ email, password }),
       });
       console.log("response:", response);
       // if (response.ok) {
@@ -243,68 +267,17 @@ export function UserAuthForm() {
         // }
       } else {
         console.log("reached responseData.success else");
-
         // const errorData = await response.json();
         // console.log("error data:", errorData);
 
         toast.error(`${responseData.message}`);
+        router.push("/signup");
       }
     } catch (error) {
       console.error("Error during registration:", error);
       toast.error("Something went wrong during registration");
+      setIsLoading(false);
     }
-  };
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setIsLoading(true);
-
-    try {
-      // const { data } = await login({
-      //   variables: { email, password },
-      // });
-      // console.log(data);
-      // const { user, token } = data.login;
-      // // const { user, token } = data.signup;
-      // // const user = data.signup;
-      // localStorage.setItem("token", token);
-
-      // console.log("Login successful!");
-      // console.log("User:", user);
-      // // Save the token in localStorage
-      // // localStorage.setItem("token", token);
-
-      // console.log("Login successful!", data);
-      // // console.log("User:", user);
-
-      const response = await fetch("/api/registerOrLogin", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email,
-          password,
-          phonenumber,
-        }),
-      });
-      const data = await response.json();
-      console.log(data);
-
-      if (data.token) {
-        localStorage.setItem("token", data.token);
-        alert(data.message);
-        // window.location.href = '/dashboard'
-        console.log(data.token);
-        push("/dashboard");
-      } else {
-        alert("Please check your username and password");
-      }
-    } catch (error) {
-      console.error("Login failed:", error.message);
-      // setError(error.message);
-    }
-
-    setIsLoading(false);
   };
 
   // useEffect(() => {
@@ -322,23 +295,42 @@ export function UserAuthForm() {
         type="email"
         id="email"
         value={email}
-        onChange={(e) => setEmail(e.target.value)}
+        // onChange={(e) => setEmail(e.target.value)}
+        onChange={(e) => {
+          setEmail(e.target.value);
+          validateField("email", e.target.value);
+        }}
+        // onChange={handleChange}
+        // onBlur={() => validateField("email", email)}
         required
       />
+      {errors.email && <p className="text-red-500">{errors.email}</p>}
       <Label htmlFor="password">Password</Label>
       <Input
         type="password"
         id="password"
         value={password}
-        onChange={(e) => setPassword(e.target.value)}
+        // onChange={(e) => setPassword(e.target.value)}
+        onChange={(e) => {
+          setPassword(e.target.value);
+          validateField("password", e.target.value);
+        }}
+        // onBlur={() => validateField("password", password)}
         required
       />
+      {errors.password && <p className="text-red-500">{errors.password}</p>}
       {/* onClick={handleSubmit} */}
-      <Button type="submit" disabled={isLoading}>
+      {/* <Button type="submit" disabled={isLoading}>
         {isLoading ? "Logging up..." : "Login"}
-      </Button>
-      <SigninButton />
-      {JSON.stringify(session)}
+      </Button> */}
+      <button
+        className="font-exbold bg-[#8645FF] h-10 text-[#F3E8FF] rounded-lg text-xl w-full mt-2"
+        type="submit"
+        disabled={isLoading}
+      >
+        {isLoading ? "Logging up..." : "Continue with email"}
+      </button>
+      {/* {JSON.stringify(session)} */}
     </form>
   );
 }

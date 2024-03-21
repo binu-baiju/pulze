@@ -736,14 +736,19 @@ const VideoAndAudioRecorder = forwardRef((props, ref) => {
 
       <hr /> */}
       {videoElement && (
-        <video
-          ref={videoElement}
-          className={`bg-gray-900 ${shouldVideoVisible ? "visible" : "hidden"}`}
-          controls
-          autoPlay
-          playsInline
-          style={{ width: "100%", height: "100%" }}
-        ></video>
+        <>
+          <video
+            ref={videoElement}
+            className={`bg-gray-900 ${shouldVideoVisible ? "visible" : "hidden"}`}
+            controls
+            autoPlay
+            playsInline
+            style={{ width: "100%", height: "100%" }}
+          ></video>
+          <div
+            className={`min-h-[100px] ${shouldVideoVisible ? "hidden" : "visible"}`}
+          ></div>
+        </>
       )}
       {/* <footer style={{ marginTop: "20px" }}>
         <small id="send-message"></small>
