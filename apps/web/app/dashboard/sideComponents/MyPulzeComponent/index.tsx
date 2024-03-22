@@ -170,7 +170,6 @@ const ActivityPage = ({
       </div>
       <div className="notification-container">
         <div className="flex flex-col mx-3 my-6">
-          <div>Closed</div>
           {/* {receivedVideos.map((recievedvideo) => { */}
 
           {initialReceivedVideos.map((recievedvideo) => {

@@ -17,6 +17,7 @@ import sendRoutes from "./routes/recordingCompleted/sendVideoRoute";
 import videoRoutes from "./routes/dashboard/videoRoutes";
 import updateRecipientStatusRoute from "./routes/gettingResponse/updateRecipientStatusRoute";
 import findingVideoIdRoute from "./routes/gettingResponse/findingVideoRoute";
+import workspaceRoutes from "./routes/workspaceRoutes";
 // import { User } from "../../web/types/index";
 
 app.use(cors());
@@ -99,6 +100,8 @@ app.use("/api", sendRoutes);
 app.use("/api", videoRoutes);
 app.use("/api", updateRecipientStatusRoute);
 app.use("/api", findingVideoIdRoute);
+app.use("/api", workspaceRoutes);
+
 
 app.get("/api/home", (req: Request, res: Response) => {
   res.json({ message: "Hello world! from normal express" });

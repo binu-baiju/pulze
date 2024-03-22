@@ -5,8 +5,8 @@ import { Button } from "ui/components/button";
 interface ToggleButtonProps {
   icon1: JSX.Element;
   icon2: JSX.Element;
-  isIcon1Visible: boolean;
-  onToggle: () => void;
+  isIcon1Visible?: boolean;
+  onToggle?: () => void;
 }
 
 const ToggleButton: React.FC<ToggleButtonProps> = ({

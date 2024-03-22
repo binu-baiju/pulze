@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 // import User from "../model/usermodel";
 import { config } from "dotenv";
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from "../../node_modules/.prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -122,3 +122,48 @@ export const registerOrLogin = async (req: Request, res: Response) => {
 //     res.json({ status: "error", error: "Invalid token" });
 //   }
 // };
+
+export const getUserInfoContoller = async (req: Request, res: Response) => {
+  const { user_id } = req.query;
+
+  try {
+    if (!user_id) {
+      return res.status(400).json({ error: "User ID is required" });
+    }
+
+    const userInfo= await prisma.user.findUnique({
+      where: {
+        id: String(user_id)
+      }
+    });
+
+    return res.json({ userInfo: userInfo });
+
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+export const updateUserNameContoller = async (req: Request, res: Response) => {
+  const { user_id, user_name } = req.body;
+
+  try {
+    if (!user_id) {
+      return res.status(400).json({ error: "User ID is required" });
+    }
+
+    const updatedRecipient = await prisma.user.update({
+      where: { id: String(user_id) },
+      data: { name: user_name },
+    });
+
+    const user = await prisma.workspace.findUnique({where:{ workspace_id: String(user_id) }});
+
+    return res.json({ user });
+
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+};

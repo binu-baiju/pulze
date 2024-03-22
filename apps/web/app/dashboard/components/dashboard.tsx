@@ -62,6 +62,10 @@ import { log } from "console";
 import AutoComplete from "./Autocomplete";
 import { io } from "socket.io-client";
 import toast from "react-hot-toast";
+import DropDown from "./DropDown";
+import Account from "./Account";
+
+import { fetchData } from "../../utils/axios";
 // import { VideoScreenRecorder } from "../VideoScreenRecorder/components/VideoScreenRecorderRest";
 // import MyTabs from "./components/tabs";
 interface ReceivedVideo {
@@ -82,6 +86,12 @@ interface ReceivedVideo {
 interface VideoObject {
   video_id: string; // Assuming video_id is of type string
   // Add other properties if needed
+}
+
+export interface workspace {
+  name: string;
+  workspace_creator_id: string;
+  workspace_id: string;
 }
 
 const socket = io("http://localhost:8080");
@@ -112,7 +122,7 @@ const Dashboard = () => {
   const [recievedVideos, setRecievedVideos] = useState<ReceivedVideo[]>([]);
   const receivedVideosArray: ReceivedVideo[] = [];
   if (recievedVideos) {
-    receivedVideosArray.push(...recievedVideos);
+    receivedVideosArray?.push(...recievedVideos);
   }
   const [currentComponent, setCurrentComponent] = useState("activity");
   const [dateFieldState, setDateFieldState] = useState<{
@@ -125,6 +135,9 @@ const Dashboard = () => {
     millisecond?: number;
   } | null>(null);
   const [responsetime, setResponseTime] = useState("");
+
+  const [allWorkspaces, setAllWorkspaces] = useState<Array<workspace>>([]);
+  const [selectWorkspace, setSelectWorkspace] = useState<workspace>();
   // const [showRrespondByComponent, setShowRespondByComponent] = useState(false);
   // const videoScreenRecorderRef = React.createRef();
   // Function to set the recorded data
@@ -140,29 +153,29 @@ const Dashboard = () => {
   };
 
   const handleStartRecording = () => {
-    console.log("hadleStartRecord111");
+    // console.log("hadleStartRecord111");
 
-    console.log("hadleStartRecord222");
+    // console.log("hadleStartRecord222");
 
     (videoScreenRecorderRef.current as any).startRecording();
     setIsNotRecording(false);
   };
 
   const handleStopRecording = () => {
-    console.log("hadleStartRecord111");
+    // console.log("hadleStartRecord111");
 
-    console.log("hadleStartRecord222");
+    // console.log("hadleStartRecord222");
 
     (videoScreenRecorderRef.current as any).stopRecording();
     // setIsNotRecording(true);
-    console.log(`resultvideosrc in grandparent:${resultVideosrccontext}`);
+    // console.log(`resultvideosrc in grandparent:${resultVideosrccontext}`);
     setMoveToRecordingCompleted(true);
   };
 
   const handleCameraAndAudioStartRecording = () => {
-    console.log("hadleStartRecord111");
+    // console.log("hadleStartRecord111");
 
-    console.log("hadleStartRecord222");
+    // console.log("hadleStartRecord222");
 
     (cameraAudioRecorderRef.current as any).startRecording();
     setIsNotRecording(false);
@@ -240,9 +253,30 @@ const Dashboard = () => {
   const userName = session?.user.name;
   let responseTime;
   let formattedHours;
+
+  const fetchAllWorkspace = async () => {
+    if (session && userId) {
+      try {
+        const workspaceData = await fetch(
+          `http://localhost:8080/api/get-workspace-by-user?user_id=${userId}`
+        );
+        const data = await workspaceData.json();
+
+        setAllWorkspaces(data.workspaces);
+
+        if (!selectWorkspace || selectWorkspace.workspace_id == "") {
+          setSelectWorkspace(data.workspaces[0]);
+        }
+      } catch (ex) {
+        console.log("ex from workspace", ex);
+        // alert("Error while fetching workspace");
+      }
+    }
+  };
+
   if (dateFieldState) {
-    console.log("datefieldState", dateFieldState);
-    console.log("datefiledState month", dateFieldState.month);
+    // console.log("datefieldState", dateFieldState);
+    // console.log("datefiledState month", dateFieldState.month);
 
     let date = new Date(
       dateFieldState.year ?? 0,
@@ -253,10 +287,6 @@ const Dashboard = () => {
       dateFieldState.second ?? 0,
       dateFieldState.millisecond ?? 0
     );
-
-    // date.setUTCHours(date.getUTCHours() - 5);
-    console.log("date datefieldState", date);
-
     const currentDate = new Date();
     const differenceInMillis = date.getTime() - currentDate.getTime();
     // const hours = date.getUTCHours();
@@ -269,12 +299,14 @@ const Dashboard = () => {
         (differenceInMillis / (1000 * 60 * 60)).toFixed(1)
       );
       const nonNegativeHours = Math.max(0, hours);
-      formattedHours = `${nonNegativeHours} hour${nonNegativeHours > 1 ? "s" : ""}`; // Display hours
+      formattedHours = `${nonNegativeHours} hour${
+        nonNegativeHours > 1 ? "s" : ""
+      }`; // Display hours
     }
 
     const isoString = date.toISOString();
-    console.log("isoString dashboard", isoString);
-
+    // formattedHours = nonNegativeHours.toString() + "h";
+    // console.log("date datefielstate", isoString);
     if (isoString) {
       // setResponseTime(isoString);
       responseTime = isoString;
@@ -304,7 +336,7 @@ const Dashboard = () => {
       });
 
       if (response.ok) {
-        console.log("Video sent successfully!");
+        // console.log("Video sent successfully!");
         const data = await response.json();
         const recipients = data.recipients;
         console.log("SendVideo response:", data);
@@ -332,7 +364,7 @@ const Dashboard = () => {
           `http://localhost:8080/api/getvideos/${session?.user.id}`
         );
         const data = await response.json();
-        console.log("user videos in db", data);
+        // console.log("user videos in db", data);
         setUserVideos(data);
       } else {
         console.error("No active session");
@@ -348,7 +380,7 @@ const Dashboard = () => {
         `http://localhost:8080/api/recievedvideos/${session?.user.id}`
       );
       const data = await response.json();
-      console.log("recieved videos in db", data);
+      // console.log("recieved videos in db", data);
 
       // if (response.ok) {
       setRecievedVideos(data);
@@ -366,7 +398,7 @@ const Dashboard = () => {
   };
 
   const handleDateFieldState = (state) => {
-    console.log("DateTimePicker State:", state.value);
+    // console.log("DateTimePicker State:", state.value);
     setDateFieldState(state.value);
     // if (dateFieldState) {
     //   setShowRespondByComponent(true);
@@ -378,7 +410,7 @@ const Dashboard = () => {
   const handleDeleteVideo = async (videoId, isRecievedVideo) => {
     // e.stopPropagation();
 
-    console.log("entered handleDeleteVideo");
+    // console.log("entered handleDeleteVideo");
 
     try {
       const response = await fetch("http://localhost:8080/api/deletevideo", {
@@ -392,7 +424,7 @@ const Dashboard = () => {
       if (!response.ok) {
         throw new Error("Failed to delete video");
       }
-      console.log("isRecievedVideo dashboard", isRecievedVideo);
+      // console.log("isRecievedVideo dashboard", isRecievedVideo);
 
       if (isRecievedVideo) {
         // Remove the video from receivedVideosArray
@@ -402,7 +434,7 @@ const Dashboard = () => {
         setRecievedVideos(updatedReceivedVideosArray);
       } else {
         // Remove the video from userVideos
-        const updatedUserVideos = userVideos.filter(
+        const updatedUserVideos = userVideos?.filter(
           (video) => video.videoId !== videoId
         );
         setUserVideos(updatedUserVideos);
@@ -410,7 +442,7 @@ const Dashboard = () => {
 
       const data = await response.json();
       toast.success("Video Deleted Successfully");
-      console.log("deleted Video", data);
+      // console.log("deleted Video", data);
       // Handle success, e.g., show a success message or update UI
     } catch (error) {
       console.error("Error deleting video:", error);
@@ -428,10 +460,11 @@ const Dashboard = () => {
     if (status === "authenticated") {
       fetchUserVideos();
     }
-    console.log("userId from dashbaord", userId);
+    // console.log("userId from dashbaord", userId);
 
     if (userId) {
       fetchRecievedVideos();
+      fetchAllWorkspace();
     }
     // Listener for room creation and receiving video object
     socket.on("roomCreated", (room) => {
@@ -443,10 +476,17 @@ const Dashboard = () => {
       // Handle received video object
     });
   }, [session, userId, socket]);
+
+  useEffect(() => {
+    if (userId) {
+      console.log("userId", userId);
+      fetchAllWorkspace();
+    }
+  }, [selectWorkspace]);
   console.log(userVideos);
 
   return (
-    <div className="bg-slate-100 h-full w-full flex">
+    <div className="bg-slate-100 h-screen  w-screen flex">
       {/* {JSON.stringify(session?.user.id)} */}
       <button
         data-drawer-target="default-sidebar"
@@ -472,23 +512,20 @@ const Dashboard = () => {
       </button>
       <div
         id="default-sidebar"
-        className="hidden md:block md:translate-x-0 h-screen bg-gray-200 w-2/12 "
+        className="h-screen bg-gray-200 w-1/4 lg:w-2/12 flex justify-between flex-col "
       >
-        <h1 className="mt-2 ml-5 font-bold">Pulzez</h1>
-        <div className=" mt-5 flex flex-col justify-center">
-          {/* <Button type="submit" className="h-10 mx-4" size="lg">
-            New Pulze
-          </Button> */}
+        <h1 className="mt-2 mb-[-50px] ml-5 font-bold">pulze</h1>
+        <div className="flex flex-col justify-center">
           <Dialog>
             <DialogTrigger asChild>
-              <Button className="h-10 mx-4 " size="lg">
+              <Button className="h-10 mx-4 mt-[-70px] bg-[#8645FF]  " size="lg">
                 New Pulze
               </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]  flex flex-col justify-center  ">
               <DialogHeader className="">
                 <DialogTitle className="">
-                  <span className="font-normal ">New Pulze in </span>
+                  <span className="font-normal">New Pulze in </span>
                   <span className="font-semibold">Binu Baiju's team</span>
                 </DialogTitle>
               </DialogHeader>
@@ -928,47 +965,24 @@ const Dashboard = () => {
           </Dialog>
 
           {/* <!-- Modal toggle   */}
-
-          <DropdownMenu>
-            <DropdownMenuTrigger className="mt-2 bg-white mx-4 rounded-md h-9 flex justify-center items-center">
-              binubaiju's{"teams"}
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                className="w-6 mt-1"
-              >
-                <g id="SVGRepo_bgCarrier" strokeWidth="0"></g>
-                <g
-                  id="SVGRepo_tracerCarrier"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                ></g>
-                <g id="SVGRepo_iconCarrier">
-                  {" "}
-                  <path
-                    fillRule="evenodd"
-                    clipRule="evenodd"
-                    d="M12.7071 14.7071C12.3166 15.0976 11.6834 15.0976 11.2929 14.7071L6.29289 9.70711C5.90237 9.31658 5.90237 8.68342 6.29289 8.29289C6.68342 7.90237 7.31658 7.90237 7.70711 8.29289L12 12.5858L16.2929 8.29289C16.6834 7.90237 17.3166 7.90237 17.7071 8.29289C18.0976 8.68342 18.0976 9.31658 17.7071 9.70711L12.7071 14.7071Z"
-                    fill="#000000"
-                  ></path>{" "}
-                </g>
-              </svg>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              <DropdownMenuLabel>My Account</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem>Profile</DropdownMenuItem>
-              <DropdownMenuItem>Billing</DropdownMenuItem>
-              <DropdownMenuItem>Team</DropdownMenuItem>
-              <DropdownMenuItem>Subscription</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <div className="flex justify-center items-center mt-5">
+            <DropDown
+              allWorkspaces={allWorkspaces}
+              selectedWorkspace={
+                selectWorkspace ? selectWorkspace : allWorkspaces[0]
+              }
+              setSelectedWorkspace={setSelectWorkspace}
+            />
+          </div>
         </div>
         <Sidebar onSidebarClick={handleSidebarClick} />
+        <div className="flex">
+          <Account />
+        </div>
       </div>
+
       {currentComponent === "activity" && (
-        <div className="  w-10/12">
+        <div className="grow flex">
           {/* <ActivityPage /> */}
           <MyPulzePage
             userVideos={userVideos}

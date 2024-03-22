@@ -1,5 +1,5 @@
 import React from "react";
-import { Button } from "ui/components/button";
+import { Input, Button } from "ui/components";
 import InviteIcon from "../../../icons/InviteIcon";
 import HelpIcon from "../../../icons/HelpIcon";
 import SearchIcon from "../../../icons/SearchIcon";
@@ -10,10 +10,10 @@ interface Props {
 const Header = (props: Props) => {
   return (
     <>
-      <div className="container mb-2 w-full ">
+      <div className="container mb-2">
         <div className="flex flex-row grow justify-between py-3">
           <div className="font-bold">{props.headerTitle}</div>
-          <div className="hidden  md:search-container ">
+          <div className="search-container ">
             <div className="relative w-96 shadow-2xl shadow-slate-400">
               <div className="absolute inset-y-0 start-0 flex items-center ps-3.5 pointer-events-none">
                 <SearchIcon />
@@ -26,7 +26,7 @@ const Header = (props: Props) => {
               />
             </div>
           </div>
-          <div className="hidden md:flex flex-row justify-between px-4">
+          <div className="flex flex-row justify-between px-4">
             <div className="mx-2">
               <Button className="h-10 mx-4 px-4 py-0 bg-indigo-600 text-xs">
                 Invite

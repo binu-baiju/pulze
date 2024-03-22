@@ -20,11 +20,10 @@ const ScreenAndAudioRecorder = dynamic(
 
 import { Button } from "ui/components/button";
 import { Sidebar } from "ui/components/sidebar";
-import { Input } from "ui/components/input";
 import { BorderLessInput } from "ui/components/borderlessinput";
 import { Icons } from "ui/components/icons";
-import { Label } from "ui/components/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "ui/components/tabs";
+
 import {
   Dialog,
   DialogContent,
