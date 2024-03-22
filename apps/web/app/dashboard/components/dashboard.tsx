@@ -122,7 +122,7 @@ const Dashboard = () => {
   const [recievedVideos, setRecievedVideos] = useState<ReceivedVideo[]>([]);
   const receivedVideosArray: ReceivedVideo[] = [];
   if (recievedVideos) {
-    receivedVideosArray.push(...recievedVideos);
+    receivedVideosArray?.push(...recievedVideos);
   }
   const [currentComponent, setCurrentComponent] = useState("activity");
   const [dateFieldState, setDateFieldState] = useState<{
@@ -257,21 +257,14 @@ const Dashboard = () => {
   const fetchAllWorkspace = async () => {
     if (session && userId) {
       try {
-        console.log("workspace fetching");
-        // const url = `get-workspace-by-user?user_id=${userId}`;
-        // const body: any = {};
-        // const method = "get";
-
-        // const workspaceData: any = await fetchData({ url, body, method });
         const workspaceData = await fetch(
           `http://localhost:8080/api/get-workspace-by-user?user_id=${userId}`
         );
         const data = await workspaceData.json();
-        console.log("workspace fetched", data);
+
         setAllWorkspaces(data.workspaces);
-        console.log("selectWorkspace", selectWorkspace);
+
         if (!selectWorkspace || selectWorkspace.workspace_id == "") {
-          console.log("selectWorkspace inside", data.workspaces[0]);
           setSelectWorkspace(data.workspaces[0]);
         }
       } catch (ex) {
@@ -294,7 +287,6 @@ const Dashboard = () => {
       dateFieldState.second ?? 0,
       dateFieldState.millisecond ?? 0
     );
-    console.log("date datefieldState", date);
     const currentDate = new Date();
     const differenceInMillis = date.getTime() - currentDate.getTime();
     // const hours = date.getUTCHours();
@@ -446,7 +438,7 @@ const Dashboard = () => {
         setRecievedVideos(updatedReceivedVideosArray);
       } else {
         // Remove the video from userVideos
-        const updatedUserVideos = userVideos.filter(
+        const updatedUserVideos = userVideos?.filter(
           (video) => video.videoId !== videoId
         );
         setUserVideos(updatedUserVideos);
