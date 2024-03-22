@@ -130,6 +130,8 @@ const NotificationTab: React.FC<NotificationTabProps> = ({
   const nonFyiRecipients = recipients?.filter(
     (recipient) => recipient.FYI === false
   );
+  console.log("nonFyiRecipients", nonFyiRecipients);
+
   const lastNonFyiRecipient = nonFyiRecipients?.[nonFyiRecipients.length - 1];
   const createdOn = video?.createdOn;
   console.log("createdOn", createdOn);
@@ -238,7 +240,13 @@ const NotificationTab: React.FC<NotificationTabProps> = ({
                 ? recievedVideoNonFYICount > 0 && (
                     <DropdownMenuItem>
                       <div className="flex justify-start">
-                        <AvatarDemo imageUrl={session?.user?.image} />
+                        <AvatarDemo
+                          imageUrl={
+                            session?.user?.image
+                              ? session?.user?.image
+                              : "/icons8-user-50.png"
+                          }
+                        />
                         <div className="bg-re-500 font-poppins text-[10px] text-[#474545] ml-2 capitalize flex flex-col justify-start gap-0">
                           <span
                             className="font-semibold"
@@ -260,8 +268,15 @@ const NotificationTab: React.FC<NotificationTabProps> = ({
                   )
                 : nonFyiRecipients?.map((recipient) => (
                     <DropdownMenuItem>
+                      {/* {nonFyiRecipients.length} */}
                       <div className="flex justify-start  ">
-                        <AvatarDemo imageUrl={recipient?.user?.image} />
+                        <AvatarDemo
+                          imageUrl={
+                            recipient?.user?.image
+                              ? recipient?.user?.image
+                              : "/icons8-user-50.png"
+                          }
+                        />
                         <div className="bg-re-500 font-poppins text-[10px] text-[#474545] ml-2 capitalize flex flex-col justify-start gap-0  ">
                           <span
                             className="font-medium"
@@ -295,43 +310,6 @@ const NotificationTab: React.FC<NotificationTabProps> = ({
                   </div> */}
                     </DropdownMenuItem>
                   ))}
-              {nonFyiRecipients?.map((recipient) => (
-                <DropdownMenuItem>
-                  <div className="flex justify-start  ">
-                    <AvatarDemo imageUrl={recipient?.user?.image} />
-                    <div className="bg-re-500 font-poppins text-[10px] text-[#474545] ml-2 capitalize flex flex-col justify-start gap-0  ">
-                      <span
-                        className="font-medium"
-                        style={{ lineHeight: "10px" }}
-                      >
-                        {recipient?.user?.name}
-                      </span>
-                      <span
-                        className="inline font-light "
-                        style={{ lineHeight: "14px" }}
-                      >
-                        {recipient?.status
-                          ? recipient?.status
-                          : "hasn't opened"}
-                      </span>
-                    </div>
-                  </div>
-                  {/* <div className="flex justify-start  ">
-                <AvatarDemo imageUrl={undefined} />
-                <div className="bg-re-500 font-poppins text-[10px] text-[#474545] ml-2 capitalize flex flex-col justify-start gap-0  ">
-                  <span className="font-medium" style={{ lineHeight: "10px" }}>
-                    person-1
-                  </span>
-                  <span
-                    className="inline font-light "
-                    style={{ lineHeight: "14px" }}
-                  >
-                    Hasn't responded
-                  </span>
-                </div>
-              </div> */}
-                </DropdownMenuItem>
-              ))}
 
               <DropdownMenuSeparator />
 
@@ -427,9 +405,9 @@ const NotificationTab: React.FC<NotificationTabProps> = ({
       ) : null}
 
       <div className="hidden md:flex flex-row mr-10">
-        <div className="mx-2 cursor-pointer">
+        {/* <div className="mx-2 cursor-pointer">
           <LinkIcon />
-        </div>
+        </div> */}
         <div
           className="mx-2 cursor-pointer"
           onClick={(e) => e.stopPropagation()}

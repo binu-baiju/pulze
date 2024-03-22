@@ -6,7 +6,8 @@ import { config } from "dotenv";
 import { PrismaClient } from "../../node_modules/.prisma/client";
 import stream from "stream";
 const prisma = new PrismaClient();
-import { createUploadStream } from "../../../api/src/modules/stream";
+// import { createUploadStream } from "../../../api/src/modules/stream";
+import { createUploadStream } from "../modules/stream";
 
 // Load environment variables
 config();
@@ -20,13 +21,13 @@ config();
 //   }
 
 export const uploadVideo = async (req: Request, res: Response) => {
-  console.log("Hello from backend");
+  // console.log("Hello from backend");
   // console.log("Request object:", req);
   const { file } = req as any;
-  const { title, description } = req.body as any; // Assuming you are using a middleware to handle file uploads
-  console.log(`file:${file}`);
-  console.log(`title:${title}`);
-  console.log(`description:${description}`);
+  const { title, description, userId } = req.body as any; // Assuming you are using a middleware to handle file uploads
+  // console.log(`file:${file}`);
+  // console.log(`title:${title}`);
+  // console.log(`description:${description}`);
 
   if (!file) {
     return res.status(400).json({ error: "No file provided" });
@@ -52,7 +53,7 @@ export const uploadVideo = async (req: Request, res: Response) => {
     const uploadStream = createUploadStream(originalname);
     stream1.pipe(uploadStream.writeStream);
     const result = await uploadStream.promise;
-    console.log(result);
+    // console.log(result);
     const { ETag, Location, Bucket, Key } = result;
     try {
       const creatorId = "d68e3f11-bdab-430f-9dc2-54c2c088864d"; // Replace with the actual user ID
@@ -66,11 +67,11 @@ export const uploadVideo = async (req: Request, res: Response) => {
           Key,
           Bucket,
 
-          creator: { connect: { id: creatorId } },
+          creator: { connect: { id: userId } },
           workspace: { connect: { workspace_id: workspaceId } },
         },
       });
-      console.log(newVideo);
+      // console.log(newVideo);
       res.json({
         success: true,
         result: {

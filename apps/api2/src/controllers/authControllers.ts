@@ -11,9 +11,9 @@ const prisma = new PrismaClient();
 config();
 
 export const registerOrLogin = async (req: Request, res: Response) => {
-  console.log("hello login called");
+  // console.log("hello login called");
 
-  console.log(req.body);
+  // console.log(req.body);
 
   const { email, password, phonenumber } = req.body;
   let oneUser;
@@ -26,7 +26,7 @@ export const registerOrLogin = async (req: Request, res: Response) => {
     );
 
     const user = await prisma.user.findUnique({ where: { email: email } });
-    console.log(user);
+    // console.log(user);
 
     if (!user) {
       // No user, registration will be done
@@ -35,7 +35,7 @@ export const registerOrLogin = async (req: Request, res: Response) => {
       // console.log(hashedPassword);
 
       const name = req.body.email.split("@")[0];
-      console.log(name);
+      // console.log(name);
 
       //   await prisma.user.create({
       //     data:{
@@ -69,7 +69,7 @@ export const registerOrLogin = async (req: Request, res: Response) => {
             workspace_id: workspace.workspace_id,
           },
         });
-        console.log(workspace);
+        // console.log(workspace);
       } catch (error) {
         console.error("Error creating workspace:", error);
         return res
@@ -77,7 +77,7 @@ export const registerOrLogin = async (req: Request, res: Response) => {
           .json({ status: "error", error: "Workspace creation failed" });
       }
 
-      console.log(oneUser);
+      // console.log(oneUser);
 
       return res.json({ message: "Registration Successful", token: token });
     } else {
@@ -90,7 +90,7 @@ export const registerOrLogin = async (req: Request, res: Response) => {
         if (isPasswordValid) {
           return res.json({ message: "Login Successful", token: token });
         } else {
-          console.log(isPasswordValid);
+          // console.log(isPasswordValid);
 
           return res
             .status(401)

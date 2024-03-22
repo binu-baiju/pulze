@@ -10,10 +10,10 @@ import { PrismaClient } from "../../../node_modules/.prisma/client";
 const prisma = new PrismaClient();
 
 export const recievedVideos = async (req: Request, res: Response) => {
-  console.log("entered recieved Videos");
+  // console.log("entered recieved Videos");
 
   const userId = req.params.userId;
-  console.log("userId from recievedVideos", userId);
+  // console.log("userId from recievedVideos", userId);
 
   try {
     const recievedVideos = await prisma.recipient.findMany({

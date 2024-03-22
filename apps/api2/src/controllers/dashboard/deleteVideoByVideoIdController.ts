@@ -12,7 +12,7 @@ const prisma = new PrismaClient();
 export const deleteVideo = async (req: Request, res: Response) => {
   if (req.method === "DELETE") {
     const { videoId } = req.body;
-    console.log("videoId from deleteVideo", videoId);
+    // console.log("videoId from deleteVideo", videoId);
 
     try {
       // Step 1: Find the video

@@ -12,10 +12,10 @@ const prisma = new PrismaClient();
 export const getVideosCreatedByUser = async (req: Request, res: Response) => {
   try {
     const userId = req.params.userId;
-    console.log("userId", userId);
+    // console.log("userId", userId);
 
     // Create a new SendVideo record
-    console.log("entered getVideosCreatedByUser");
+    // console.log("entered getVideosCreatedByUser");
 
     const userCreatedVideosWithDetails = await prisma.video.findMany({
       where: {
@@ -43,6 +43,7 @@ export const getVideosCreatedByUser = async (req: Request, res: Response) => {
         },
       },
     });
+    // console.log("userCreatedVideosWithDetails", userCreatedVideosWithDetails);
 
     res.json(userCreatedVideosWithDetails);
   } catch (error) {

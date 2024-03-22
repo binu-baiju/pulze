@@ -27,14 +27,15 @@ export const recorderCompletedSearch = async (req: Request, res: Response) => {
   //   console.error(error);
   //   res.status(500).json({ error: "Internal server error" });
   // }
-  const { query, workspaceId } = req.query;
-
+  const { query, workspaceId, userIdToRemove } = req.query;
+  // const { userId } = req.body;
   try {
     if (!workspaceId) {
       return res.status(400).json({ error: "Workspace ID is required" });
     }
+    // console.log("in suggestionsssssssssss");
 
-    const suggestions = await prisma.user.findMany({
+    let suggestions = await prisma.user.findMany({
       where: {
         workspaceMembers: {
           some: {
@@ -54,6 +55,8 @@ export const recorderCompletedSearch = async (req: Request, res: Response) => {
       },
       take: 5, // Limit the number of suggestions
     });
+    suggestions = suggestions.filter((user) => user.id !== userIdToRemove);
+    // console.log("suggestions", suggestions);
 
     res.json({ suggestions });
   } catch (error) {

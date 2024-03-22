@@ -48,13 +48,37 @@ const ActivityPage = ({
   let filteredUserVideos;
   if (userVideos) {
     filteredUserVideos = userVideos.filter((video) => {
-      const responseTime = new Date(video.sendVideos?.[0]?.responseTime);
-      return currentTime < responseTime;
+      const responseTimeFromVideo = video.sendVideos?.[0]?.responseTime;
+
+      if (responseTimeFromVideo) {
+        const responseTime = new Date(
+          responseTimeFromVideo.toLocaleString("en-US", {
+            timeZone: "Asia/Kolkata",
+          })
+        );
+        return currentTime < responseTime;
+      }
     });
   }
+
+  console.log("currentTime", currentTime);
+
+  const recievedVideos = initialReceivedVideos.map((video) => {
+    const responseTime = new Date(video.sendVideo.responseTime);
+    console.log("recieved responseTime unfiltered", responseTime);
+    // console.log("recieved responseTime unfiltered currentTime", currentTime);
+  });
+
   const filteredReceivedVideos = initialReceivedVideos.filter(
     (recievedvideo) => {
-      const responseTime = new Date(recievedvideo.sendVideo.responseTime);
+      const responseTimeFromVideo = recievedvideo.sendVideo.responseTime;
+      const responseTime = new Date(
+        responseTimeFromVideo.toLocaleString("en-US", {
+          timeZone: "Asia/Kolkata",
+        })
+      );
+      console.log("recieved responseTime filtered", responseTime);
+
       return currentTime < responseTime;
     }
   );
@@ -88,52 +112,52 @@ const ActivityPage = ({
           (filteredUserVideos.length > 0 ||
             filteredReceivedVideos.length > 0) ? (
             <>
-              <div>Open</div>
+              <div>Send Pulzes</div>
               {/* {userVideos.map((video) => { */}
               {filteredUserVideos.map((video) => {
                 const recipients = video?.sendVideos?.[0]?.recipients;
 
-                // if (recipients && recipients.length > 0) {
-                //   const responseTime = new Date(
-                //     video.sendVideos?.[0]?.responseTime
-                //   );
-                //   if (currentTime < responseTime) {
-                //     return (
-                <NotificationTab
-                  key={video.video_id}
-                  video={video}
-                  session={session}
-                  isRecievedVideo={false}
-                  fullVideoObject={undefined}
-                  handleDeleteVideo={handleDeleteVideo}
-                />;
-                //     );
-                //   }
-                // }
+                if (recipients && recipients.length > 0) {
+                  const responseTime = new Date(
+                    video.sendVideos?.[0]?.responseTime
+                  );
+                  if (currentTime < responseTime) {
+                    return (
+                      <NotificationTab
+                        key={video.video_id}
+                        video={video}
+                        session={session}
+                        isRecievedVideo={false}
+                        fullVideoObject={undefined}
+                        handleDeleteVideo={handleDeleteVideo}
+                      />
+                    );
+                  }
+                }
               })}
 
               <div>recieved</div>
 
               {/* {receivedVideos.map((recievedvideo) => { */}
               {filteredReceivedVideos.map((recievedvideo) => {
-                // const responseTime = new Date(
-                //   recievedvideo.sendVideo.responseTime
-                // );
-                // if (currentTime < responseTime) {
-                // return (
-                <>
-                  <div>{recievedvideo.sendVideo.video.video_id}</div>
-                  <NotificationTab
-                    key={recievedvideo.sendVideo.video.video_id}
-                    video={recievedvideo.sendVideo.video}
-                    fullVideoObject={recievedvideo}
-                    session={session}
-                    isRecievedVideo={true}
-                    handleDeleteVideo={handleDeleteVideo}
-                  />
-                </>;
-                // );
-                // }
+                const responseTime = new Date(
+                  recievedvideo.sendVideo.responseTime
+                );
+                if (currentTime < responseTime) {
+                  return (
+                    <>
+                      {/* <div>{recievedvideo.sendVideo.video.video_id}</div> */}
+                      <NotificationTab
+                        key={recievedvideo.sendVideo.video.video_id}
+                        video={recievedvideo.sendVideo.video}
+                        fullVideoObject={recievedvideo}
+                        session={session}
+                        isRecievedVideo={true}
+                        handleDeleteVideo={handleDeleteVideo}
+                      />
+                    </>
+                  );
+                }
               })}
             </>
           ) : (
@@ -154,7 +178,7 @@ const ActivityPage = ({
             if (currentTime > responseTime) {
               return (
                 <>
-                  <div>{recievedvideo.sendVideo.video.video_id}</div>
+                  {/* <div>{recievedvideo.sendVideo.video.video_id}</div> */}
                   <NotificationTab
                     key={recievedvideo.sendVideo.video.video_id}
                     video={recievedvideo.sendVideo.video}

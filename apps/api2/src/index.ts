@@ -40,7 +40,7 @@ interface User {
 
 const rooms: { [key: string]: User[] } = {};
 io.on("connection", (socket) => {
-  console.log(`A user connected:${socket.id}`);
+  // console.log(`A user connected:${socket.id}`);
 
   socket.on(
     "sendVideo",
@@ -51,14 +51,14 @@ io.on("connection", (socket) => {
       recipients: User[];
       videoObjectFromRecorder: any;
     }) => {
-      console.log("send video backedn recipients", recipients);
-      console.log(
-        "send video backedn videoobjectfromrecorder",
-        videoObjectFromRecorder
-      );
+      // console.log("send video backedn recipients", recipients);
+      // console.log(
+      //   "send video backedn videoobjectfromrecorder",
+      //   videoObjectFromRecorder
+      // );
 
       const room = generateRoom(recipients);
-      console.log(room);
+      // console.log(room);
 
       // Broadcast video object to all users in the room
       io.to(room).emit("receiveVideo", videoObjectFromRecorder);
@@ -66,7 +66,7 @@ io.on("connection", (socket) => {
   );
 
   socket.on("disconnect", () => {
-    console.log(`User disconnected: ${socket.id}`);
+    // console.log(`User disconnected: ${socket.id}`);
   });
 });
 
