@@ -11,12 +11,172 @@ import {
 } from "ui/components/dialog";
 import { Input } from "ui/components/input";
 import { IoMdSettings } from "react-icons/io";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { workspace } from "../../dashboard/components/dashboard";
+import toast from "react-hot-toast";
+import { WorkspaceProps } from "../../dashboard/components/DropDown";
+import { useSession } from "next-auth/react";
 
-export function WorkSpaceSet() {
+export interface WorkspaceMember {
+  id: string;
+  name: string;
+  email: string;
+  password: string;
+  phonenumber: string;
+  emailVerified: boolean;
+  image: string;
+  role: string;
+}
+export function WorkSpaceSet(props: WorkspaceProps) {
   const [tab, setTab] = useState(1);
+  const [workspaceName, setWorkspaceName] = useState(
+    props.selectedWorkspace?.name
+  );
+  const [workspaceMembers, setWorkspaceMembers] = useState<
+    Array<WorkspaceMember>
+  >([]);
+  const [modelOpen, setModelOpen] = useState(false);
+  const { data: session, status } = useSession();
+  const userId = session?.user.id;
+
+  useEffect(() => {
+    fetchWorkspaceMember();
+  }, [props.selectedWorkspace]);
+
+  const fetchWorkspaceMember = async () => {
+    if (props.selectedWorkspace?.workspace_id) {
+      try {
+        const workspaceMemberData = await fetch(
+          `http://localhost:8080/api/get-workspace-members?workspace_id=${props.selectedWorkspace?.workspace_id}`
+        );
+        const data = await workspaceMemberData.json();
+        setWorkspaceMembers(data.workspaceMembers);
+        console.log("selectWorkspaceMembers", workspaceMembers);
+      } catch (ex) {
+        console.log("ex from workspace", ex);
+        // alert("Error while fetching workspace");
+      }
+    }
+  };
+
+  useEffect(() => {
+    console.log("workspaceMembers", workspaceMembers);
+  }, []);
+  const updateWorkspaceName = async () => {
+    try {
+      const response = await fetch(
+        "http://localhost:8080/api/update-workspace-name",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            workspace_id: props.selectedWorkspace?.workspace_id,
+            workspaceName: workspaceName,
+          }),
+        }
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        props.updateWorkspace(data.workspaces);
+        // console.log("SendVideo response:", data);
+        toast("workspace name updated successfully");
+      } else {
+        console.error("Failed to update workspace name");
+        const data = await response.json();
+        console.error("Error response:", data.error);
+        toast("error", data.error);
+      }
+    } catch (error) {
+      console.error("Error sending video:", error);
+      toast("error", error);
+    }
+  };
+
+  const leaveWorkspace = async () => {
+    try {
+      console.log("leave workspace");
+      const response = await fetch(
+        "http://localhost:8080/api/leave-workspace",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            workspace_id: props.selectedWorkspace?.workspace_id,
+            user_id: userId,
+          }),
+        }
+      );
+
+      if (response.ok) {
+        console.log("Work space left successfully");
+
+        const workspace: workspace = {
+          name: "",
+          workspace_creator_id: "",
+          workspace_id: "",
+        };
+        props.updateWorkspace(workspace);
+        // console.log("SendVideo response:", data);
+        toast("workspace left successfully");
+      } else {
+        const data = await response.json();
+        console.log("error in leaving ", data);
+
+        toast(data?.error);
+      }
+      setModelOpen(false);
+    } catch (error) {
+      console.error("Error leaving Workspace", error);
+      toast("Error leaving Workspace");
+    }
+  };
+
+  const deleteWorkspace = async () => {
+    try {
+      console.log("delete workspace");
+      const response = await fetch(
+        "http://localhost:8080/api/delete-workspace",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            workspace_id: props.selectedWorkspace?.workspace_id,
+          }),
+        }
+      );
+
+      if (response.ok) {
+        console.log("Work space delete successfully");
+
+        const workspace: workspace = {
+          name: "",
+          workspace_creator_id: "",
+          workspace_id: "",
+        };
+        props.updateWorkspace(workspace);
+        // console.log("SendVideo response:", data);
+        toast("workspace deleted successfully");
+      } else {
+        const data = await response.json();
+        console.log("error in deleting workspace ", data);
+
+        toast(data?.error);
+      }
+      setModelOpen(false);
+    } catch (error) {
+      console.error("Error deleting Workspace", error);
+      toast("Error deleting Workspace");
+    }
+  };
   return (
-    <Dialog>
+    <Dialog open={modelOpen} onOpenChange={setModelOpen}>
       <DialogTrigger asChild>
         <span className="flex flex-row font-[Inter] font-normal text-sm text-left items-center m-1 ">
           <IoMdSettings className="ml-1" />
@@ -90,12 +250,18 @@ export function WorkSpaceSet() {
                           id="workspace_name"
                           placeholder="Enter your workspace name"
                           className="w-[300px]"
+                          value={workspaceName}
+                          onChange={(e) => {
+                            console.log("workspace", e.target.value);
+                            setWorkspaceName(e.target.value);
+                          }}
                         />
                       </div>
                       <div>
                         <Button
                           type="submit"
                           className="text-white bg-[#8645FF] rounded-r-md font-[Inter] font-semibold text-lg w-[120px]"
+                          onClick={() => updateWorkspaceName()}
                         >
                           Save
                         </Button>
@@ -127,15 +293,20 @@ export function WorkSpaceSet() {
                     <Button
                       type="submit"
                       className="text-white bg-[#DC2626] rounded-r-md font-[Inter] font-semibold text-lg w-[200px]"
+                      onClick={leaveWorkspace}
                     >
                       Leave Workspace
                     </Button>
-                    <Button
-                      type="submit"
-                      className="text-white bg-[#DC2626] rounded-r-md font-[Inter] font-semibold text-lg w-[200px]"
-                    >
-                      Delete Workspace
-                    </Button>
+                    {props.selectedWorkspace?.workspace_creator_id ==
+                      userId && (
+                      <Button
+                        type="submit"
+                        className="text-white bg-[#DC2626] rounded-r-md font-[Inter] font-semibold text-lg w-[200px]"
+                        onClick={deleteWorkspace}
+                      >
+                        Delete Workspace
+                      </Button>
+                    )}
                   </div>
                 </div>
               )}
@@ -145,46 +316,36 @@ export function WorkSpaceSet() {
                 <div>
                   <div className="pl-4">
                     <h3 className="font-medium font-poppins text-lg font-semibold text-[#000000] capitalize mt-4">
-                      1 Member
+                      {workspaceMembers.length} Member
                     </h3>
-                    <div className="flex flex-row mt-6 items-center w-full justify-between">
-                      <div className="flex flex-row items-center">
-                        <div className="scale-[2]">
-                          {" "}
-                          <AvatarDemo />
+
+                    {workspaceMembers.map((workspaceMember) => {
+                      return (
+                        <div className="flex flex-row mt-6 items-center w-full justify-between">
+                          <div className="flex flex-row items-center">
+                            <div className="scale-[2]">
+                              {" "}
+                              <AvatarDemo imageUrl={workspaceMember?.image} />
+                            </div>
+                            <div className="flex flex-col ml-4">
+                              <p className="font-semibold font-poppins text-lg">
+                                {workspaceMember?.name}
+                              </p>
+                              <p className="font-normal font-poppins  text-xs text-[#474545] tracking-wider">
+                                {workspaceMember?.email}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="font-semibold font-poppins text-base">
+                            <p>
+                              {workspaceMember?.role == "admin"
+                                ? "Admin"
+                                : "Member"}
+                            </p>
+                          </div>
                         </div>
-                        <div className="flex flex-col ml-4">
-                          <p className="font-semibold font-poppins text-lg">
-                            Binu Baiju
-                          </p>
-                          <p className="font-normal font-poppins  text-xs text-[#474545] tracking-wider">
-                            binubaiju@gmail.com
-                          </p>
-                        </div>
-                      </div>
-                      <div className="font-semibold font-poppins text-base">
-                        <p>Admin</p>
-                      </div>
-                    </div>
-                    <div className="flex flex-row mt-6 items-center w-full justify-between">
-                      <div className="flex flex-row items-center">
-                        <div className="scale-[2]">
-                          {" "}
-                          <AvatarDemo />
-                        </div>
-                        <div className="flex flex-col ml-4">
-                          <p className="font-semibold font-poppins text-lg">
-                            Binu Baiju
-                          </p>
-                          <p className="font-normal font-poppins  text-xs text-[#474545] tracking-wider">
-                            binubaiju@gmail.com
-                          </p>
-                        </div>
-                      </div>
-                      <div className="font-semibold font-poppins text-base">
-                        <p>Admin</p>
-                      </div>
-                    </div>
+                      );
+                    })}
                   </div>
                 </div>
               )}
