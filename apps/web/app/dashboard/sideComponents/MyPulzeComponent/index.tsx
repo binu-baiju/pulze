@@ -47,7 +47,7 @@ const ActivityPage = ({
   const [currentTime, setCurrentTime] = useState(new Date());
   let filteredUserVideos;
   if (userVideos) {
-    filteredUserVideos = userVideos.filter((video) => {
+    filteredUserVideos = userVideos?.filter((video) => {
       const responseTime = new Date(video.sendVideos?.[0]?.responseTime);
       return currentTime < responseTime;
     });

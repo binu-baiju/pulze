@@ -12,8 +12,11 @@ import { Input } from "ui/components/input";
 import { Label } from "ui/components/label";
 import FlaggIcon from "../../../icons/FlaggIcon";
 import { FaPlus } from "react-icons/fa";
-
+import { signOut } from "next-auth/react";
 export function LogOutPopUp() {
+  const logOut = async () => {
+    await signOut({ callbackUrl: "/login" });
+  };
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -23,10 +26,10 @@ export function LogOutPopUp() {
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px] sm:max-h-[375px] flex flex-col justify-center items-center rounded-lg border border-slate-500">
         <DialogHeader>
-          <div className="scale-50 justify-center ml-6 border-2 border-blue-500">
+          <div className="scale-50 justify-center ml-6">
             <FlaggIcon />
           </div>
-          <DialogTitle className="flex font-[Inter] font-semibold justify-center items-center text-3xl border-2 border-blue-500">
+          <DialogTitle className="flex font-[Inter] font-semibold justify-center items-center text-3xl ">
             pulze
           </DialogTitle>
           <DialogDescription className="font-poppins font-medium text-xl text-center text-[#4B5563] py-4">
@@ -43,6 +46,7 @@ export function LogOutPopUp() {
           <Button
             type="submit"
             className="bg-[#8645FF] hover:bg-[#8645FF] w-28 rounded-r-md font-[Inter] font-semibold text-base"
+            onClick={logOut}
           >
             Logout
           </Button>
