@@ -184,17 +184,17 @@ const LogIn = () => {
             {/* <button className="font-exbold bg-[#8645FF] h-10 text-[#F3E8FF] rounded-lg text-xl">
               Continue with email
             </button> */}
-            <div className="ml-[70px]">
-              <p className="px-8 text-center text-xs text-muted-foreground font-poppins font-light">
+            <div className="">
+              <div className="px-8 text-center text-xs text-muted-foreground font-poppins font-light">
                 Not on pulze yet?
                 <Link
                   href="../signup"
                   className="text-[#8B5CF6] font-bold font-[Inter] text-xs"
                 >
                   Signup
-                </Link>{" "}
-                <ForgetPassword />
-              </p>
+                </Link>
+                <br /> <ForgetPassword />
+              </div>
             </div>
           </div>
         </div>
