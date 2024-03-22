@@ -21,14 +21,14 @@ export const sendVideo = async (req: Request, res: Response) => {
       titleFromFrontend,
       descriptionFromFrontend,
     } = req.body;
-    console.log("senderId", senderId);
-    console.log("recipientData", recipientData);
-    console.log("videoId", videoId);
-    console.log("responseTime", responseTime);
-    console.log("workspaceId", workspaceId);
-    console.log("videoObject:", videoObject);
-    console.log("title from frontend:", titleFromFrontend);
-    console.log("description from frontend:", descriptionFromFrontend);
+    // console.log("senderId", senderId);
+    // console.log("recipientData", recipientData);
+    // console.log("videoId", videoId);
+    // console.log("responseTime", responseTime);
+    // console.log("workspaceId", workspaceId);
+    // console.log("videoObject:", videoObject);
+    // console.log("title from frontend:", titleFromFrontend);
+    // console.log("description from frontend:", descriptionFromFrontend);
 
     if (titleFromFrontend || descriptionFromFrontend) {
       // Retrieve the video using videoId

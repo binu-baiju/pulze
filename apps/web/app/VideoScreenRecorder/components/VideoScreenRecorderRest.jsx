@@ -264,6 +264,7 @@ import { useState } from "react";
 
 import { useMyContext } from "../../../context/MyContext";
 import toast from "react-hot-toast";
+import { useSession } from "next-auth/react";
 // import { log } from "console";
 // const VideoScreenRecorder = forwardRef((props, ref) => {
 //   useImperativeHandle(ref, () => ({
@@ -305,6 +306,9 @@ const VideoScreenRecorder = forwardRef((props, ref) => {
   const [shouldVideoVisible, setVideoVisible] = useState(false);
   const [videoFile, setVideoFile] = useState(null);
   const { resultVideosrccontext, setResultVideosrccontext } = useMyContext();
+
+  const { data: session, status } = useSession();
+  const userId = session?.user.id;
 
   const handleRecordingComplete = (recordedData) => {
     // Do any processing or validation if needed
@@ -463,6 +467,7 @@ const VideoScreenRecorder = forwardRef((props, ref) => {
             formData.append("file", videoFile);
             formData.append("title", title);
             formData.append("description", description);
+            formData.append("userId", userId);
 
             const response = await fetch(
               "http://localhost:8080/api/uploadVideo",
@@ -566,9 +571,14 @@ const VideoScreenRecorder = forwardRef((props, ref) => {
           body: formData,
         }
       );
-
+      if (!response.ok) {
+        console.error(`Error uploading video:`);
+      }
       const responseData = await response.json();
+      console.log("Server Response:", responseData);
+
       const { result, success } = responseData;
+      console.log("sucess", success);
       setResultVideosrccontext(
         `https://d1yt4919vxgwb5.cloudfront.net/${result.VideoUploadedToS3Details.key}`
       );
@@ -586,7 +596,7 @@ const VideoScreenRecorder = forwardRef((props, ref) => {
       // };
 
       console.log(resultVideosrc);
-      if (responseData.success) {
+      if (success) {
         console.log(`src:${resultVideosrccontext}`);
         toast("Video uploaded successfully");
       } else {
@@ -594,7 +604,7 @@ const VideoScreenRecorder = forwardRef((props, ref) => {
       }
     } catch (error) {
       console.error("Error uploading video:", error);
-      alert("Error uploading video from frontend");
+      // alert("Error uploading video from frontend");
     }
   };
 

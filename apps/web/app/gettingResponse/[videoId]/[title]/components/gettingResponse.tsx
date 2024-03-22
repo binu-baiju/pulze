@@ -56,6 +56,7 @@ import {
 } from "../../../../../context/MyContext";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
+import toast from "react-hot-toast";
 
 interface User {
   id: string;
@@ -125,7 +126,7 @@ const GettinResponse = () => {
   const [selectedTimeStamp, setSelectedTimeStamp] = useState("");
 
   const [topLevelCommentTabsValue, setTopLevelCommentTabsValue] = useState("");
-  const [replyCommentTabsValue, setReplyCommentTabsValue] = useState("");
+  const [replyCommentTabsValue, setReplyCommentTabsValue] = useState("text");
 
   const [moveToRecordingCompleted, setMoveToRecordingCompleted] =
     useState(false);
@@ -227,7 +228,35 @@ const GettinResponse = () => {
       );
       console.log("parentComments:", parentComments);
       // setComments(data.comments);
-      setComments(parentComments);
+      // const sortedParentComments = [...parentComments].sort((a, b) => {
+      //   // Convert createdAt strings to Date objects
+      //   const dateA = new Date(a.createdAt);
+      //   const dateB = new Date(b.createdAt);
+
+      //   // Check if the dates are valid before performing the subtraction
+      //   if (isNaN(dateA.getTime()) || isNaN(dateB.getTime())) {
+      //     // Handle invalid dates here if needed
+      //     return 0; // Return 0 if unable to determine the order
+      //   }
+
+      //   // Perform the comparison
+      //   return dateA.getTime() - dateB.getTime();
+      // });
+      const sortComments = (comments: Comment[]) => {
+        return comments
+          .sort((a, b) => {
+            const dateA = new Date(a.createdAt);
+            const dateB = new Date(b.createdAt);
+            return dateA.getTime() - dateB.getTime(); // Use getTime() to compare dates
+          })
+          .map((comment) => ({
+            ...comment,
+            replies: comment.replies ? sortComments(comment.replies) : [],
+          }));
+      };
+      const sortedParentComments = sortComments(parentComments);
+
+      setComments(sortedParentComments);
 
       console.log("Received data from API:", data.comments);
     } catch (error) {
@@ -329,6 +358,11 @@ const GettinResponse = () => {
     } catch (error) {
       console.error("Error creating comment:", error);
     }
+    try {
+      await handleUpdateStatus(respondedStatus);
+    } catch (error) {
+      console.error("Coudnt update status");
+    }
   };
 
   const handleChange = (isChecked) => {
@@ -344,7 +378,7 @@ const GettinResponse = () => {
   };
   const handleCreateComment = async () => {
     console.log("called top level comment creation");
-    await handleUpdateStatus(respondedStatus);
+    // await handleUpdateStatus(respondedStatus);
     await createComment(); // Assuming you want to create a top-level comment here
   };
 
@@ -440,6 +474,8 @@ const GettinResponse = () => {
   };
   const handleUpdateStatus = async (recipientVideoStatus: String) => {
     try {
+      console.log("enterd updateStatus");
+
       const response = await fetch(
         "http://localhost:8080/api/updateRecipientStatus",
         {
@@ -522,7 +558,13 @@ const GettinResponse = () => {
         );
       }
     }
-    await handleUpdateStatus(respondedStatus);
+    try {
+      if (videoStatus != "Responded") {
+        await handleUpdateStatus(respondedStatus);
+      }
+    } catch (error) {
+      console.error("coudnt update");
+    }
   };
 
   const handlePostButton = (selectedTab) => {
@@ -538,6 +580,8 @@ const GettinResponse = () => {
     setTopLevelCommentTabsValue(value);
   };
   const handleReplyCommentTabsValue = (value) => {
+    console.log("handleReplyCommentTabsValue", value);
+
     setReplyCommentTabsValue(value);
     // console.log(replyCommentTabsValue);
   };
@@ -588,33 +632,41 @@ const GettinResponse = () => {
     setHoveredReplyCommentId(null);
   };
 
-  const handleDeleteComment = async (replycommentId) => {
-    console.log(
-      "called handleDeleteCommment and replyCommendID:",
-      replycommentId
-    );
+  const handleDeleteComment = async (commentId) => {
+    console.log("called handleDeleteCommment and replyCommendID:", commentId);
 
     try {
       const response = await fetch(
-        `http://localhost:8080/api/comments/deletecomment/${replycommentId}`,
+        `http://localhost:8080/api/comments/deletecomment/${commentId}`,
         {
           method: "DELETE",
         }
       );
       console.log("response delete comment:", response);
 
-      // Replace '/api/comments' with your actual endpoint
       if (response.ok) {
-        setComments((prevComments) =>
-          prevComments.map((comment) => ({
-            ...comment,
-            replies: comment.replies.filter(
-              (reply) => reply.id !== replycommentId
-            ),
-          }))
-        );
+        const comment = comments.find((comment) => comment.id === commentId);
+        if (comment) {
+          if (!comment.parentCommentId) {
+            // It's a parent comment, filter it and its replies
+            setComments((prevComments) =>
+              prevComments.filter((c) => c.id !== commentId)
+            );
+          } else {
+            // It's a reply, update the replies of its parent
+            setComments((prevComments) =>
+              prevComments.map((comment) => ({
+                ...comment,
+                replies: comment.replies.filter(
+                  (reply) => reply.id !== commentId
+                ),
+              }))
+            );
+          }
+          toast.success("Comment Deleted Successfully");
+        }
       } else {
-        throw new Error("Failed to delete reply");
+        throw new Error("Failed to delete comment");
       }
     } catch (error) {
       console.error("Error deleting comment:", error);
@@ -633,8 +685,9 @@ const GettinResponse = () => {
 
     if (videoId && userId && status) {
       console.log("from useeffect called");
-
-      handleUpdateStatus(opendStatus);
+      if (videoStatus === "") {
+        handleUpdateStatus(opendStatus);
+      }
     } else {
       console.log("couldnt update");
     }
@@ -780,7 +833,7 @@ const GettinResponse = () => {
                             <button
                               className="mr-4 mt-4 hover:text-red-500"
                               // className="bg-red-500 text-white px-2 py-1 rounded"
-                              // onClick={() => handleDeleteComment(comment.id)}
+                              onClick={() => handleDeleteComment(comment.id)}
                             >
                               <Trash
                                 size={20}
@@ -878,9 +931,9 @@ const GettinResponse = () => {
                                 </button>
                               )}
                             </header>{" "}
-                            <section className="w-full mt-2  h-10">
+                            <section className="w-full mt-2  ">
                               <div
-                                className={`flex gap-2 ${comment.timeStamp != null ? `ml-7` : `ml-7`} ${comment.type === "video" ? `flex flex-col` : null}`}
+                                className={`flex gap-2 h-full ${comment.timeStamp != null ? `ml-7` : `ml-7`} ${comment.type === "video" ? `flex flex-col` : null}`}
                               >
                                 {reply.timeStamp != "null" &&
                                   reply.timeStamp != null && (
@@ -904,7 +957,7 @@ const GettinResponse = () => {
                                   </p>
                                 ) : (
                                   <video
-                                    className="h-1/6 w-5/6 lg:mr-10  rounded-r-lg rounded-l-lg mt-5"
+                                    className="h-1/6 w-5/6 lg:mr-10  rounded-r-lg rounded-l-lg mt-2"
                                     controls
                                   >
                                     <source
@@ -993,7 +1046,7 @@ const GettinResponse = () => {
                                       </g>
                                     </svg>
                                   </TabsTrigger>
-                                  <TabsTrigger
+                                  {/* <TabsTrigger
                                     value="upload"
                                     className="  w-1/3 ring-0 focus:bg-violet-300 bg-violet-200 flex gap-3 focus:ring-0"
                                   >
@@ -1018,7 +1071,7 @@ const GettinResponse = () => {
                                         <path d="M763.024 259.968C718.4 141.536 622.465 66.527 477.553 66.527c-184.384 0-313.392 136.912-324.479 315.536C64.177 410.495.002 501.183.002 603.903c0 125.744 98.848 231.968 215.823 231.968h92.448c17.664 0 32-14.336 32-32 0-17.68-14.336-32-32-32h-92.448c-82.304 0-152.832-76.912-152.832-167.968 0-80.464 56.416-153.056 127.184-165.216l29.04-5.008-2.576-29.328-.24-.368c0-155.872 102.576-273.44 261.152-273.44 127.104 0 198.513 62.624 231.537 169.44l6.847 22.032 23.056.496c118.88 2.496 223.104 98.945 223.104 218.77 0 109.055-72.273 230.591-181.696 230.591h-73.12c-17.664 0-32 14.336-32 32 0 17.68 14.336 32 32 32l72.88-.095c160-4.224 243.344-157.071 243.344-294.495 0-147.712-115.76-265.744-260.48-281.312zM535.985 514.941c-.176-.192-.241-.352-.354-.512l-8.095-8.464c-4.432-4.688-10.336-7.008-16.24-6.976-5.905-.048-11.777 2.288-16.289 6.975l-8.095 8.464c-.16.16-.193.353-.336.513L371.072 642.685c-8.944 9.344-8.944 24.464 0 33.84l8.064 5.471c8.945 9.344 23.44 6.32 32.368-3.024l68.113-75.935v322.432c0 17.664 14.336 32 32 32s32-14.336 32-32V603.34l70.368 77.631c8.944 9.344 23.408 12.369 32.336 3.025l8.064-5.472c8.945-9.376 8.945-24.496 0-33.84z"></path>
                                       </g>
                                     </svg>
-                                  </TabsTrigger>
+                                  </TabsTrigger> */}
                                 </TabsList>
                                 <TabsContent
                                   value="text"
@@ -1279,12 +1332,12 @@ const GettinResponse = () => {
                                     </div>
                                   </div>
                                 </TabsContent>
-                                <TabsContent
+                                {/* <TabsContent
                                   value="upload"
                                   className="flex justify-center"
                                 >
                                   Change your password here.
-                                </TabsContent>
+                                </TabsContent> */}
                               </Tabs>
                             </div>
                             <div
@@ -1446,7 +1499,7 @@ const GettinResponse = () => {
                         </g>
                       </svg>
                     </TabsTrigger>
-                    <TabsTrigger
+                    {/* <TabsTrigger
                       value="upload"
                       className="  w-1/3 ring-0 focus:bg-violet-300 bg-violet-200 flex gap-3 focus:ring-0"
                     >
@@ -1468,7 +1521,7 @@ const GettinResponse = () => {
                           <path d="M763.024 259.968C718.4 141.536 622.465 66.527 477.553 66.527c-184.384 0-313.392 136.912-324.479 315.536C64.177 410.495.002 501.183.002 603.903c0 125.744 98.848 231.968 215.823 231.968h92.448c17.664 0 32-14.336 32-32 0-17.68-14.336-32-32-32h-92.448c-82.304 0-152.832-76.912-152.832-167.968 0-80.464 56.416-153.056 127.184-165.216l29.04-5.008-2.576-29.328-.24-.368c0-155.872 102.576-273.44 261.152-273.44 127.104 0 198.513 62.624 231.537 169.44l6.847 22.032 23.056.496c118.88 2.496 223.104 98.945 223.104 218.77 0 109.055-72.273 230.591-181.696 230.591h-73.12c-17.664 0-32 14.336-32 32 0 17.68 14.336 32 32 32l72.88-.095c160-4.224 243.344-157.071 243.344-294.495 0-147.712-115.76-265.744-260.48-281.312zM535.985 514.941c-.176-.192-.241-.352-.354-.512l-8.095-8.464c-4.432-4.688-10.336-7.008-16.24-6.976-5.905-.048-11.777 2.288-16.289 6.975l-8.095 8.464c-.16.16-.193.353-.336.513L371.072 642.685c-8.944 9.344-8.944 24.464 0 33.84l8.064 5.471c8.945 9.344 23.44 6.32 32.368-3.024l68.113-75.935v322.432c0 17.664 14.336 32 32 32s32-14.336 32-32V603.34l70.368 77.631c8.944 9.344 23.408 12.369 32.336 3.025l8.064-5.472c8.945-9.376 8.945-24.496 0-33.84z"></path>
                         </g>
                       </svg>
-                    </TabsTrigger>
+                    </TabsTrigger> */}
                   </TabsList>
                   <TabsContent value="text" className="w-full h-4/6   ">
                     {/* Make changes to your account here. */}
@@ -1683,13 +1736,13 @@ const GettinResponse = () => {
                       </div>
                     </div>
                   </TabsContent>
-                  <TabsContent value="upload" className="flex justify-center">
+                  {/* <TabsContent value="upload" className="flex justify-center">
                     Change your password here.
-                  </TabsContent>
+                  </TabsContent> */}
                 </Tabs>
               </div>
               <div
-                className={`flex items-center  w-11/12 mt-2   ${
+                className={`flex items-start  w-11/12 mt-  ${
                   !currentTime && !isTopCommentTextareaFocused
                     ? "justify-end"
                     : "justify-between"
@@ -1697,7 +1750,7 @@ const GettinResponse = () => {
               >
                 {currentTime !== null || isTopCommentTextareaFocused ? (
                   currentTime !== null ? (
-                    <div className="flex justify-start gap-2">
+                    <div className="flex justify-start gap-2 mt-2">
                       <Checkbox
                         // onChange={(e) => {
                         //   console.log("hello");
@@ -1734,7 +1787,7 @@ const GettinResponse = () => {
                           ? handleCreateVideoComment
                           : handleCreateComment
                     }
-                    className="bg-violet-600 hover:bg-violet-700 mb-2 w-2/5 "
+                    className="bg-violet-600 hover:bg-violet-700 mb-4 w-2/5 "
                     disabled={!mainCommentPostButtonShow}
                   >
                     Post <Send />

@@ -278,7 +278,7 @@ const Dashboard = () => {
     // console.log("datefieldState", dateFieldState);
     // console.log("datefiledState month", dateFieldState.month);
 
-    const date = new Date(
+    let date = new Date(
       dateFieldState.year ?? 0,
       (dateFieldState.month ?? 0) - 1,
       dateFieldState.day ?? 1,
@@ -303,12 +303,7 @@ const Dashboard = () => {
         nonNegativeHours > 1 ? "s" : ""
       }`; // Display hours
     }
-    // const hours = parseFloat(
-    //   (differenceInMillis / (1000 * 60 * 60)).toFixed(1)
-    // );
 
-    // console.log("date datefieldState hours", hours);
-    // const nonNegativeHours = Math.max(0, hours);
     const isoString = date.toISOString();
     // formattedHours = nonNegativeHours.toString() + "h";
     // console.log("date datefielstate", isoString);
@@ -344,7 +339,8 @@ const Dashboard = () => {
         // console.log("Video sent successfully!");
         const data = await response.json();
         const recipients = data.recipients;
-        // console.log("SendVideo response:", data);
+        console.log("SendVideo response:", data);
+        toast.success("Video Sent");
         socket.emit("sendVideo", {
           recipients,
           videoObjectFromRecorder,
@@ -593,19 +589,19 @@ const Dashboard = () => {
                       // style={{ width: "40%" }}
                       className="w-full"
                     ></video>
-                    <Button
+                    {/* <Button
                       onClick={() => handleResultsrc(resultVideosrccontext)}
                     >
                       Src
-                    </Button>
-                    <div className="flex justify-between  w-full mt-2">
-                      <Button
+                    </Button> */}
+                    <div className="flex justify-end  w-full mt-2">
+                      {/* <Button
                         className=" flex w-2/5 justify-center gap-1 text-violet-600 hover:text-violet-600 border border-violet-600 bg-transparent mb-3 "
                         variant="outline"
                       >
                         <Link size={20} />
                         Copy Link
-                      </Button>
+                      </Button> */}
                       {
                         <Button
                           disabled={selectedUsers.length > 0 ? false : true}
@@ -623,7 +619,7 @@ const Dashboard = () => {
                     <TabsList className="flex justify-around gap-2 bg-white focus:bg-gray-100">
                       <TabsTrigger
                         value="screen"
-                        className=" w-1/3 focus:bg-gray-200 flex gap-3 justify-center items-center"
+                        className=" w-1/2 focus:bg-gray-200 flex gap-3 justify-center items-center"
                       >
                         <svg
                           className="w-6 h-6"
@@ -647,7 +643,7 @@ const Dashboard = () => {
                       </TabsTrigger>
                       <TabsTrigger
                         value="camera"
-                        className="  w-1/3 focus:bg-gray-200  flex gap-3 justify-center items-center"
+                        className="  w-1/2 focus:bg-gray-200  flex gap-3 justify-center items-center"
                       >
                         <svg
                           className="w-6 h-6"
@@ -674,30 +670,6 @@ const Dashboard = () => {
                         </svg>
                         Camera
                       </TabsTrigger>
-                      <TabsTrigger
-                        value="upload"
-                        className="  w-1/3 ring-0 focus:bg-gray-200  flex gap-3 focus:ring-0"
-                      >
-                        <svg
-                          className="w-6 h-6"
-                          fill="#000000"
-                          viewBox="0 0 1024 1024"
-                          xmlns="http://www.w3.org/2000/svg"
-                          stroke="#000000"
-                          strokeWidth="19.456"
-                        >
-                          <g id="SVGRepo_bgCarrier" strokeWidth="0"></g>
-                          <g
-                            id="SVGRepo_tracerCarrier"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          ></g>
-                          <g id="SVGRepo_iconCarrier">
-                            <path d="M763.024 259.968C718.4 141.536 622.465 66.527 477.553 66.527c-184.384 0-313.392 136.912-324.479 315.536C64.177 410.495.002 501.183.002 603.903c0 125.744 98.848 231.968 215.823 231.968h92.448c17.664 0 32-14.336 32-32 0-17.68-14.336-32-32-32h-92.448c-82.304 0-152.832-76.912-152.832-167.968 0-80.464 56.416-153.056 127.184-165.216l29.04-5.008-2.576-29.328-.24-.368c0-155.872 102.576-273.44 261.152-273.44 127.104 0 198.513 62.624 231.537 169.44l6.847 22.032 23.056.496c118.88 2.496 223.104 98.945 223.104 218.77 0 109.055-72.273 230.591-181.696 230.591h-73.12c-17.664 0-32 14.336-32 32 0 17.68 14.336 32 32 32l72.88-.095c160-4.224 243.344-157.071 243.344-294.495 0-147.712-115.76-265.744-260.48-281.312zM535.985 514.941c-.176-.192-.241-.352-.354-.512l-8.095-8.464c-4.432-4.688-10.336-7.008-16.24-6.976-5.905-.048-11.777 2.288-16.289 6.975l-8.095 8.464c-.16.16-.193.353-.336.513L371.072 642.685c-8.944 9.344-8.944 24.464 0 33.84l8.064 5.471c8.945 9.344 23.44 6.32 32.368-3.024l68.113-75.935v322.432c0 17.664 14.336 32 32 32s32-14.336 32-32V603.34l70.368 77.631c8.944 9.344 23.408 12.369 32.336 3.025l8.064-5.472c8.945-9.376 8.945-24.496 0-33.84z"></path>
-                          </g>
-                        </svg>
-                        Upload
-                      </TabsTrigger>
                     </TabsList>
                     <TabsContent
                       // style={{ minHeight: "300px", height: "auto" }}
@@ -722,8 +694,8 @@ const Dashboard = () => {
 
                       <div className="flex flex-col items-start w-full ml-9 gap-3  mr-10 ">
                         {/* <div className="flex flex-col items-start w-full ml-9 gap-3  mr-10 "> */}
-                        {moveToRecordingCompleted === false ? (
-                          <div className=" w-full flex gap-2 ml-2">
+                        {/* {moveToRecordingCompleted === false ? (
+                          <div className=" w-full flex gap-2 ml-2 bg-red-500">
                             <ToggleButton
                               icon1={
                                 <Video color="#000000" className="w-5 h-5" />
@@ -739,8 +711,8 @@ const Dashboard = () => {
                               </Button>
                             </div>
                           </div>
-                        ) : null}
-                        {moveToRecordingCompleted === false ? (
+                        ) : null} */}
+                        {/* {moveToRecordingCompleted === false ? (
                           <div className=" w-full flex gap-2 ml-2">
                             <ToggleButton
                               icon1={
@@ -759,7 +731,7 @@ const Dashboard = () => {
                               </Button>
                             </div>
                           </div>
-                        ) : null}
+                        ) : null} */}
 
                         {/* </div> */}
 
@@ -959,14 +931,6 @@ const Dashboard = () => {
                         </div>
                       </div>
                     </TabsContent>
-                    <TabsContent
-                      value="upload"
-                      style={{ height: "auto" }}
-                      className="flex flex-col justify-between gap-3 items-center min-h-96 bg-gray-200"
-                    >
-                      hello
-                      {/* ... Content for the "Upload" tab ... */}
-                    </TabsContent>
 
                     {/* <TabsContent
                     value="camera"
@@ -1030,7 +994,10 @@ const Dashboard = () => {
       {currentComponent === "myPulzez" && (
         <div className="  w-10/12">
           {/* <ActivityPage /> */}
-          <ActivityPage userVideos={userVideos} />
+          <ActivityPage
+            userVideos={userVideos}
+            handleDeleteVideo={handleDeleteVideo}
+          />
         </div>
       )}
       {/* <Popover /> */}

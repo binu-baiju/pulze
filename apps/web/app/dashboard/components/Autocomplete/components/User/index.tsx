@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import Image from "next/image";
 import { User as UserType } from "../../../../../../types/index";
 import { StarHalf } from "lucide-react";
+import { useSession } from "next-auth/react";
 
 interface UserListProps {
   users: UserType[];
@@ -30,11 +31,16 @@ const UserList: React.FC<UserListProps> = ({
   lastSelectedIndex,
   handleToggle,
 }) => {
+  const { data: session, status } = useSession();
+
   // const [isChecked, setIsChecked] = useState(false);
 
   // const handleCheckboxChange = () => {
   //   setIsChecked(!isChecked);
   // };
+  // console.log("Users in autocomplete", users);
+
+  const userId = session?.user.id;
   return (
     <div
       className={`flex flex-col justify-center items-center gap-2 px-1 bg-red-500 py-2  ${users.length > 2 ? "max-h-[120px] overflow-x-hidden  overflow-y-auto" : ""}`}

@@ -91,11 +91,9 @@ readOnly
 className="col-span-9 border-none focus:outline-none ring-0 text-left"
 /> */}
             <div className="border rounded-md  focus:outline-none  flex justify-start col-span-10  w-full bg-gray-100 ">
-              <AutoComplete
+              {/* <AutoComplete
                 onSelectedUsersChange={handleSelectedUsersChange}
-                onStateChange={function (state: any): void {
-                  throw new Error("Function not implemented.");
-                }}
+                onStateChange={handleDateFieldState}
                 setDateFieldState={function (
                   value: React.SetStateAction<DateFieldState | null>
                 ): void {
@@ -103,7 +101,7 @@ className="col-span-9 border-none focus:outline-none ring-0 text-left"
                 }}
                 dateFieldState={null}
                 formattedHours={undefined}
-              />
+              /> */}
 
               {/* <input
 type="email"

@@ -453,6 +453,7 @@ import RecordRTC from "recordrtc";
 // import { useState } from "react";
 import { useMyContext } from "../../../context/MyContext";
 import toast from "react-hot-toast";
+import { useSession } from "next-auth/react";
 
 const VideoAndAudioRecorder = forwardRef((props, ref) => {
   const {
@@ -483,6 +484,8 @@ const VideoAndAudioRecorder = forwardRef((props, ref) => {
   const [videoFile, setVideoFile] = useState(null);
   const { resultVideosrccontext, setResultVideosrccontext } = useMyContext();
   const [resultVideosrc, setResultVideosrc] = useState("hlo");
+  const { data: session, status } = useSession();
+  const userId = session?.user.id;
   const captureCamera = (callback) => {
     navigator.mediaDevices
       .getUserMedia({ audio: true, video: true })
@@ -542,6 +545,7 @@ const VideoAndAudioRecorder = forwardRef((props, ref) => {
         formData.append("file", videoFile);
         formData.append("title", title);
         formData.append("description", description);
+        formData.append("userId", userId);
 
         const response = await fetch(
           "http://localhost:8080/api/uploadVideo",
@@ -669,7 +673,7 @@ const VideoAndAudioRecorder = forwardRef((props, ref) => {
       }
     } catch (error) {
       console.error("Error uploading video:", error);
-      alert("Error uploading video from frontend");
+      // alert("Error uploading video from frontend");
     }
   };
 

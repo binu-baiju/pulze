@@ -176,7 +176,7 @@ const DateTimePicker = React.forwardRef<HTMLDivElement, DateTimePickerProps>(
                   {/* <div className="cursor-not-allowed"> */}
                   <Calendar {...calendarProps} />
                   {Boolean(state.hasTime) && (
-                    <div className="flex bg-red-500 w-full pl-4">
+                    <div className="flex  w-full pl-4">
                       <span>Time:</span>
                       <TimeField
                         value={state.timeValue}

@@ -10,7 +10,7 @@ const prisma = new PrismaClient();
 
 export const findingVideoId = async (req: Request, res: Response) => {
   const { videoId } = req.params;
-  console.log("videoId from get videoId", videoId);
+  // console.log("videoId from get videoId", videoId);
 
   try {
     const video = await prisma.video.findUnique({

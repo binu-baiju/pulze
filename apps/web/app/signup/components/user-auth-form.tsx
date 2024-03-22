@@ -249,11 +249,13 @@ export function UserAuthForm() {
     });
 
     // if (emailError || passwordError || phoneNumberError) {
-    // toast.error(emailError || passwordError || phoneNumberError);
-    // return;
+    //   toast.error(emailError || passwordError || phoneNumberError);
+    //   return;
     // }
 
     try {
+      console.log("signup entered");
+
       setIsLoading(true);
       // Call your API endpoint for registration
       const response = await fetch("/api/signup", {

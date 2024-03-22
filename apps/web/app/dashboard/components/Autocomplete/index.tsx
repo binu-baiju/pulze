@@ -16,7 +16,7 @@ import UserList from "./components/User";
 import { DateTimePicker } from "ui/components/date-time-picker/date-time-picker";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "ui/components/tabs";
 import { Clock } from "lucide-react";
-
+import { useSession } from "next-auth/react";
 interface DateFieldState {
   year?: number;
   month?: number;
@@ -52,7 +52,8 @@ export default function AutoComplete({
     null
   );
   const [focusedUserIndex, setFocusedUserIndex] = useState(-1);
-
+  const { data: session, status } = useSession();
+  const userId = session?.user.id;
   useEffect(() => {
     // Fetch initial users from the database when the component mounts
     fetchUsersFromDatabase();
@@ -68,17 +69,21 @@ export default function AutoComplete({
       const workspaceId = "1bd89f4c-36eb-4411-9232-acb129219e8f";
       const query = encodeURIComponent(searchQuery);
       const response = await fetch(
-        `http://localhost:8080/api/videorecordercompleted/search?workspaceId=${workspaceId}&query=${query}`,
+        `http://localhost:8080/api/videorecordercompleted/search?workspaceId=${workspaceId}&query=${query}&userIdToRemove=${userId}`,
         {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
           },
+          // body: JSON.stringify({ userId }),
         }
       );
 
       if (response.ok) {
         const data = await response.json();
+        console.log("users in AutoComplete", data.suggestions);
+        const users = data.suggestions;
+        // const filteredUser = users.find((user) => user.id === userId);
         setUsers(data.suggestions);
         setMatchedUsers(data.suggestions);
       } else {
