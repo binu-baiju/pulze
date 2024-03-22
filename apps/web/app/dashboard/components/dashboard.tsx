@@ -64,6 +64,8 @@ import { io } from "socket.io-client";
 import toast from "react-hot-toast";
 import DropDown from "./DropDown";
 import Account from "./Account";
+
+import { fetchData } from "../../utils/axios";
 // import { VideoScreenRecorder } from "../VideoScreenRecorder/components/VideoScreenRecorderRest";
 // import MyTabs from "./components/tabs";
 interface ReceivedVideo {
@@ -84,6 +86,12 @@ interface ReceivedVideo {
 interface VideoObject {
   video_id: string; // Assuming video_id is of type string
   // Add other properties if needed
+}
+
+export interface workspace {
+  name: string;
+  workspace_creator_id: string;
+  workspace_id: string;
 }
 
 const socket = io("http://localhost:8080");
@@ -127,6 +135,9 @@ const Dashboard = () => {
     millisecond?: number;
   } | null>(null);
   const [responsetime, setResponseTime] = useState("");
+
+  const [allWorkspaces, setAllWorkspaces] = useState<Array<workspace>>([]);
+  const [selectWorkspace, setSelectWorkspace] = useState<workspace>();
   // const [showRrespondByComponent, setShowRespondByComponent] = useState(false);
   // const videoScreenRecorderRef = React.createRef();
   // Function to set the recorded data
@@ -142,29 +153,29 @@ const Dashboard = () => {
   };
 
   const handleStartRecording = () => {
-    console.log("hadleStartRecord111");
+    // console.log("hadleStartRecord111");
 
-    console.log("hadleStartRecord222");
+    // console.log("hadleStartRecord222");
 
     (videoScreenRecorderRef.current as any).startRecording();
     setIsNotRecording(false);
   };
 
   const handleStopRecording = () => {
-    console.log("hadleStartRecord111");
+    // console.log("hadleStartRecord111");
 
-    console.log("hadleStartRecord222");
+    // console.log("hadleStartRecord222");
 
     (videoScreenRecorderRef.current as any).stopRecording();
     // setIsNotRecording(true);
-    console.log(`resultvideosrc in grandparent:${resultVideosrccontext}`);
+    // console.log(`resultvideosrc in grandparent:${resultVideosrccontext}`);
     setMoveToRecordingCompleted(true);
   };
 
   const handleCameraAndAudioStartRecording = () => {
-    console.log("hadleStartRecord111");
+    // console.log("hadleStartRecord111");
 
-    console.log("hadleStartRecord222");
+    // console.log("hadleStartRecord222");
 
     (cameraAudioRecorderRef.current as any).startRecording();
     setIsNotRecording(false);
@@ -242,9 +253,37 @@ const Dashboard = () => {
   const userName = session?.user.name;
   let responseTime;
   let formattedHours;
+
+  const fetchAllWorkspace = async () => {
+    if (session && userId) {
+      try {
+        console.log("workspace fetching");
+        // const url = `get-workspace-by-user?user_id=${userId}`;
+        // const body: any = {};
+        // const method = "get";
+
+        // const workspaceData: any = await fetchData({ url, body, method });
+        const workspaceData = await fetch(
+          `http://localhost:8080/api/get-workspace-by-user?user_id=${userId}`
+        );
+        const data = await workspaceData.json();
+        console.log("workspace fetched", data);
+        setAllWorkspaces(data.workspaces);
+        console.log("selectWorkspace", selectWorkspace);
+        if (!selectWorkspace || selectWorkspace.workspace_id == "") {
+          console.log("selectWorkspace inside", data.workspaces[0]);
+          setSelectWorkspace(data.workspaces[0]);
+        }
+      } catch (ex) {
+        console.log("ex from workspace", ex);
+        // alert("Error while fetching workspace");
+      }
+    }
+  };
+
   if (dateFieldState) {
-    console.log("datefieldState", dateFieldState);
-    console.log("datefiledState month", dateFieldState.month);
+    // console.log("datefieldState", dateFieldState);
+    // console.log("datefiledState month", dateFieldState.month);
 
     const date = new Date(
       dateFieldState.year ?? 0,
@@ -280,7 +319,7 @@ const Dashboard = () => {
     // const nonNegativeHours = Math.max(0, hours);
     const isoString = date.toISOString();
     // formattedHours = nonNegativeHours.toString() + "h";
-    console.log("date datefielstate", isoString);
+    // console.log("date datefielstate", isoString);
     if (isoString) {
       // setResponseTime(isoString);
       responseTime = isoString;
@@ -310,10 +349,10 @@ const Dashboard = () => {
       });
 
       if (response.ok) {
-        console.log("Video sent successfully!");
+        // console.log("Video sent successfully!");
         const data = await response.json();
         const recipients = data.recipients;
-        console.log("SendVideo response:", data);
+        // console.log("SendVideo response:", data);
         socket.emit("sendVideo", {
           recipients,
           videoObjectFromRecorder,
@@ -337,7 +376,7 @@ const Dashboard = () => {
           `http://localhost:8080/api/getvideos/${session?.user.id}`
         );
         const data = await response.json();
-        console.log("user videos in db", data);
+        // console.log("user videos in db", data);
         setUserVideos(data);
       } else {
         console.error("No active session");
@@ -353,7 +392,7 @@ const Dashboard = () => {
         `http://localhost:8080/api/recievedvideos/${session?.user.id}`
       );
       const data = await response.json();
-      console.log("recieved videos in db", data);
+      // console.log("recieved videos in db", data);
 
       // if (response.ok) {
       setRecievedVideos(data);
@@ -371,7 +410,7 @@ const Dashboard = () => {
   };
 
   const handleDateFieldState = (state) => {
-    console.log("DateTimePicker State:", state.value);
+    // console.log("DateTimePicker State:", state.value);
     setDateFieldState(state.value);
     // if (dateFieldState) {
     //   setShowRespondByComponent(true);
@@ -383,7 +422,7 @@ const Dashboard = () => {
   const handleDeleteVideo = async (videoId, isRecievedVideo) => {
     // e.stopPropagation();
 
-    console.log("entered handleDeleteVideo");
+    // console.log("entered handleDeleteVideo");
 
     try {
       const response = await fetch("http://localhost:8080/api/deletevideo", {
@@ -397,7 +436,7 @@ const Dashboard = () => {
       if (!response.ok) {
         throw new Error("Failed to delete video");
       }
-      console.log("isRecievedVideo dashboard", isRecievedVideo);
+      // console.log("isRecievedVideo dashboard", isRecievedVideo);
 
       if (isRecievedVideo) {
         // Remove the video from receivedVideosArray
@@ -415,7 +454,7 @@ const Dashboard = () => {
 
       const data = await response.json();
       toast.success("Video Deleted Successfully");
-      console.log("deleted Video", data);
+      // console.log("deleted Video", data);
       // Handle success, e.g., show a success message or update UI
     } catch (error) {
       console.error("Error deleting video:", error);
@@ -433,10 +472,11 @@ const Dashboard = () => {
     if (status === "authenticated") {
       fetchUserVideos();
     }
-    console.log("userId from dashbaord", userId);
+    // console.log("userId from dashbaord", userId);
 
     if (userId) {
       fetchRecievedVideos();
+      fetchAllWorkspace();
     }
     // Listener for room creation and receiving video object
     socket.on("roomCreated", (room) => {
@@ -448,6 +488,13 @@ const Dashboard = () => {
       // Handle received video object
     });
   }, [session, userId, socket]);
+
+  useEffect(() => {
+    if (userId) {
+      console.log("userId", userId);
+      fetchAllWorkspace();
+    }
+  }, [selectWorkspace]);
   console.log(userVideos);
 
   return (
@@ -963,7 +1010,13 @@ const Dashboard = () => {
 
           {/* <!-- Modal toggle   */}
           <div className="flex justify-center items-center mt-5">
-            <DropDown />
+            <DropDown
+              allWorkspaces={allWorkspaces}
+              selectedWorkspace={
+                selectWorkspace ? selectWorkspace : allWorkspaces[0]
+              }
+              setSelectedWorkspace={setSelectWorkspace}
+            />
           </div>
         </div>
         <Sidebar onSidebarClick={handleSidebarClick} />
