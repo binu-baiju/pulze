@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 // import User from "../model/usermodel";
 import { config } from "dotenv";
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from "../../node_modules/.prisma/client";
 
 const prisma = new PrismaClient();
 
