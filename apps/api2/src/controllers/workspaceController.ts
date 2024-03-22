@@ -18,6 +18,12 @@ export const createNewWorkspaceContoller = async (req: Request, res: Response) =
           workspace_creator_id: creater_id,
         }
       });
+
+      const new_workspace = await prisma.workspace.findUnique({
+        where: {
+          workspace_id: workspace.workspace_id
+        }
+      })
     
     const workspaceMember = await prisma.workspaceMember.create({
           data: {
@@ -26,7 +32,7 @@ export const createNewWorkspaceContoller = async (req: Request, res: Response) =
           }
         });
 
-    return res.json({ message: "Workspace Created Successful", workspaceId: workspace.workspace_id });
+    return res.json({ workspace:  new_workspace});
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: "Internal server error" });
@@ -107,13 +113,19 @@ export const getWorkspaceByUserContoller = async (req: Request, res: Response) =
 
 
 export const deleteWorkspaceContoller = async (req: Request, res: Response) => {
-    const { workspace_id } = req.body;
+    const { workspace_id, user_id } = req.body;
   
     try {
       if (!workspace_id) {
         return res.status(400).json({ error: "Workspace ID is required" });
       }
 
+      const workspace = await prisma.workspace.findUnique({where:{ workspace_id: String(workspace_id) }});
+      
+      if(workspace?.workspace_creator_id !== user_id)
+      {
+        return res.status(500).json({ error: "Only Owner can delete the workspace" });
+      }
       const workspaceMemberDeleted = await prisma.workspaceMember.deleteMany({
         where: {
           workspace_id: workspace_id
@@ -137,6 +149,7 @@ export const deleteWorkspaceContoller = async (req: Request, res: Response) => {
 export const leaveWorkspaceContoller = async (req: Request, res: Response) => {
     const { workspace_id, user_id } = req.body;
   
+    console.log("leave workspace entered");
     try {
       if (!workspace_id) {
         return res.status(400).json({ error: "Workspace ID is required" });
@@ -158,6 +171,8 @@ export const leaveWorkspaceContoller = async (req: Request, res: Response) => {
         }
       });
 
+      console.log("allWorkspaceMember", allWorkspaceMember);
+
       const workspaceMember = await prisma.workspaceMember.findMany({
         where: {
           workspace_id: workspace_id,
@@ -170,7 +185,7 @@ export const leaveWorkspaceContoller = async (req: Request, res: Response) => {
         return res.status(400).json({ error: "Workspace doesn't exist" });
       }
 
-      if(allWorkspaceMember.length <1)
+      if(allWorkspaceMember.length <2)
       {
         return res.status(400).json({ error: "Can't leave workspace with no members" });
       }
@@ -210,15 +225,21 @@ export const leaveWorkspaceContoller = async (req: Request, res: Response) => {
 
 
   export const addWorkspaceMemberContoller = async (req: Request, res: Response) => {
-    const { workspace_id, user_id } = req.body;
+    const { workspace_id, user_email } = req.body;
   
     try {
       if (!workspace_id) {
         return res.status(400).json({ error: "Workspace ID is required" });
       }
 
-      if (!user_id) {
-        return res.status(400).json({ error: "User ID is required" });
+      const user = await prisma.user.findFirst({
+        where: {
+          email: user_email
+        }
+      })
+
+      if (!user?.id) {
+        return res.status(400).json({ error: "User ID not found, invite" });
       }
   
       const workspace = await prisma.workspace.findUnique({
@@ -234,7 +255,7 @@ export const leaveWorkspaceContoller = async (req: Request, res: Response) => {
 
       const createWorkspace = await prisma.workspaceMember.create({
         data: {
-            user_id: user_id,
+            user_id: user.id,
             workspace_id: workspace_id
         }
       });
@@ -249,24 +270,42 @@ export const leaveWorkspaceContoller = async (req: Request, res: Response) => {
 
 
   export const getWorkspaceMemberContoller = async (req: Request, res: Response) => {
-    const { workspace_id, user_id } = req.body;
+    const { workspace_id } = req.query;
   
     try {
       if (!workspace_id) {
         return res.status(400).json({ error: "Workspace ID is required" });
       }
-
-      if (!user_id) {
-        return res.status(400).json({ error: "User ID is required" });
-      }
   
       const workspaceMember = await prisma.workspaceMember.findMany({
         where: {
-          workspace_id: workspace_id
+          workspace_id: String(workspace_id)
         }
       });
+
+      const workspace = await prisma.workspace.findUnique({
+        where: {
+          workspace_id: String(workspace_id)
+        }
+      })
+
+      const workspaceMembersList = [];
+      for(let i=0; i< workspaceMember.length ; i++)
+      {
+        const workspaceUser= await prisma.user.findUnique({
+          where: {
+            id: String(workspaceMember[i].user_id)
+          }
+        });
+
+        if(workspaceUser)
+        {
+          const role = workspaceMember[i].user_id == workspace?.workspace_creator_id ? "admin" : "member"
+          workspaceMembersList.push({...workspaceUser, role: role} )
+        }
+      }
   
-      return res.json({ workspace: workspaceMember });
+      return res.json({ workspaceMembers: workspaceMembersList });
 
     } catch (error) {
       console.error(error);
@@ -300,3 +339,27 @@ export const leaveWorkspaceContoller = async (req: Request, res: Response) => {
       return res.status(500).json({ error: "Internal server error" });
     }
   };
+
+  export const updateWorkspaceNameContoller = async (req: Request, res: Response) => {
+    const { workspace_id, workspaceName } = req.body;
+  
+    try {
+      if (!workspace_id) {
+        return res.status(400).json({ error: "Workspace ID is required" });
+      }
+  
+      const updatedRecipient = await prisma.workspace.update({
+        where: { workspace_id: workspace_id },
+        data: { name: workspaceName },
+      });
+
+      const workspaces =await prisma.workspace.findUnique({where:{ workspace_id: String(workspace_id) }});
+  
+      return res.json({ workspaces });
+
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  };
+  

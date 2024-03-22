@@ -1,14 +1,26 @@
 import { CreatingWorkspace } from "../../workspace/components/creatingWorkspace";
 import { Inviting } from "./Inviting";
 import { WorkSpaceSet } from "../../workspace/components/workspaceset";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { IoIosArrowDown } from "react-icons/io";
+import { workspace } from "./dashboard";
+import { AlarmClockOffIcon } from "lucide-react";
+import { FaCheck } from "react-icons/fa6";
 
-const DropDown = () => {
+interface Props {
+  allWorkspaces: Array<workspace>;
+  selectedWorkspace: workspace;
+  setSelectedWorkspace: (workspace: workspace) => void;
+}
+
+export interface WorkspaceProps {
+  selectedWorkspace: workspace;
+  updateWorkspace: (workspace: workspace) => void;
+}
+const DropDown = (props: Props) => {
   const [showInviting, setShowInviting] = useState(false);
   const [showWorkSpace, setShowWorkspace] = useState(false);
   const [showCreateWorkSpace, setShowCreateWorkspace] = useState(false);
-
   const toggleInviting = () => {
     setShowInviting(!showInviting);
   };
@@ -33,27 +45,60 @@ const DropDown = () => {
         onClick={toggleAll}
       >
         <span className="text-[#0F172A] text-left font-poppins font-semibold">
-          Binu Baiju's team
+          {props.selectedWorkspace?.name}
         </span>
         <IoIosArrowDown />
       </div>
-      <div className="flex flex-col relative">
-        <p>
-          <a className="flex flex-row items-center absolute top-1 font-normal text-sm m-1 font-[Inter] text-left ">
-            {showWorkSpace && <WorkSpaceSet />}
-          </a>
-        </p>
-        <p>
-          <a className="flex flex-row font-[Inter] absolute top-7 font-normal text-sm text-left items-center m-1 ">
-            {showInviting && <Inviting />}
-          </a>
-        </p>
-        <p>
-          <a className="flex flex-row font-[Inter] absolute top-14 font-normal text-sm text-left items-center m-1 ">
-            {showCreateWorkSpace && <CreatingWorkspace />}
-          </a>
-        </p>
-      </div>
+      {showWorkSpace && (
+        <>
+          <div className="flex flex-col justify-center items-center">
+            {props.allWorkspaces.map((workspace: workspace) => {
+              return (
+                <div
+                  className="flex flex-row justify-betweeen items-center"
+                  onClick={() => props.setSelectedWorkspace(workspace)}
+                >
+                  <div className="mx-4">{workspace.name}</div>
+                  {workspace.workspace_id ==
+                  props.selectedWorkspace?.workspace_id ? (
+                    <div>
+                      <FaCheck />
+                    </div>
+                  ) : (
+                    <div></div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+          <div className="flex flex-col relative">
+            <p>
+              <a className="flex flex-row items-center absolute top-1 font-normal text-sm m-1 font-[Inter] text-left ">
+                <WorkSpaceSet
+                  selectedWorkspace={props.selectedWorkspace}
+                  updateWorkspace={props.setSelectedWorkspace}
+                />
+              </a>
+            </p>
+            <p>
+              <a className="flex flex-row font-[Inter] absolute top-7 font-normal text-sm text-left items-center m-1 ">
+                <Inviting
+                  selectedWorkspace={props.selectedWorkspace}
+                  updateWorkspace={props.setSelectedWorkspace}
+                />
+              </a>
+            </p>
+            <p>
+              <a className="flex flex-row font-[Inter] absolute top-14 font-normal text-sm text-left items-center m-1 ">
+                <CreatingWorkspace
+                  selectedWorkspace={props.selectedWorkspace}
+                  updateWorkspace={props.setSelectedWorkspace}
+                />
+              </a>
+            </p>
+          </div>
+        </>
+      )}
     </div>
   );
 };
