@@ -1,3 +1,4 @@
+// "use client";
 import React from "react";
 import { Input } from "ui/components";
 import { AvatarDemo } from "./avatar";
@@ -113,6 +114,8 @@ const NotificationTab: React.FC<NotificationTabProps> = ({
 }) => {
   console.log("video in notification Tab", video);
   console.log("key in notification Tab", key);
+
+  // const { data: session, status } = useSession();
 
   const title = video?.title || "Untitled Pulze";
   const truncatedTitle =

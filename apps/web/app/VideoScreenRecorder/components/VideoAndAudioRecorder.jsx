@@ -464,6 +464,7 @@ const VideoAndAudioRecorder = forwardRef((props, ref) => {
     typeComment1,
     requestBody,
     videoId,
+    selectWorkspace,
   } = props;
   console.log(`title:${title}`);
   console.log(`description:${description}`);
@@ -546,6 +547,7 @@ const VideoAndAudioRecorder = forwardRef((props, ref) => {
         formData.append("title", title);
         formData.append("description", description);
         formData.append("userId", userId);
+        formData.append("selectWorkspaceId", selectWorkspace.workspace_id);
 
         const response = await fetch(
           "http://localhost:8080/api/uploadVideo",
@@ -775,6 +777,7 @@ const VideoScreen = ({
   requestBody,
   typeComment1,
   videoId,
+  selectWorkspace,
 }) => {
   const handleRecordingComplete = (data) => {
     setRecordedVideoLink(data);
@@ -791,6 +794,7 @@ const VideoScreen = ({
       requestBody={requestBody}
       typeComment1={typeComment1}
       videoId={videoId}
+      selectWorkspace={selectWorkspace}
     />
   );
 };
