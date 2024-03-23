@@ -100,6 +100,7 @@ interface NotificationTabProps {
   isRecievedVideo: Boolean;
   fullVideoObject: fullVideObject | undefined;
   handleDeleteVideo: (videoId: string, isRecievedVideo: Boolean) => void;
+  disableDelete: boolean;
 }
 const NotificationTab: React.FC<NotificationTabProps> = ({
   key,
@@ -108,6 +109,7 @@ const NotificationTab: React.FC<NotificationTabProps> = ({
   session,
   isRecievedVideo,
   handleDeleteVideo,
+  disableDelete = false,
 }) => {
   console.log("video in notification Tab", video);
   console.log("key in notification Tab", key);
@@ -413,7 +415,7 @@ const NotificationTab: React.FC<NotificationTabProps> = ({
           className="mx-2 cursor-pointer"
           onClick={(e) => e.stopPropagation()}
         >
-          {videoId && (
+          {videoId && !disableDelete && (
             <DustbinIcon
               onClick={() =>
                 handleDeleteVideo(videoId.toString(), isRecievedVideo)
