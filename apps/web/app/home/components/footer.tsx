@@ -10,11 +10,11 @@ const Footer = () => {
       <div className="flex flex-row justify-evenly flex-wrap">
         <div>
           <div>
-            <p className="font-poppins font-bold text-2xl">Pulze</p>
+            <p className="font-poppins font-bold text-2xl">pulze</p>
           </div>
           <div className="flex flex-row justify-center content-center">
             <p className="font-poppins font-bold text-xl mt-4">
-              Built by an Anshul Tiwari And Binu
+              Built by an Anshul Tiwari And Binu Baiju
             </p>
             <div>
               <GlobeIcon className="scale-[45%]" />
