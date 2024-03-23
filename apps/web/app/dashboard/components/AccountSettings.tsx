@@ -27,7 +27,7 @@ export function Settings() {
   const userId = session?.user.id;
   const [userName, setUserName] = useState("");
   const [user, setUser] = useState<User>();
-
+  const [openModal, setOpenModal] = useState(false);
   useEffect(() => {
     fetchUserInfo();
   }, []);
@@ -76,15 +76,16 @@ export function Settings() {
         console.error("Error response:", data.error);
         toast("error", data.error);
       }
+      setOpenModal(false);
     } catch (error) {
       console.error("Error updating user name:", error);
       toast("error", error);
     }
   };
   return (
-    <Dialog>
+    <Dialog open={openModal} onOpenChange={setOpenModal}>
       <DialogTrigger asChild>
-        <span className="flex flex-row font-[poppins] font-light text-xs text-left justify-center items-center m-1 text-[#0F172A]">
+        <span className="flex flex-row font-[poppins] cursor-pointer font-light text-xs text-left justify-start items-center m-1 text-[#0F172A]">
           Settings
         </span>
       </DialogTrigger>
@@ -115,7 +116,7 @@ export function Settings() {
               placeholder="Name"
               type="text"
               value={userName}
-              onChange={(e) => setUserName(e.target.value.toUpperCase())}
+              onChange={(e) => setUserName(e.target.value)}
             />
           </div>
           <div className="flex flex-col gap-2">
