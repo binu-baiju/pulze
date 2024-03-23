@@ -12,6 +12,7 @@ const prisma = new PrismaClient();
 export const getVideosCreatedByUser = async (req: Request, res: Response) => {
   try {
     const userId = req.params.userId;
+    const workspaceId = req.params.workspaceId;
     // console.log("userId", userId);
 
     // Create a new SendVideo record
@@ -20,6 +21,7 @@ export const getVideosCreatedByUser = async (req: Request, res: Response) => {
     const userCreatedVideosWithDetails = await prisma.video.findMany({
       where: {
         creatorId: userId,
+        workspace_id: workspaceId,
       },
       include: {
         creator: true,

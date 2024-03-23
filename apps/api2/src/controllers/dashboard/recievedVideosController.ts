@@ -13,12 +13,16 @@ export const recievedVideos = async (req: Request, res: Response) => {
   // console.log("entered recieved Videos");
 
   const userId = req.params.userId;
+  const workspaceId = req.params.workspaceId;
   // console.log("userId from recievedVideos", userId);
 
   try {
     const recievedVideos = await prisma.recipient.findMany({
       where: {
         userId: userId,
+        sendVideo: {
+          workspaceId: workspaceId, // Filter by workspace_id
+        },
       },
       include: {
         sendVideo: {

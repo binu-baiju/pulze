@@ -21,13 +21,14 @@ config();
 //   }
 
 export const uploadVideo = async (req: Request, res: Response) => {
-  // console.log("Hello from backend");
+  console.log("called upload Video");
   // console.log("Request object:", req);
   const { file } = req as any;
-  const { title, description, userId } = req.body as any; // Assuming you are using a middleware to handle file uploads
+  const { title, description, userId, selectWorkspaceId } = req.body as any; // Assuming you are using a middleware to handle file uploads
   // console.log(`file:${file}`);
   // console.log(`title:${title}`);
   // console.log(`description:${description}`);
+  console.log("workspaceId", selectWorkspaceId);
 
   if (!file) {
     return res.status(400).json({ error: "No file provided" });
@@ -57,7 +58,7 @@ export const uploadVideo = async (req: Request, res: Response) => {
     const { ETag, Location, Bucket, Key } = result;
     try {
       const creatorId = "d68e3f11-bdab-430f-9dc2-54c2c088864d"; // Replace with the actual user ID
-      const workspaceId = "1bd89f4c-36eb-4411-9232-acb129219e8f";
+      // const workspaceId = "1bd89f4c-36eb-4411-9232-acb129219e8f";
       const newVideo = await prisma.video.create({
         data: {
           title: title,
@@ -68,7 +69,10 @@ export const uploadVideo = async (req: Request, res: Response) => {
           Bucket,
 
           creator: { connect: { id: userId } },
-          workspace: { connect: { workspace_id: workspaceId } },
+          // workspace: { connect: { workspace_id: workspaceId } },
+          workspace: {
+            connect: { workspace_id: selectWorkspaceId },
+          },
         },
       });
       // console.log(newVideo);

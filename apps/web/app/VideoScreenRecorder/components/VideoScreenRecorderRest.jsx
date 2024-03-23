@@ -285,6 +285,7 @@ const VideoScreenRecorder = forwardRef((props, ref) => {
     typeComment1,
     saveVideoAfterStopRecordingOrNot,
     onRecordingCompleteAndGettingVideoId,
+    selectWorkspace,
   } = props;
   console.log(`title:${title}`);
   console.log(`description:${description}`);
@@ -292,6 +293,8 @@ const VideoScreenRecorder = forwardRef((props, ref) => {
   console.log("Requestbody from videoScreenRecorder", requestBody);
   console.log(`typecomment1:${typeComment1}`);
   console.log("saveVideoAfterStopRecording", saveVideoAfterStopRecordingOrNot);
+  console.log("selectWorkspaceID", selectWorkspace.workspace_id);
+  const workspaceId = selectWorkspace.workspace_id;
 
   useImperativeHandle(ref, () => ({
     startRecording,
@@ -468,6 +471,7 @@ const VideoScreenRecorder = forwardRef((props, ref) => {
             formData.append("title", title);
             formData.append("description", description);
             formData.append("userId", userId);
+            formData.append("selectWorkspaceId", selectWorkspace.workspace_id);
 
             const response = await fetch(
               "http://localhost:8080/api/uploadVideo",
@@ -579,15 +583,19 @@ const VideoScreenRecorder = forwardRef((props, ref) => {
 
       const { result, success } = responseData;
       console.log("sucess", success);
-      setResultVideosrccontext(
-        `https://d1yt4919vxgwb5.cloudfront.net/${result.VideoUploadedToS3Details.key}`
-      );
-      console.log("Server Response:", responseData);
-      console.log("Server Response result:", result);
-      setResultVideosrc(
-        `https://d1yt4919vxgwb5.cloudfront.net/${result.VideoUploadedToS3Details.key}`
-      );
-
+      if (
+        result.VideoUploadedToS3Details &&
+        result.VideoUploadedToS3Details.key
+      ) {
+        setResultVideosrccontext(
+          `https://d1yt4919vxgwb5.cloudfront.net/${result.VideoUploadedToS3Details.key}`
+        );
+        // console.log("Server Response:", responseData);
+        // console.log("Server Response result:", result);
+        setResultVideosrc(
+          `https://d1yt4919vxgwb5.cloudfront.net/${result.VideoUploadedToS3Details.key}`
+        );
+      }
       // console.log(` src:${resultVideosrccontext}`);
       // onRecordingComplete(resultVideosrc);
 
@@ -697,6 +705,7 @@ const VideoScreen = ({
   typeComment1,
   saveVideoAfterStopRecordingOrNot,
   onRecordingCompleteAndGettingVideoId,
+  selectWorkspace,
 }) => {
   const { resultVideosrccontext } = useMyContext();
   const handleRecordingComplete = (data) => {
@@ -715,6 +724,7 @@ const VideoScreen = ({
       onRecordingCompleteAndGettingVideoId={
         onRecordingCompleteAndGettingVideoId
       }
+      selectWorkspace={selectWorkspace}
       // onRecordingComplete={handleRecordingComplete}
     />
   );
