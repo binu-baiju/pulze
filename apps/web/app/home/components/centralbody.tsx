@@ -27,7 +27,7 @@ const CentralBody = () => {
           </p>
           <div className="flex flex-col space-y-4 sm:flex-row sm:justify-center sm:space-y-0">
             <a
-              href="#"
+              href="/signup"
               className="inline-flex justify-center text-[Inter] items-center py-3 px-5 text-base font-medium text-center text-white rounded-lg bg-[#8645FF]  focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-900"
             >
               Create test pulze{" "}
