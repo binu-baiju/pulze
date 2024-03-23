@@ -789,7 +789,7 @@ const GettinResponse = () => {
 
             {/* //384 */}
             <div
-              className={` h-[130px] lg:${videoStatus ? `h-[400px]` : `h-[435px]`}  max-w-full  flex flex-col justify-start scrollbar scrollbar-thin scrollbar-thumb-rounded-md scrollbar-track-rounded-md overflow-y-auto overflow-x-hidden`}
+              className={` h-[130px] lg:h-[435px] max-w-full  flex flex-col justify-start scrollbar scrollbar-thin scrollbar-thumb-rounded-md scrollbar-track-rounded-md overflow-y-auto overflow-x-hidden`}
             >
               {comments.map((comment) => {
                 // const parsedDate =3;
@@ -1235,6 +1235,7 @@ const GettinResponse = () => {
                                         requestBody={replyCommentRequestBody}
                                         typeComment1={typeReplyComment}
                                         videoId={videoId}
+                                        selectWorkspace={undefined}
                                       />
                                     ) : (
                                       <ScreenAndAudioRecorder
@@ -1251,6 +1252,7 @@ const GettinResponse = () => {
                                         requestBody={replyCommentRequestBody}
                                         typeComment1={typeReplyComment}
                                         videoId={videoId}
+                                        selectWorkspace={undefined}
                                       />
                                     )}
                                   </div>
@@ -1654,6 +1656,7 @@ const GettinResponse = () => {
                           requestBody={topLevelCommentRequestBody}
                           typeComment1={typeComment}
                           videoId={videoId}
+                          selectWorkspace={undefined}
                         />
                       ) : (
                         <ScreenAndAudioRecorder
@@ -1666,6 +1669,7 @@ const GettinResponse = () => {
                           requestBody={topLevelCommentRequestBody}
                           typeComment1={typeComment}
                           videoId={videoId}
+                          selectWorkspace={undefined}
                         />
                       )}
                     </div>
