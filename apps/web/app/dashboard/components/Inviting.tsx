@@ -56,7 +56,7 @@ export function Inviting(props: WorkspaceProps) {
           Invite Coworkers
         </span>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px] flex flex-col justify-center rounded-lg border border-slate-500  min-w-[500px] min-h-[300px] ">
+      <DialogContent className="sm:max-w-[425px] flex flex-col justify-center rounded-lg border border-slate-500  min-w-[500px] min-h-[200px] ">
         <DialogHeader>
           <DialogTitle className="font-poppins items-start font-bold ml-[30px] mx-0 text-2xl text-lg">
             Invite co-workers by email
@@ -77,17 +77,6 @@ export function Inviting(props: WorkspaceProps) {
               onClick={addMember}
             >
               Send
-            </Button>
-          </div>
-          <div className="flex flex-row place-content-between items-center">
-            <span className="text-[#474545] text-poppins text-sm font-light">
-              Anyone with the link can join the pulse
-            </span>
-            <Button
-              type="submit"
-              className="text-white bg-[#8645FF] w-[120px] rounded-r-md font-[Inter] font-semibold text-lg"
-            >
-              Copy Link
             </Button>
           </div>
         </div>
