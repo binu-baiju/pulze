@@ -271,6 +271,7 @@ export function WorkSpaceSet(props: WorkspaceProps) {
                           placeholder="Enter your workspace name"
                           className="w-[300px]"
                           value={workspaceName}
+                          disabled={workspace?.workspace_creator_id != userId}
                           onChange={(e) => {
                             console.log("workspace", e.target.value);
                             setWorkspaceName(e.target.value);
@@ -289,7 +290,6 @@ export function WorkSpaceSet(props: WorkspaceProps) {
                     </div>
                   </div>
                   <div className="mt-2">
-                    <div className="font-semibold">Join Link</div>
                     <div className="flex flex-row w-full justify-between mt-4">
                       <div>
                         <Input
@@ -298,14 +298,6 @@ export function WorkSpaceSet(props: WorkspaceProps) {
                           className="w-[300px]"
                           disabled
                         />
-                      </div>
-                      <div>
-                        <Button
-                          type="submit"
-                          className="text-white bg-[#8645FF] rounded-r-md font-[Inter] font-semibold text-lg w-[120px]"
-                        >
-                          Copy Link
-                        </Button>
                       </div>
                     </div>
                   </div>
