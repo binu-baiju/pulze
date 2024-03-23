@@ -5,11 +5,12 @@ import CaughtUp from "../../components/caughtUp";
 
 import NotificationTab from "../../components/notificationTab";
 import { useSession } from "next-auth/react";
-const ActivityPage = (userVideos, handleDeleteVideo) => {
-  console.log("uservideos in mypulze component", userVideos);
+
+const ActivityPage = ({ userVideos, workspace, handleDeleteVideo }) => {
   const { data: session, status } = useSession();
   const [currentTime, setCurrentTime] = useState(new Date());
   let filteredUserVideos;
+  const user_id = session?.user.id;
   // if (userVideos) {
   //   //   filteredUserVideos = userVideos.userVideos.filter((video) => {
   //   //     const responseTime = new Date(video.sendVideos?.[0]?.responseTime);
@@ -63,6 +64,7 @@ const ActivityPage = (userVideos, handleDeleteVideo) => {
             isRecievedVideo={false}
             fullVideoObject={undefined}
             handleDeleteVideo={handleDeleteVideo}
+            disableDelete={workspace.workspace_creator_id != user_id}
           />
         ))
       ) : (
@@ -89,6 +91,7 @@ const ActivityPage = (userVideos, handleDeleteVideo) => {
                       isRecievedVideo={false}
                       fullVideoObject={undefined}
                       handleDeleteVideo={handleDeleteVideo}
+                      disableDelete={workspace.workspace_creator_id != user_id}
                     />
                   </>
                 );
