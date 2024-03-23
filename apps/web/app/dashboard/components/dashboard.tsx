@@ -1014,6 +1014,7 @@ const Dashboard = () => {
             userVideos={userVideos}
             receivedVideos={receivedVideosArray}
             handleDeleteVideo={handleDeleteVideo}
+            workspace={selectWorkspace}
           />
         </div>
       )}
@@ -1023,6 +1024,7 @@ const Dashboard = () => {
           <ActivityPage
             userVideos={userVideos}
             handleDeleteVideo={handleDeleteVideo}
+            workspace={selectWorkspace}
           />
         </div>
       )}

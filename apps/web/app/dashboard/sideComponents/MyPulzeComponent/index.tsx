@@ -38,13 +38,11 @@ const ActivityPage = ({
   userVideos,
   receivedVideos: initialReceivedVideos,
   handleDeleteVideo,
+  workspace,
 }) => {
   const { data: session, status } = useSession();
-  console.log("uservideos in pulze component", userVideos);
-  console.log("recievedVideos in pulze component", initialReceivedVideos);
-
-  // const [receivedVideos, setReceivedVideos] = useState(initialReceivedVideos);
   const [currentTime, setCurrentTime] = useState(new Date());
+  const user_id = session?.user.id;
   let filteredUserVideos;
   if (userVideos) {
     filteredUserVideos = userVideos.filter((video) => {
@@ -130,6 +128,9 @@ const ActivityPage = ({
                         isRecievedVideo={false}
                         fullVideoObject={undefined}
                         handleDeleteVideo={handleDeleteVideo}
+                        disableDelete={
+                          workspace.workspace_creator_id != user_id
+                        }
                       />
                     );
                   }
@@ -154,6 +155,9 @@ const ActivityPage = ({
                         session={session}
                         isRecievedVideo={true}
                         handleDeleteVideo={handleDeleteVideo}
+                        disableDelete={
+                          workspace.workspace_creator_id != user_id
+                        }
                       />
                     </>
                   );
@@ -186,6 +190,7 @@ const ActivityPage = ({
                     isRecievedVideo={true}
                     fullVideoObject={recievedvideo}
                     handleDeleteVideo={handleDeleteVideo}
+                    disableDelete={workspace.workspace_creator_id != user_id}
                   />
                 </>
               );
@@ -209,6 +214,7 @@ const ActivityPage = ({
                       isRecievedVideo={false}
                       fullVideoObject={undefined}
                       handleDeleteVideo={handleDeleteVideo}
+                      disableDelete={workspace.workspace_creator_id != user_id}
                     />
                   </>
                 );
