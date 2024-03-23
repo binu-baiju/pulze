@@ -25,10 +25,10 @@ const DropDown = (props: Props) => {
         className="flex flex-row justify-center items-center cursor-pointer"
         onClick={() => setToggle(!toggle)}
       >
-        <span className="text-[#0F172A] font-poppins font-semibold relative">
+        <button className="flex flex-row items-center justify-center text-[#0F172A] font-poppins bg-[#EFEFEF]  w-full h-10 font-semibold relative">
           {props.selectedWorkspace?.name}
-        </span>
-        <IoIosArrowDown />
+          <IoIosArrowDown />
+        </button>
       </div>
       <>
         {toggle && (
