@@ -204,8 +204,9 @@ const NotificationTab: React.FC<NotificationTabProps> = ({
             <AvatarDemo
               imageUrl={
                 isRecievedVideo
-                  ? fullVideoObject?.sendVideo?.sender?.image
-                  : creatorImage
+                  ? fullVideoObject?.sendVideo?.sender?.image ||
+                    "/icons8-user-50.png"
+                  : creatorImage || "/icons8-user-50.png"
               }
             />
             <p className="font-semibold font-poppins text-[9px] pl-1.5 pt-1 text-[#474545]">

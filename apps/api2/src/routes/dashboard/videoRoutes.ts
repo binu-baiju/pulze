@@ -6,8 +6,8 @@ import { deleteVideo } from "../../controllers/dashboard/deleteVideoByVideoIdCon
 
 const router: Router = express.Router();
 
-router.get("/getvideos/:userId", getVideosCreatedByUser);
-router.get("/recievedvideos/:userId", recievedVideos);
+router.get("/getvideos/:userId/:workspaceId", getVideosCreatedByUser);
+router.get("/recievedvideos/:userId/:workspaceId", recievedVideos);
 router.delete("/deletevideo", deleteVideo);
 
 export default router;

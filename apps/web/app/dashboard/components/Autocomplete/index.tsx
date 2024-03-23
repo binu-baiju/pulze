@@ -17,6 +17,9 @@ import { DateTimePicker } from "ui/components/date-time-picker/date-time-picker"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "ui/components/tabs";
 import { Clock } from "lucide-react";
 import { useSession } from "next-auth/react";
+
+import Workspace from "../dashboard";
+// import { Workspace } from "@prisma/client";
 interface DateFieldState {
   year?: number;
   month?: number;
@@ -33,6 +36,7 @@ export interface AutoCompleteProps {
   setDateFieldState: Dispatch<SetStateAction<DateFieldState | null>>;
   dateFieldState: DateFieldState | null;
   formattedHours: String;
+  selectWorkspace;
 }
 
 export default function AutoComplete({
@@ -41,6 +45,7 @@ export default function AutoComplete({
   dateFieldState,
   setDateFieldState,
   formattedHours,
+  selectWorkspace,
 }: AutoCompleteProps) {
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [users, setUsers] = useState<UserType[]>();
@@ -69,7 +74,7 @@ export default function AutoComplete({
       const workspaceId = "1bd89f4c-36eb-4411-9232-acb129219e8f";
       const query = encodeURIComponent(searchQuery);
       const response = await fetch(
-        `http://localhost:8080/api/videorecordercompleted/search?workspaceId=${workspaceId}&query=${query}&userIdToRemove=${userId}`,
+        `http://localhost:8080/api/videorecordercompleted/search?workspaceId=${selectWorkspace.workspace_id}&query=${query}&userIdToRemove=${userId}`,
         {
           method: "GET",
           headers: {

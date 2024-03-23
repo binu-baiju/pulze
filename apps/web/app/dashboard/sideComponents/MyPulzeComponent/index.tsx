@@ -136,7 +136,7 @@ const ActivityPage = ({
                 }
               })}
 
-              <div>recieved</div>
+              <div>Recieve Pulzes</div>
 
               {/* {receivedVideos.map((recievedvideo) => { */}
               {filteredReceivedVideos.map((recievedvideo) => {
@@ -168,11 +168,11 @@ const ActivityPage = ({
           {/* <NotificationTab /> */}
         </div>
       </div>
-      Closed
+
       <div className="notification-container">
         <div className="flex flex-col mx-3 my-6">
+          Closed
           {/* {receivedVideos.map((recievedvideo) => { */}
-
           {initialReceivedVideos.map((recievedvideo) => {
             const responseTime = new Date(recievedvideo.sendVideo.responseTime);
             if (currentTime > responseTime) {

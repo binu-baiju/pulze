@@ -352,7 +352,7 @@ const GettinResponse = () => {
       // fetchComments();
       // You can handle the new comment data as needed
       console.log("New Comment:", newComment);
-
+      toast.success("New Comment Created");
       // Optionally, you can update the UI to include the new comment
       // For example, update a list of comments using setComments([...comments, newComment]);
     } catch (error) {
@@ -363,6 +363,7 @@ const GettinResponse = () => {
     } catch (error) {
       console.error("Coudnt update status");
     }
+    await fetchComments();
   };
 
   const handleChange = (isChecked) => {
@@ -565,6 +566,7 @@ const GettinResponse = () => {
     } catch (error) {
       console.error("coudnt update");
     }
+    await fetchComments();
   };
 
   const handlePostButton = (selectedTab) => {
@@ -731,7 +733,11 @@ const GettinResponse = () => {
           <div className="flex  h-16 gap-2 items-center ">
             <div className="ml-12">
               <img
-                src={creatorFromVideoPlayer.image}
+                src={
+                  creatorFromVideoPlayer.image
+                    ? creatorFromVideoPlayer.image
+                    : "/icons8-user-50.png"
+                }
                 className="w-[45px] h-[44.35px] rounded-full"
                 alt="Picture of the author"
               />
@@ -782,7 +788,9 @@ const GettinResponse = () => {
             )}
 
             {/* //384 */}
-            <div className=" h-[130px] lg:h-[435px]  max-w-full  flex flex-col justify-start scrollbar scrollbar-thin scrollbar-thumb-rounded-md scrollbar-track-rounded-md overflow-y-auto overflow-x-hidden">
+            <div
+              className={` h-[130px] lg:${videoStatus ? `h-[400px]` : `h-[435px]`}  max-w-full  flex flex-col justify-start scrollbar scrollbar-thin scrollbar-thumb-rounded-md scrollbar-track-rounded-md overflow-y-auto overflow-x-hidden`}
+            >
               {comments.map((comment) => {
                 // const parsedDate =3;
                 const isCurrentUserMainComment = userId === comment.user.id;
@@ -804,7 +812,11 @@ const GettinResponse = () => {
                         <header className=" h-5 flex w-full items-center justify-between mt-2   ">
                           <div className=" h-full flex  items-center mt-2   ">
                             <img
-                              src={comment.user.image}
+                              src={
+                                comment.user.image
+                                  ? comment.user.image
+                                  : "/icons8-user-50.png"
+                              }
                               width={10}
                               height={10}
                               alt="Picture of the author"
@@ -903,7 +915,11 @@ const GettinResponse = () => {
                             <header className="h-5  flex w-full items-center justify-between mt-2 ">
                               <div className="h-full flex items-center mt-2 ">
                                 <img
-                                  src={reply.user.image}
+                                  src={
+                                    reply.user.image
+                                      ? reply.user.image
+                                      : "/icons8-user-50.png"
+                                  }
                                   width={10}
                                   height={10}
                                   alt="Picture of the author"
@@ -1109,10 +1125,11 @@ const GettinResponse = () => {
                                       onRecordingCompleteAndGettingVideoId={
                                         undefined
                                       }
+                                      selectWorkspace={undefined}
                                     />
                                   </div>
                                   <div className="flex flex-col items-start w-full ml-9 gap-3  mr-10 ">
-                                    <div className=" w-full flex gap-2 ml-2">
+                                    {/* <div className=" w-full flex gap-2 ml-2">
                                       <ToggleButton
                                         icon1={
                                           <Video
@@ -1158,7 +1175,7 @@ const GettinResponse = () => {
                                           Allow
                                         </Button>
                                       </div>
-                                    </div>
+                                    </div> */}
                                     {/* </div> */}
 
                                     <div className=" w-full  flex justify-center">
@@ -1422,8 +1439,8 @@ const GettinResponse = () => {
           <div className="bg-white lg:absolute right-0 bottom-0 min-h-[100px]  lg:min-h-[171px] rounded-xl border border-slate-300 w-[690px] lg:w-11/12  mb-4 flex items-start  justify-center mr-5   ">
             <div className=" w-2/12 flex justify-end items-start ">
               <img
-                src={image}
-                className="w-[35px] lg:w-[35px] h-[35px] lg:h-[35.3px] rounded-full mt-2 mr-2"
+                src={image ? image : "/icons8-user-50.png"}
+                className="w-[35px] lg:w-[35px] h-[35px] lg:h-[35.3px] rounded-full mt-2 mr-2 border-2"
                 alt="Picture of the author"
               />
             </div>
@@ -1552,11 +1569,12 @@ const GettinResponse = () => {
                         typeComment1={typeComment}
                         saveVideoAfterStopRecordingOrNot={false}
                         onRecordingCompleteAndGettingVideoId={undefined}
+                        selectWorkspace={undefined}
                       />
                     </div>
                     <div className="flex flex-col items-start w-full ml-9 gap-3  mr-10 ">
-                      <div className=" w-full flex gap-2 ml-2">
-                        <ToggleButton
+                      {/* <div className=" w-full flex gap-2 ml-2"> */}
+                      {/* <ToggleButton
                           icon1={<Video color="#000000" className="w-5 h-5" />}
                           icon2={<VideoOff className="w-4 h-4" />}
                           isIcon1Visible={isIcon1Visible}
@@ -1582,7 +1600,7 @@ const GettinResponse = () => {
                             Allow
                           </Button>
                         </div>
-                      </div>
+                      </div> */}
                       {/* </div> */}
 
                       <div className=" w-full  flex justify-center">

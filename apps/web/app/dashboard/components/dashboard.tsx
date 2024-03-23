@@ -138,6 +138,7 @@ const Dashboard = () => {
 
   const [allWorkspaces, setAllWorkspaces] = useState<Array<workspace>>([]);
   const [selectWorkspace, setSelectWorkspace] = useState<workspace>();
+
   // const [showRrespondByComponent, setShowRespondByComponent] = useState(false);
   // const videoScreenRecorderRef = React.createRef();
   // Function to set the recorded data
@@ -331,7 +332,8 @@ const Dashboard = () => {
           // responseTime: "2024-02-27T12:00:00.000Z",
           responseTime: responseTime,
 
-          workspaceId: workspaceId,
+          // workspaceId: workspaceId,
+          workspaceId: selectWorkspace?.workspace_id,
         }),
       });
 
@@ -353,7 +355,10 @@ const Dashboard = () => {
     } catch (error) {
       console.error("Error sending video:", error);
     }
+    await fetchUserVideos();
+    await fetchRecievedVideos();
   };
+
   const fetchUserVideos = async () => {
     try {
       if (session) {
@@ -361,7 +366,7 @@ const Dashboard = () => {
         console.log("userId from session", userId);
 
         const response = await fetch(
-          `http://localhost:8080/api/getvideos/${session?.user.id}`
+          `http://localhost:8080/api/getvideos/${session?.user.id}/${selectWorkspace?.workspace_id}`
         );
         const data = await response.json();
         // console.log("user videos in db", data);
@@ -376,20 +381,23 @@ const Dashboard = () => {
 
   const fetchRecievedVideos = async () => {
     try {
-      const response = await fetch(
-        `http://localhost:8080/api/recievedvideos/${session?.user.id}`
-      );
-      const data = await response.json();
-      // console.log("recieved videos in db", data);
+      if (selectWorkspace?.workspace_id) {
+        const response = await fetch(
+          `http://localhost:8080/api/recievedvideos/${session?.user.id}/${selectWorkspace?.workspace_id}`
+        );
 
-      // if (response.ok) {
-      setRecievedVideos(data);
+        const data = await response.json();
+        // console.log("recieved videos in db", data);
 
-      // } else {
-      //   console.error(data.error || "Error fetching video details");
-      // }
+        // if (response.ok) {
+        setRecievedVideos(data);
+
+        // } else {
+        //   console.error(data.error || "Error fetching video details");
+        // }
+      }
     } catch (error) {
-      console.error("An error occurred while fetching video details");
+      console.error("An error occurred while fetching recieved video details");
     }
   };
 
@@ -427,21 +435,26 @@ const Dashboard = () => {
       // console.log("isRecievedVideo dashboard", isRecievedVideo);
 
       if (isRecievedVideo) {
+        await fetchRecievedVideos();
         // Remove the video from receivedVideosArray
-        const updatedReceivedVideosArray = receivedVideosArray.filter(
-          (video) => video.videoId !== videoId
-        );
-        setRecievedVideos(updatedReceivedVideosArray);
+        // const updatedReceivedVideosArray = receivedVideosArray.filter(
+        //   (video) => video.videoId !== videoId
+        // );
+        // setRecievedVideos(updatedReceivedVideosArray);
       } else {
+        await fetchUserVideos();
+
         // Remove the video from userVideos
-        const updatedUserVideos = userVideos?.filter(
-          (video) => video.videoId !== videoId
-        );
-        setUserVideos(updatedUserVideos);
+        // const updatedUserVideos = userVideos?.filter(
+        //   (video) => video.videoId !== videoId
+        // );
+        // setUserVideos(updatedUserVideos);
       }
 
       const data = await response.json();
       toast.success("Video Deleted Successfully");
+      // await fetchUserVideos();
+      // await fetchRecievedVideos();
       // console.log("deleted Video", data);
       // Handle success, e.g., show a success message or update UI
     } catch (error) {
@@ -476,11 +489,14 @@ const Dashboard = () => {
       // Handle received video object
     });
   }, [session, userId, socket]);
+  // useEffect
 
   useEffect(() => {
     if (userId) {
       console.log("userId", userId);
       fetchAllWorkspace();
+      fetchUserVideos();
+      fetchRecievedVideos();
     }
   }, [selectWorkspace]);
   console.log(userVideos);
@@ -526,7 +542,11 @@ const Dashboard = () => {
               <DialogHeader className="">
                 <DialogTitle className="">
                   <span className="font-normal">New Pulze in </span>
-                  <span className="font-semibold">Binu Baiju's team</span>
+                  {selectWorkspace && (
+                    <span className="font-semibold">
+                      {selectWorkspace.name}'s team
+                    </span>
+                  )}
                 </DialogTitle>
               </DialogHeader>
 
@@ -550,6 +570,7 @@ const Dashboard = () => {
                       dateFieldState={dateFieldState}
                       setDateFieldState={setDateFieldState}
                       formattedHours={formattedHours}
+                      selectWorkspace={selectWorkspace}
                     />
 
                     {/* <input
@@ -689,6 +710,7 @@ const Dashboard = () => {
                           onRecordingCompleteAndGettingVideoId={
                             handleRecordingCompleteAndGettingVideoId
                           }
+                          selectWorkspace={selectWorkspace}
                         />
                       </div>
 
