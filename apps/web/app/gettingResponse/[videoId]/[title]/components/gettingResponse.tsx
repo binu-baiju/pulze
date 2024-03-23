@@ -559,6 +559,7 @@ const GettinResponse = () => {
         );
       }
     }
+    await fetchComments();
     try {
       if (videoStatus != "Responded") {
         await handleUpdateStatus(respondedStatus);
@@ -566,7 +567,6 @@ const GettinResponse = () => {
     } catch (error) {
       console.error("coudnt update");
     }
-    await fetchComments();
   };
 
   const handlePostButton = (selectedTab) => {
@@ -656,14 +656,15 @@ const GettinResponse = () => {
             );
           } else {
             // It's a reply, update the replies of its parent
-            setComments((prevComments) =>
-              prevComments.map((comment) => ({
-                ...comment,
-                replies: comment.replies.filter(
-                  (reply) => reply.id !== commentId
-                ),
-              }))
-            );
+            // setComments((prevComments) =>
+            //   prevComments.map((comment) => ({
+            //     ...comment,
+            //     replies: comment.replies.filter(
+            //       (reply) => reply.id !== commentId
+            //     ),
+            //   }))
+            // );
+            await fetchComments();
           }
           toast.success("Comment Deleted Successfully");
         }

@@ -293,8 +293,8 @@ const VideoScreenRecorder = forwardRef((props, ref) => {
   console.log("Requestbody from videoScreenRecorder", requestBody);
   console.log(`typecomment1:${typeComment1}`);
   console.log("saveVideoAfterStopRecording", saveVideoAfterStopRecordingOrNot);
-  console.log("selectWorkspaceID", selectWorkspace.workspace_id);
-  const workspaceId = selectWorkspace.workspace_id;
+  // console.log("selectWorkspaceID", selectWorkspace.workspace_id);
+  // const workspaceId = selectWorkspace.workspace_id;
 
   useImperativeHandle(ref, () => ({
     startRecording,
