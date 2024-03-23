@@ -832,6 +832,7 @@ const Dashboard = () => {
                               typeComment1={undefined}
                               requestBody={undefined}
                               videoId={undefined}
+                              selectWorkspace={selectWorkspace}
                             />
                           </>
                         ) : (
@@ -847,6 +848,7 @@ const Dashboard = () => {
                             typeComment1={undefined}
                             requestBody={undefined}
                             videoId={undefined}
+                            selectWorkspace={selectWorkspace}
                           />
                         )}
                       </div>
