@@ -27,14 +27,6 @@ const Header = (props: Props) => {
             </div>
           </div>
           <div className="flex flex-row justify-between px-4">
-            <div className="mx-2">
-              <Button className="h-10 mx-4 px-4 py-0 bg-indigo-600 text-xs">
-                Invite
-                <span>
-                  <InviteIcon />
-                </span>
-              </Button>
-            </div>
             <div>
               <button>
                 <HelpIcon />

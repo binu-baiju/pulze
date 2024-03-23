@@ -57,13 +57,9 @@ const Account = () => {
     <div>
       <div className="relative flex mx-2">
         <p>
-          <a className="absolute bottom-1 left-0 flex flex-row font-[Inter] font-normal text-sm text-left items-center m-1 ">
-            {showLogOut && <LogOutPopUp />}
-          </a>
-        </p>
-        <p>
-          <a className="absolute bottom-8 left-0 flex flex-row font-[Inter] font-normal text-sm text-left items-center m-1 ">
+          <a className="absolute shadow-xl w-full bottom-1 left-0 flex flex-col font-[Inter] justify-start font-normal text-sm text-left m-1 ">
             {showSettings && <Settings />}
+            {showLogOut && <LogOutPopUp />}
           </a>
         </p>
       </div>

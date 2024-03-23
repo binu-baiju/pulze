@@ -18,45 +18,29 @@ export interface WorkspaceProps {
   updateWorkspace: (workspace: workspace) => void;
 }
 const DropDown = (props: Props) => {
-  const [showInviting, setShowInviting] = useState(false);
-  const [showWorkSpace, setShowWorkspace] = useState(false);
-  const [showCreateWorkSpace, setShowCreateWorkspace] = useState(false);
-  const toggleInviting = () => {
-    setShowInviting(!showInviting);
-  };
-
-  const toggleWorkSpace = () => {
-    setShowWorkspace(!showWorkSpace);
-  };
-
-  const toggleCreateWorkSpace = () => {
-    setShowCreateWorkspace(!showCreateWorkSpace);
-  };
-
-  const toggleAll = () => {
-    toggleInviting();
-    toggleWorkSpace();
-    toggleCreateWorkSpace();
-  };
+  const [toggle, setToggle] = useState(false);
   return (
     <div className="flex flex-col w-48 text-[#0F172A]">
       <div
         className="flex flex-row justify-center items-center cursor-pointer"
-        onClick={toggleAll}
+        onClick={() => setToggle(!toggle)}
       >
         <span className="text-[#0F172A] font-poppins font-semibold relative">
           {props.selectedWorkspace?.name}
         </span>
         <IoIosArrowDown />
       </div>
-      {showWorkSpace && (
-        <>
-          <div className="flex flex-col justify-center ml-12 items-center absolute top-40">
+      <>
+        {toggle && (
+          <div className="flex flex-col justify-center items-center absolute top-40 border-2 border-[#8645FF] rounded-md shadow-xl shadow-[#8645FF] bg-[#8645FF] opacity-100 z-40 w-[200px]">
             {props.allWorkspaces.map((workspace: workspace) => {
               return (
                 <div
-                  className="flex flex-row justify-center items-center"
-                  onClick={() => props.setSelectedWorkspace(workspace)}
+                  className="flex flex-row justify-center items-center cursor-pointer text-slate-50	"
+                  onClick={() => {
+                    props.setSelectedWorkspace(workspace);
+                    setToggle(false);
+                  }}
                 >
                   <div className="mx-4">{workspace.name}</div>
                   {workspace.workspace_id ==
@@ -71,34 +55,35 @@ const DropDown = (props: Props) => {
               );
             })}
           </div>
-          <div className="flex flex-col relative">
-            <p>
-              <a className="flex flex-row items-center absolute top-16 font-normal text-sm  font-[Inter] text-left mx-3 my-3">
-                <WorkSpaceSet
-                  selectedWorkspace={props.selectedWorkspace}
-                  updateWorkspace={props.setSelectedWorkspace}
-                />
-              </a>
-            </p>
-            <p>
-              <a className="flex flex-row font-[Inter] absolute top-20 font-normal text-sm text-left items-center  mx-3 my-6">
-                <Inviting
-                  selectedWorkspace={props.selectedWorkspace}
-                  updateWorkspace={props.setSelectedWorkspace}
-                />
-              </a>
-            </p>
-            <p>
-              <a className="flex flex-row font-[Inter] absolute top-24 font-normal text-sm text-left items-center mx-3 my-9 ">
-                <CreatingWorkspace
-                  selectedWorkspace={props.selectedWorkspace}
-                  updateWorkspace={props.setSelectedWorkspace}
-                />
-              </a>
-            </p>
-          </div>
-        </>
-      )}
+        )}
+
+        <div className="flex flex-col relative z-10">
+          <p>
+            <a className="flex flex-row items-center absolute top-16 cursor-pointer font-normal text-sm  font-[Inter] text-left my-3">
+              <WorkSpaceSet
+                selectedWorkspace={props.selectedWorkspace}
+                updateWorkspace={props.setSelectedWorkspace}
+              />
+            </a>
+          </p>
+          <p>
+            <a className="flex flex-row font-[Inter] cursor-pointer absolute top-20 font-normal text-sm text-left items-center  mx-3 my-6">
+              <Inviting
+                selectedWorkspace={props.selectedWorkspace}
+                updateWorkspace={props.setSelectedWorkspace}
+              />
+            </a>
+          </p>
+          <p>
+            <a className="flex flex-row font-[Inter] cursor-pointer absolute top-24 font-normal text-sm text-left items-center mx-3 my-9 ">
+              <CreatingWorkspace
+                selectedWorkspace={props.selectedWorkspace}
+                updateWorkspace={props.setSelectedWorkspace}
+              />
+            </a>
+          </p>
+        </div>
+      </>
     </div>
   );
 };

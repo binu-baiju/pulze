@@ -514,7 +514,9 @@ const Dashboard = () => {
         id="default-sidebar"
         className="h-screen bg-gray-200 w-1/4 lg:w-2/12 flex justify-between flex-col "
       >
-        <h1 className="mt-2 mb-[-50px] ml-5 font-bold">pulze</h1>
+        <h1 className="mt-2 mb-[-50px] flex justify-start ml-8 font-bold text-xl">
+          <a href="#">pulze</a>
+        </h1>
         <div className="flex flex-col justify-center">
           <Dialog>
             <DialogTrigger asChild>
