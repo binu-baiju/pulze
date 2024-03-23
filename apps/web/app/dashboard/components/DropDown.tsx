@@ -32,12 +32,15 @@ const DropDown = (props: Props) => {
       </div>
       <>
         {toggle && (
-          <div className="flex flex-col justify-center items-center absolute top-40 border-2 border-[#8645FF] rounded-md shadow-xl bg-[#8645FF] opacity-100 z-40 w-[200px]">
+          <div className="flex flex-col justify-center items-center absolute top-40 border-2 border-[#8645FF] rounded-md shadow-xl shadow-[#8645FF] bg-[#8645FF] opacity-100 z-40 w-[200px]">
             {props.allWorkspaces.map((workspace: workspace) => {
               return (
                 <div
                   className="flex flex-row justify-center items-center cursor-pointer text-slate-50	"
-                  onClick={() => props.setSelectedWorkspace(workspace)}
+                  onClick={() => {
+                    props.setSelectedWorkspace(workspace);
+                    setToggle(false);
+                  }}
                 >
                   <div className="mx-4">{workspace.name}</div>
                   {workspace.workspace_id ==
