@@ -199,8 +199,10 @@ const LogIn = () => {
           </div>
         </div>
       </div>
-      <div>
-        <h1 className="font-semibold font-[Inter] text-[32px] pt-8">pulze</h1>
+      <div className="cursor-pointer">
+        <h1 className="font-semibold font-[Inter] text-[32px] pt-8">
+          <a href="/home">pulze</a>
+        </h1>
       </div>
     </div>
   );
