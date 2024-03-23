@@ -120,6 +120,11 @@ export const deleteWorkspaceContoller = async (req: Request, res: Response) => {
         return res.status(400).json({ error: "Workspace ID is required" });
       }
 
+      if(!user_id)
+      {
+        return res.status(400).json({ error: "User ID is required" });
+      }
+
       const workspace = await prisma.workspace.findUnique({where:{ workspace_id: String(workspace_id) }});
       
       if(workspace?.workspace_creator_id !== user_id)

@@ -35,11 +35,13 @@ export function WorkSpaceSet(props: WorkspaceProps) {
   const [workspaceMembers, setWorkspaceMembers] = useState<
     Array<WorkspaceMember>
   >([]);
+  const [workspace, setWorkspace] = useState(props.selectedWorkspace);
   const [modelOpen, setModelOpen] = useState(false);
   const { data: session, status } = useSession();
   const userId = session?.user.id;
 
   useEffect(() => {
+    fetchWorkspace();
     fetchWorkspaceMember();
   }, [props.selectedWorkspace]);
 
@@ -59,9 +61,26 @@ export function WorkSpaceSet(props: WorkspaceProps) {
     }
   };
 
-  useEffect(() => {
-    console.log("workspaceMembers", workspaceMembers);
-  }, []);
+  const fetchWorkspace = async () => {
+    if (props.selectedWorkspace?.workspace_id) {
+      try {
+        const workspaceData = await fetch(
+          `http://localhost:8080/api/get-workspace?workspace_id=${props.selectedWorkspace?.workspace_id}`
+        );
+        const data = await workspaceData.json();
+        setWorkspace(data.workspace);
+        if (data.workspace?.name) {
+          setWorkspaceName(data.workspace?.name);
+        }
+
+        console.log("workspace", workspace);
+      } catch (ex) {
+        console.log("ex from workspace", ex);
+        // alert("Error while fetching workspace");
+      }
+    }
+  };
+
   const updateWorkspaceName = async () => {
     try {
       const response = await fetch(
@@ -148,6 +167,7 @@ export function WorkSpaceSet(props: WorkspaceProps) {
           },
           body: JSON.stringify({
             workspace_id: props.selectedWorkspace?.workspace_id,
+            user_id: userId,
           }),
         }
       );
@@ -178,8 +198,8 @@ export function WorkSpaceSet(props: WorkspaceProps) {
   return (
     <Dialog open={modelOpen} onOpenChange={setModelOpen}>
       <DialogTrigger asChild>
-        <span className="flex flex-row font-[Inter] font-normal text-sm text-left items-center m-1 ">
-          <IoMdSettings className="ml-1" />
+        <span className="flex flex-row font-[Inter] font-normal text-sm text-left items-center mt-1">
+          <IoMdSettings className="ml-3" />
           Workspace Settings
         </span>
       </DialogTrigger>
@@ -251,6 +271,7 @@ export function WorkSpaceSet(props: WorkspaceProps) {
                           placeholder="Enter your workspace name"
                           className="w-[300px]"
                           value={workspaceName}
+                          disabled={workspace?.workspace_creator_id != userId}
                           onChange={(e) => {
                             console.log("workspace", e.target.value);
                             setWorkspaceName(e.target.value);
@@ -269,7 +290,6 @@ export function WorkSpaceSet(props: WorkspaceProps) {
                     </div>
                   </div>
                   <div className="mt-2">
-                    <div className="font-semibold">Join Link</div>
                     <div className="flex flex-row w-full justify-between mt-4">
                       <div>
                         <Input
@@ -278,14 +298,6 @@ export function WorkSpaceSet(props: WorkspaceProps) {
                           className="w-[300px]"
                           disabled
                         />
-                      </div>
-                      <div>
-                        <Button
-                          type="submit"
-                          className="text-white bg-[#8645FF] rounded-r-md font-[Inter] font-semibold text-lg w-[120px]"
-                        >
-                          Copy Link
-                        </Button>
                       </div>
                     </div>
                   </div>

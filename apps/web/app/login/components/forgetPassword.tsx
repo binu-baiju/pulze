@@ -86,26 +86,20 @@ export function ForgetPassword() {
             Forget Password
           </DialogTitle>
         </DialogHeader>
-        <form action={submit}>
+        <form action={submit} className="flex flex-col gap-4">
           {/* <h1 className="text-2xl font-light">Reset password</h1>
           <p>
             Enter your email address to get instructions for resetting your
             password.
           </p> */}
-          <Input
-            name="email"
-            type="email"
-            // size="3"
-            placeholder="Your email..."
-          />
+          <Input name="email" type="email" placeholder="Enter your Email" />
           {error && <p className="text-red-500">{error}</p>}
-          <Button>Reset Password</Button>
+          <Button className="bg-[#8645FF] w-[320px]">Reset Password</Button>
           <Link
-            href="/"
-            className="text-sm text-neutral-700/80 flex items-center"
+            href="/login"
+            className="text-sm flex  justify-center items-center"
           >
             {/* <CaretLeftIcon /> */}
-            <span>Return to Login</span>
           </Link>
         </form>
       </DialogContent>

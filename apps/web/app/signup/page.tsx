@@ -34,7 +34,7 @@ const App: React.FunctionComponent = () => {
   return (
     <div className="h-screen flex items-center justify-center">
       <div className="h-full w-[45%] flex items-center justify-center">
-        <div className="flex flex-col items-center justify-center  w-[400px] h-[450px] mt-[80px]">
+        <div className="flex flex-col items-center justify-center  w-[400px] h-[450px] mt-[60px]">
           <h1 className="font-semibold font-[Inter] sm:text-[33px] text-center">
             Visually Rich sync conversations - free forever
           </h1>
@@ -58,6 +58,11 @@ const App: React.FunctionComponent = () => {
                   Login
                 </Link>{" "}
               </p>
+            </div>
+            <div className="cursor-pointer flex justify-center items-center">
+              <h1 className="font-semibold font-[Inter] text-[32px] pt-8">
+                <a href="/home">pulze</a>
+              </h1>
             </div>
           </div>
         </div>

@@ -9,9 +9,6 @@ const CaughtUp = () => {
       <div className="font-medium text-lg tracking-wide text-purple-900">
         You are all caught up
       </div>
-      {/* <div className="font-normal text-base tracking-normal text-purple-900">
-        New Pulze
-      </div> */}
     </div>
   );
 };

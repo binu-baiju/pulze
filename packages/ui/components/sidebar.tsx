@@ -85,7 +85,7 @@ export function Sidebar({ onSidebarClick }: SidebarProps) {
                   />
                 </g>
               </svg>
-              My Pulzez
+              My Pulzes
             </Button>
           </div>
         </div>
