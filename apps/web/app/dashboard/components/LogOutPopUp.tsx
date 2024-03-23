@@ -20,23 +20,23 @@ export function LogOutPopUp() {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <span className="flex flex-row font-[poppins] font-light text-xs text-left justify-center items-center m-1 text-[#DC2626]">
+        <span className="flex flex-row font-[poppins] cursor-pointer font-light text-xs text-left justify-start items-center m-1 text-[#DC2626]">
           Logout
         </span>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px] sm:max-h-[375px] flex flex-col justify-center items-center rounded-lg border border-slate-500">
+      <DialogContent className="sm:max-w-[425px] sm:max-h-[345px] flex flex-col justify-center items-center rounded-lg border border-slate-500">
         <DialogHeader>
-          <div className="scale-50 justify-center ml-6">
+          <div className="scale-50 justify-center ml-6 mt-[-60px]">
             <FlaggIcon />
           </div>
-          <DialogTitle className="flex font-[Inter] font-semibold justify-center items-center text-3xl ">
+          <DialogTitle className="flex font-[Inter] font-semibold justify-center items-center text-3xl mt-[-20px]">
             pulze
           </DialogTitle>
           <DialogDescription className="font-poppins font-medium text-xl text-center text-[#4B5563] py-4">
             You can log back at any time
           </DialogDescription>
         </DialogHeader>
-        <DialogFooter className="flex flex-col gap-8 justify-center items-center mb-10">
+        <DialogFooter className="flex flex-col gap-8 justify-center items-center">
           <Button
             type="submit"
             className="bg-[#D4D4D8] hover:bg-[#D4D4D8] w-28 rounded-r-md font-[Inter] font-semibold text-base text-black"
