@@ -65,15 +65,16 @@ export function CreatingWorkspace(props: WorkspaceProps) {
           New Workspace
         </span>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px] flex flex-col justify-center items-center rounded-lg border border-slate-500">
-        <DialogHeader>
-          <div className="scale-50 mt-[-30px] ml-[70px] ">
+      <DialogContent className="sm:max-w-[425px] flex flex-col  items-center rounded-lg border border-slate-500">
+        <DialogHeader className=" flex flex-col justify-start   items-center ">
+          {/* <div className="scale-50 mt-[-30px]  "> */}
+          <div className="scale-50   ">
             <FlaggIcon />
           </div>
-          <DialogTitle className="font-poppins  font-bold ml-[70px] text-2xl absolute top-[150px]">
+          <DialogTitle className="font-poppins   font-bold  text-lg absolute top-[190px]">
             Name your workspace
           </DialogTitle>
-          <DialogDescription className="font-poppins font-normal text-xl text-center">
+          <DialogDescription className="font-poppins font-normal text-sm text-center ">
             A workspace is shared home for you andyour coworkers to collaborate
             on pulze
           </DialogDescription>

@@ -54,7 +54,7 @@ const Account = () => {
   }, [userId]);
 
   return (
-    <div>
+    <div className="w-full">
       <div className="relative flex mx-2">
         <p>
           <a className="absolute shadow-xl w-full bottom-1 left-0 flex flex-col font-[Inter] justify-start font-normal text-sm text-left m-1 ">
@@ -64,13 +64,13 @@ const Account = () => {
         </p>
       </div>
       <div
-        className="flex flex-row items-center justify-center px-2 h-12 cursor-pointer"
+        className="flex flex-row items-center justify-between px-2 h-12 cursor-pointer  w-full"
         onClick={toggleBoth}
       >
-        <div>
+        <div className="flex justify-center item-center">
           <AvatarDemo imageUrl={user?.image} />
+          <p className="px-2">{user?.name}</p>
         </div>
-        <p className="px-2">{user?.name}</p>
         <IoIosArrowDown />
       </div>
     </div>
