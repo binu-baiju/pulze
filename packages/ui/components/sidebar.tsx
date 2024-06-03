@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { cn } from "../lib/utils";
+// import { cn } from "../lib/utils";
 import { Button } from "./button";
 
 interface SidebarProps {
@@ -14,10 +14,13 @@ export function Sidebar({ onSidebarClick }: SidebarProps) {
     setActiveButton(page);
   };
   return (
-    <div className={cn("pb-12")}>
-      <div className="space-y-4 py-4">
+    <div className="">
+      {/* <div className="space-y-4 py-4">
         <div className="px-3 py-2">
-          <div className="space-y-1">
+          <div className="space-y-1"> */}
+      <div className="">
+        <div className="">
+          <div className="h">
             <Button
               className={`w-full justify-start hover:bg-purple-200 ${
                 activeButton === "activity"

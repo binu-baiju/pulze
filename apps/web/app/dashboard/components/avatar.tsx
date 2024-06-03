@@ -11,6 +11,10 @@ export const AvatarDemo: React.FC<AvatarDemoProps> = ({ imageUrl }) => {
       : imageUrl;
 
   return (
-    <img className="w-5 h-5 rounded-full" src={image} alt="Rounded avatar" />
+    <img
+      className="w-5 h-5 rounded-full mt-1"
+      src={image}
+      alt="Rounded avatar"
+    />
   );
 };

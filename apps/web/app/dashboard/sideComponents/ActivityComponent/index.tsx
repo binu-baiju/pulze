@@ -19,8 +19,10 @@ const ActivityPage = ({ userVideos, workspace, handleDeleteVideo }) => {
   //   // }
   //   filteredUserVideos = userVideos.userVideos;
   // }
+  console.log("uservideosMypulze", userVideos);
+
   if (userVideos) {
-    filteredUserVideos = userVideos.userVideos.filter((video) => {
+    filteredUserVideos = userVideos.filter((video) => {
       const responseTime = video.sendVideos?.[0]?.responseTime;
       if (!responseTime) {
         return true; // If responseTime is not there, add the video to filteredVideos
@@ -73,31 +75,36 @@ const ActivityPage = ({ userVideos, workspace, handleDeleteVideo }) => {
       <div className="notification-container">
         <div className="flex flex-col mx-3 my-6">
           <div>Done for now</div>
-          {userVideos.userVideos.map((video) => {
-            const recipients = video?.sendVideos?.[0]?.recipients;
 
-            if (recipients && recipients.length > 0) {
-              const responseTime = new Date(
-                video.sendVideos?.[0]?.responseTime
-              );
-              if (currentTime > responseTime) {
-                return (
-                  <>
-                    {/* <div>{video.video_id}</div> */}
-                    <NotificationTab
-                      key={video.video_id}
-                      video={video}
-                      session={session}
-                      isRecievedVideo={false}
-                      fullVideoObject={undefined}
-                      handleDeleteVideo={handleDeleteVideo}
-                      disableDelete={workspace.workspace_creator_id != user_id}
-                    />
-                  </>
-                );
-              }
-            }
-          })}
+          {userVideos
+            ? userVideos.map((video) => {
+                const recipients = video?.sendVideos?.[0]?.recipients;
+
+                if (recipients && recipients.length > 0) {
+                  const responseTime = new Date(
+                    video.sendVideos?.[0]?.responseTime
+                  );
+                  if (currentTime > responseTime) {
+                    return (
+                      <>
+                        {/* <div>{video.video_id}</div> */}
+                        <NotificationTab
+                          key={video.video_id}
+                          video={video}
+                          session={session}
+                          isRecievedVideo={false}
+                          fullVideoObject={undefined}
+                          handleDeleteVideo={handleDeleteVideo}
+                          disableDelete={
+                            workspace.workspace_creator_id != user_id
+                          }
+                        />
+                      </>
+                    );
+                  }
+                }
+              })
+            : null}
           {/* <NotificationTab
             session={undefined}
             isRecievedVideo={false}

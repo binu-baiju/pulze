@@ -56,13 +56,13 @@ export function Inviting(props: WorkspaceProps) {
           Invite Coworkers
         </span>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px] flex flex-col justify-center rounded-lg border border-slate-500  min-w-[500px] min-h-[200px] ">
+      <DialogContent className="sm:max-w-[425px] flex flex-col justify-start rounded-lg border border-slate-500  min-w-[500px] min-h-[200px] ">
         <DialogHeader>
           <DialogTitle className="font-poppins items-start font-bold ml-[30px] mx-0 text-2xl text-lg">
             Invite co-workers by email
           </DialogTitle>
         </DialogHeader>
-        <div className="flex flex-col  gap-20 mt-10">
+        <div className="flex flex-col  gap-20 mt-5">
           <div className="flex flex-row place-content-between ">
             <Input
               id="name"
