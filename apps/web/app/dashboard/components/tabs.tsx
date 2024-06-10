@@ -1,4 +1,5 @@
 // // // dashboard.tsx
+export {};
 // "use client";
 // import React, { useEffect, useRef, useState } from "react";
 // import RecordRTC from "recordrtc";
