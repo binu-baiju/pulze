@@ -32,7 +32,6 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-  X,
   DialogOverlay,
 } from "ui/components/dialog";
 
